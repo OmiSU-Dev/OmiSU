@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Detect ASUS Zenbook UX5406AA series laptops on Intel Panther Lake.
+
+omisu-hw-match "ux5406aa" && omisu-hw-intel-ptl

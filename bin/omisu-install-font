@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# omisu:summary=Install a Nerd Font package and switch the system to it
+# omisu:args=<display-name> <package> <family>
+# omisu:examples=omisu install font 'Cascadia Mono' ttf-cascadia-mono-nerd 'CaskaydiaMono Nerd Font'
+
+name="${1-}"
+package="${2-}"
+family="${3-}"
+
+if [[ -z $name || -z $package || -z $family ]]; then
+  echo "Usage: omisu-install-font <display-name> <package> <family>" >&2
+  exit 1
+fi
+
+exec omisu-launch-floating-terminal-with-presentation \
+  "echo 'Installing ${name}...'; omisu-pkg-add ${package} && sleep 2 && omisu-font-set '${family}'"

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "omisu.notifications",
+  "name": "Notifications",
+  "version": "1.0.0",
+  "author": "OmiSu",
+  "description": "Notification daemon, popups, DND, and history",
+  "kinds": [
+    "service"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml"
+  }
+}

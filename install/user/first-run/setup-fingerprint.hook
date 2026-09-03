@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+# Only invite when there's a reader to use and it isn't set up yet (the lock
+# PAM file is the last thing the setup writes on success).
+if omisu-hw-fingerprint && [[ ! -f /etc/pam.d/omisu-lock-fingerprint ]] &&
+  omisu-done ensure fingerprint-setup-invitation; then
+  omisu-notification-send -u critical -g 󰈷 "Setup Fingerprint Reader" \
+    "Enable sudo and unlocking with your fingerprint." \
+    --exec omisu-launch-floating-terminal-with-presentation omisu-setup-security-fingerprint
+fi

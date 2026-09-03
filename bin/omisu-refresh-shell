@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# omisu:summary=Reset shell.json to OmiSu defaults
+# omisu:examples=omisu refresh shell
+
+set -euo pipefail
+
+omisu-refresh-config omisu/shell.json
+omisu-bar defaults
+
+omisu-restart-shell

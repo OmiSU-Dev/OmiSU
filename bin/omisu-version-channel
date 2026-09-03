@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# omisu:summary=Print the active OmiSu mirror and package channel
+
+if grep -q "https://stable-mirror.omisu.org/" /etc/pacman.d/mirrorlist; then
+  mirror="stable"
+elif grep -q "https://rc-mirror.omisu.org/" /etc/pacman.d/mirrorlist; then
+  mirror="rc"
+elif grep -q "https://mirror.omisu.org/" /etc/pacman.d/mirrorlist; then
+  mirror="edge"
+else
+  mirror="unknown"
+fi
+
+if grep -q "https://pkgs.omisu.org/stable/" /etc/pacman.conf; then
+  pkgs="stable"
+elif grep -q "https://pkgs.omisu.org/edge/" /etc/pacman.conf; then
+  pkgs="edge"
+else
+  pkgs="unknown"
+fi
+
+if [[ $mirror == $pkgs ]]; then
+  echo $mirror
+else
+  echo "$mirror / $pkgs"
+fi

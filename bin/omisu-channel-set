@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# omisu:summary=Set the OmiSu package channel.
+# omisu:args=<stable|rc|edge|dev>
+# omisu:requires-sudo=true
+
+set -euo pipefail
+
+usage() { echo "Usage: omisu-channel-set [stable|rc|edge|dev]"; }
+fail() { echo "Error: $*" >&2; exit 1; }
+
+OMISU_GIT_REPO_URL='https://github.com/OmiSU-Dev/OmiSU.git'
+OMISU_GIT_REPO_DIR="${OMISU_GIT_REPO_DIR:-$HOME/src/OmiSU}"
+OMISU_RUNTIME_SUBDIR="."
+
+confirm_dev() {
+  cat <<WARNING
+
+The dev channel links OmiSu directly to a checkout of the runtime source in
+$OMISU_GIT_REPO_DIR (cloned from $OMISU_GIT_REPO_URL).
+It's exclusively intended for developers working on OmiSu itself.
+
+WARNING
+
+  gum confirm --default=false "Switch to dev channel?"
+}
+
+validate_dev_checkout() {
+  local checkout="$1"
+
+  if [[ -e $checkout && ! -d $checkout/.git ]]; then
+    fail "$checkout already exists and is not a git checkout."
+  fi
+
+  if [[ -d $checkout/.git && ( ! -d $checkout/bin || ! -d $checkout/default || ! -d $checkout/shell ) ]]; then
+    fail "$checkout is a git checkout, but it does not look like OmiSu."
+  fi
+}
+
+link_dev_checkout() {
+  local repo="$1" checkout="$2"
+  [[ -d $repo/.git ]] || git clone "$OMISU_GIT_REPO_URL" "$repo"
+
+  omisu-dev-link "$checkout" --no-reboot
+}
+
+(( $# > 0 )) || { usage; exit 1; }
+
+dev_checkout=""
+channel="$1"
+leaving_dev=0
+
+case "$channel" in
+  stable)
+    pacman_channel=stable
+    packages=(omisu omisu-settings)
+    ;;
+  rc)
+    pacman_channel=rc
+    packages=(omisu omisu-settings)
+    ;;
+  edge)
+    pacman_channel=edge
+    packages=(omisu-dev omisu-settings-dev)
+    ;;
+  dev)
+    confirm_dev || { echo "Cancelled."; exit 0; }
+    dev_repo="$OMISU_GIT_REPO_DIR"
+    dev_checkout="$dev_repo/$OMISU_RUNTIME_SUBDIR"
+    validate_dev_checkout "$dev_checkout"
+    pacman_channel=edge
+    packages=(omisu-dev omisu-settings-dev)
+    ;;
+  *)
+    echo "Unknown channel: $channel" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+if [[ -z $dev_checkout && $OMISU_PATH != "/usr/share/omisu" ]]; then
+  leaving_dev=1
+fi
+
+if [[ -n $dev_checkout ]]; then
+  link_dev_checkout "$dev_repo" "$dev_checkout"
+  export OMISU_PATH="$dev_checkout"
+  export PATH="$OMISU_PATH/bin:$PATH"
+  omisu-state set reboot-required
+fi
+
+omisu-refresh-pacman "$pacman_channel"
+# --ask 4 accepts omisu <-> omisu-dev replacement prompts without file overwrites.
+sudo env OMISU_UPDATE_PACMAN=1 pacman -S --needed --noconfirm --ask 4 "${packages[@]}"
+
+if [[ -z $dev_checkout ]]; then
+  omisu-dev-unlink --no-reboot
+  export OMISU_PATH=/usr/share/omisu
+
+  if (( leaving_dev )); then
+    omisu-state set reboot-required
+  fi
+fi
+
+omisu-update -y

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# omisu:summary=Restore the preinstalled OmiSu applications (web apps, TUIs, and selected packages).
+# omisu:requires-sudo=true
+
+if gum confirm "Are you sure you want to restore all preinstalled web apps, TUI wrappers, and desktop applications?"; then
+  echo -e "Restoring preinstalled OmiSu applications...\n"
+
+  # Recreates the shipped .desktop launchers (web apps and TUIs) and the mise stubs
+  # that back claude, gh, opencode, and the rest of the agents
+  omisu-refresh-applications
+
+  # Mirrors the list in omisu-remove-preinstalls; both track optional extras from
+  # omisu-base.packages that users can opt out of via Remove Preinstalls.
+  if ! omisu-pkg-add \
+    aether \
+    cliamp; then
+    echo -e "\nPreinstalls are still marked as removed. Fix the errors above and try again."
+    exit 1
+  fi
+
+  # Last, so a failure above leaves the opt-out intact rather than restoring
+  # keybindings for apps that never came back
+  rm -f ~/.local/state/omisu/preinstalls-removed
+  hyprctl reload
+fi

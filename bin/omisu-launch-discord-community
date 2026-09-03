@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# omisu:summary=Open the OmiSu Discord community in the Discord app or a browser.
+
+invite="https://discord.gg/tXFUdasqhY"
+
+if omisu-cmd-present discord; then
+  exec setsid uwsm-app -- discord --url -- "discord://-/invite/${invite##*/}"
+else
+  exec omisu-launch-webapp "$invite"
+fi

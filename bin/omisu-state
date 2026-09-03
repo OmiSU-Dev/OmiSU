@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# omisu:summary=Manage persistent state files for OmiSu toggles and settings.
+# omisu:args=<set|clear> <state-name-or-pattern>
+# omisu:hidden=true
+
+STATE_DIR="$HOME/.local/state/omisu"
+mkdir -p "$STATE_DIR"
+
+COMMAND="$1"
+STATE_NAME="$2"
+
+if [[ -z $COMMAND ]]; then
+  echo "Usage: omisu-state <set|clear> <state-name-or-pattern>"
+  exit 1
+fi
+
+if [[ -z $STATE_NAME ]]; then
+  echo "Usage: omisu-state $COMMAND <state-name>"
+  exit 1
+fi
+
+case "$COMMAND" in
+set) touch "$STATE_DIR/$STATE_NAME" ;;
+clear) find "$STATE_DIR" -maxdepth 1 -type f -name "$STATE_NAME" -delete ;;
+esac

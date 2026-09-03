@@ -1,0 +1,157 @@
+#!/bin/bash
+
+set -euo pipefail
+
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
+template="$ROOT/default/snapper/root"
+limine_defaults="$ROOT/etc/limine-entry-tool.d/omisu-defaults.conf"
+limine_notify_autostart="$ROOT/config/autostart/limine-snapper-notify.desktop"
+
+grep -Fx 'NUMBER_CLEANUP="yes"' "$template" >/dev/null
+grep -Fx 'NUMBER_LIMIT="5"' "$template" >/dev/null
+grep -Fx 'TIMELINE_CREATE="no"' "$template" >/dev/null
+! grep -Eq '^TIMELINE_(CLEANUP|LIMIT_)' "$template" || fail "Snapper template keeps timeline cleanup details out of the default config"
+grep -Fx 'MAX_SNAPSHOT_ENTRIES=6' "$limine_defaults" >/dev/null || fail "Limine allows for a snapshot created before Snapper cleanup"
+pass "Snapper and Limine retain update snapshots without a transient limit mismatch"
+
+grep -Fx '[Desktop Entry]' "$limine_notify_autostart" >/dev/null
+grep -Fx 'Hidden=true' "$limine_notify_autostart" >/dev/null
+pass "Limine Snapper warning notifier is disabled by default"
+
+test_tmp=$(mktemp -d)
+trap 'rm -rf "$test_tmp"' EXIT
+
+fake_bin="$test_tmp/bin"
+mkdir -p "$fake_bin"
+
+cat >"$fake_bin/snapper" <<'STUB'
+#!/bin/bash
+printf 'snapper %s\n' "$*" >>"$TEST_LOG"
+STUB
+chmod +x "$fake_bin/snapper"
+
+cat >"$fake_bin/systemctl" <<'STUB'
+#!/bin/bash
+printf 'systemctl %s\n' "$*" >>"$TEST_LOG"
+STUB
+chmod +x "$fake_bin/systemctl"
+
+notification_migration=$(grep -rl 'Disable Limine Snapper warning notifier' "$ROOT/migrations" | head -n 1 || true)
+[[ -n $notification_migration ]] || fail "Limine Snapper warning notifier migration exists"
+grep -F 'limine-snapper-notify.desktop' "$notification_migration" >/dev/null
+grep -F 'systemctl --user daemon-reload' "$notification_migration" >/dev/null
+grep -F "app-limine\\x2dsnapper\\x2dnotify@autostart.service" "$notification_migration" >/dev/null
+
+migration_home="$test_tmp/migration-home"
+mkdir -p "$migration_home"
+TEST_LOG="$test_tmp/calls.log" \
+PATH="$fake_bin:$PATH" \
+HOME="$migration_home" \
+  bash -euo pipefail "$notification_migration" >/dev/null
+
+cmp -s "$limine_notify_autostart" "$migration_home/.config/autostart/limine-snapper-notify.desktop" || fail "Limine Snapper warning notifier migration writes autostart override"
+grep -Fx 'systemctl --user daemon-reload' "$test_tmp/calls.log" >/dev/null || fail "Limine Snapper warning notifier migration reloads user units"
+grep -Fx 'systemctl --user stop app-limine\x2dsnapper\x2dnotify@autostart.service' "$test_tmp/calls.log" >/dev/null || fail "Limine Snapper warning notifier migration stops active watcher"
+pass "Limine Snapper warning notifier migration disables existing user autostart"
+
+: >"$test_tmp/calls.log"
+
+TEST_LOG="$test_tmp/calls.log" \
+PATH="$fake_bin:$PATH" \
+OMISU_SNAPPER_CONFIGURE_TEST=1 \
+OMISU_PATH="$ROOT" \
+OMISU_SNAPPER_CONFIG_PATH="$test_tmp/etc/snapper/configs/root" \
+OMISU_SNAPPER_CONF_PATH="$test_tmp/etc/conf.d/snapper" \
+  bash -euo pipefail "$ROOT/install/config/snapper.sh" >/dev/null
+
+cmp -s "$template" "$test_tmp/etc/snapper/configs/root" || fail "snapshot configure installs the OmiSu Snapper template"
+grep -Fx 'SNAPPER_CONFIGS="root"' "$test_tmp/etc/conf.d/snapper" >/dev/null || fail "snapshot configure writes /etc/conf.d/snapper"
+grep -Fx 'systemctl disable --now snapper-timeline.timer' "$test_tmp/calls.log" >/dev/null || fail "snapshot configure disables timeline snapshots"
+grep -Fx 'systemctl enable --now snapper-cleanup.timer limine-snapper-sync.service' "$test_tmp/calls.log" >/dev/null || fail "snapshot configure enables cleanup and Limine snapshot sync"
+pass "snapshot configure normalizes Snapper policy and services"
+
+setup_system="$ROOT/bin/omisu-apply-system"
+grep -F 'config/all.sh' "$setup_system" >/dev/null ||
+  fail "system setup runs the config phase"
+grep -F 'config/snapper.sh' "$ROOT/install/config/all.sh" >/dev/null ||
+  fail "config phase normalizes Snapper"
+pass "system setup normalizes Snapper during fresh installs"
+
+migration=$(grep -rl 'Normalize Snapper snapshot services' "$ROOT/migrations" | head -n 1 || true)
+[[ -n $migration ]] || fail "Snapper service migration exists"
+grep -F 'unit_active snapper-cleanup.timer' "$migration" >/dev/null
+grep -F 'unit_active limine-snapper-sync.service' "$migration" >/dev/null
+grep -F 'sudo "$@"' "$migration" >/dev/null
+grep -F 'as_root env OMISU_PATH="$OMISU_PATH" bash -euo pipefail "$snapper_config_script"' "$migration" >/dev/null
+! grep -F 'NUMBER_LIMIT="5"' "$migration" >/dev/null || fail "Snapper service migration does not overwrite working custom retention"
+pass "Snapper service migration only repairs broken services idempotently"
+
+# Checkouts differ per machine, so allow an explicit pointer at the sibling repo.
+# Accepts either the omisu-pkgs checkout or its pkgbuilds/ directory.
+find_omisu_pks_root() {
+  local candidate
+  for candidate in \
+    ${OMISU_PKGS_PATH:+"$OMISU_PKGS_PATH/pkgbuilds" "$OMISU_PKGS_PATH"} \
+    "$ROOT/../omisu-pkgs/pkgbuilds" \
+    "$ROOT/../omisu/omisu-pkgs/pkgbuilds" \
+    "$ROOT/../../omisu-pkgs/pkgbuilds" \
+    "$ROOT/../omacom/omisu-pkgs/pkgbuilds" \
+    "$ROOT/../../omacom/omisu-pkgs/pkgbuilds" \
+    "$HOME/Work/omacom/omisu-pkgs/pkgbuilds"; do
+    if [[ -d $candidate ]]; then
+      cd "$candidate" && pwd
+      return 0
+    fi
+  done
+  return 1
+}
+
+pkgs_root=$(find_omisu_pks_root) || fail "omisu-pkgs checkout is available for packaging coverage"
+settings_pkgbuild="$pkgs_root/omisu-settings-dev/PKGBUILD"
+omisu_pkgbuild="$pkgs_root/omisu-dev/PKGBUILD"
+
+grep -F 'cp -a default/. "$pkgdir/usr/share/omisu/default/"' "$settings_pkgbuild" >/dev/null || fail "omisu-settings package bundles default/"
+grep -F 'install -Dm644 default/snapper/root \' "$settings_pkgbuild" >/dev/null || fail "omisu-settings package installs Snapper template source"
+grep -F '"$pkgdir/etc/snapper/config-templates/omisu"' "$settings_pkgbuild" >/dev/null || fail "omisu-settings package installs Snapper template destination"
+grep -F "'snapper'" "$omisu_pkgbuild" >/dev/null || fail "omisu package depends on snapper"
+grep -F "'limine-snapper-sync'" "$omisu_pkgbuild" >/dev/null || fail "omisu package depends on limine-snapper-sync"
+grep -F 'cp -a install "$pkgdir/usr/share/omisu/"' "$omisu_pkgbuild" >/dev/null || fail "omisu package bundles install scripts"
+grep -F 'cp -a migrations "$pkgdir/usr/share/omisu/"' "$omisu_pkgbuild" >/dev/null || fail "omisu package bundles migrations"
+pass "omisu-pkgs packages Snapper template, setup, and migration coverage"
+
+# Same per-machine checkout problem as omisu-pkgs; OMISU_ISO_PATH points at it.
+find_omisu_iso_root() {
+  local candidate
+  for candidate in \
+    ${OMISU_ISO_PATH:+"$OMISU_ISO_PATH"} \
+    "$ROOT/../omisu-iso" \
+    "$ROOT/../omisu/omisu-iso" \
+    "$ROOT/../../omisu-iso" \
+    "$ROOT/../omacom/omisu-iso" \
+    "$ROOT/../../omacom/omisu-iso" \
+    "$HOME/Work/omacom/omisu-iso"; do
+    if [[ -d $candidate ]]; then
+      cd "$candidate" && pwd
+      return 0
+    fi
+  done
+  return 1
+}
+
+iso_root=$(find_omisu_iso_root) || fail "omisu-iso checkout is available for installer coverage"
+configurator="$iso_root/configs/airootfs/root/configurator"
+phases="$iso_root/configs/airootfs/usr/share/omisu-iso/orchestrator/phases_impl.py"
+manifest="$iso_root/manifests/fresh-4-semantic.json"
+
+! grep -F 'snapshot_config' "$configurator" >/dev/null || fail "ISO does not ask archinstall to create Snapper timeline config"
+
+# The phases/manifest assertions cover the newer ISO orchestrator structure.
+# Skip them when the checkout predates that layout.
+if [[ -f $phases && -f $manifest ]]; then
+  ! grep -F '_configure_snapper_root' "$phases" >/dev/null || fail "ISO does not duplicate OmiSu Snapper setup"
+  grep -F 'run_system_finalizer' "$phases" >/dev/null || fail "ISO runs packaged system setup"
+  grep -F '/etc/systemd/system/timers.target.wants/snapper-cleanup.timer' "$manifest" >/dev/null || fail "fresh ISO manifest has snapper-cleanup timer enabled"
+  ! grep -F '/etc/systemd/system/timers.target.wants/snapper-timeline.timer' "$manifest" >/dev/null || fail "fresh ISO manifest does not enable snapper timeline timer"
+fi
+pass "omisu-iso delegates Snapper setup to packaged system setup"

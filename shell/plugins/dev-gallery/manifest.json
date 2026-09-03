@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "omisu.dev-gallery",
+  "name": "Dev gallery",
+  "version": "1.0.0",
+  "author": "OmiSu",
+  "description": "Visual reference for omisu-shell common UI components. Summon with: omisu-shell shell summon omisu.dev-gallery '{}' (or run: omisu dev ui-preview).",
+  "kinds": [
+    "panel"
+  ],
+  "entryPoints": {
+    "panel": "GalleryPanel.qml"
+  }
+}

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# omisu:summary=Refresh the SDDM theme from default
+# omisu:requires-sudo=true
+
+sudo rm -rf /usr/share/sddm/themes/omisu
+sudo cp -r "$OMISU_PATH/default/sddm/omisu" /usr/share/sddm/themes/omisu

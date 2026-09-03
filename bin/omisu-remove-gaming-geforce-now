@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# omisu:summary=Remove the GeForce NOW Flatpak app and its data.
+# omisu:group=remove
+# omisu:name=gaming geforce-now
+
+set -e
+
+if omisu-cmd-present flatpak && flatpak info com.nvidia.geforcenow &>/dev/null; then
+  flatpak uninstall -y --delete-data com.nvidia.geforcenow
+fi
+
+echo ""
+echo "GeForce NOW removed."

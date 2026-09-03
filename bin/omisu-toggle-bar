@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# omisu:summary=Toggle bar visibility without killing the OmiSu shell
+# omisu:args=[toggle|on|off]
+# omisu:examples=omisu toggle bar | omisu toggle bar off | omisu toggle bar on
+
+omisu-toggle bar-off "${1:-toggle}"

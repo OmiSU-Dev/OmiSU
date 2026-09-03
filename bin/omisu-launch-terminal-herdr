@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Launch or attach to the persistent herdr session in a terminal
+
+exec omisu-launch-terminal herdr

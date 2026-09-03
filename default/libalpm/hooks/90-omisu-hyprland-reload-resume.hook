@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = omisu-settings
+Target = omisu-settings-dev
+
+[Action]
+Description = Reloading Hyprland after OmiSu settings update...
+When = PostTransaction
+Depends = omisu
+Exec = /usr/bin/omisu-hyprland-reload-guard resume

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# omisu:summary=Open the OmiSu background switcher
+# omisu:group=theme
+# omisu:name=bg-switcher
+# omisu:aliases=omisu background
+
+theme_name=$(cat "$HOME/.local/state/omisu/current/theme.name" 2>/dev/null)
+current_background=$(readlink -f "$HOME/.local/state/omisu/current/background" 2>/dev/null)
+
+omisu-menu-images \
+  --selected "$current_background" \
+  "$HOME/.local/state/omisu/current/theme/backgrounds" \
+  "$HOME/.config/omisu/backgrounds/$theme_name"

@@ -1,0 +1,6 @@
+#!/bin/bash
+# omisu:summary=Launch the clipboard manager
+# omisu:group=menu
+# omisu:examples=omisu menu clipboard
+
+omisu-shell shell toggle omisu.clipboard

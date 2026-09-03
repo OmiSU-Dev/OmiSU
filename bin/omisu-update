@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# omisu:summary=Update OmiSu and system packages
+# omisu:args=[-y]
+# omisu:examples=omisu update | omisu update -y
+# omisu:requires-sudo=true
+
+set -e
+
+if [[ -z ${OMISU_UPDATE_LOGGED:-} ]]; then
+  script_command=$(printf '%q ' "$0" "$@")
+  exec env OMISU_UPDATE_LOGGED=1 script -qefc "$script_command" "/tmp/omisu-update.log"
+fi
+
+if ! omisu-update-lock held; then
+  exec omisu-update-lock run "$0" "$@"
+fi
+
+trap 'echo ""; echo -e "\033[0;31mSomething went wrong during the update!\n\nPlease review the output above carefully, correct the error, and retry the update.\n\nIf you need assistance, get help from the community at https://omisu.org/discord\033[0m"' ERR
+trap 'omisu-update-stay-awake stop' EXIT
+
+omisu-update-requires-free-space
+
+# -y is a promise not to ask anything. Steps that would need an answer report
+# and move on instead of waiting on a prompt nobody is here to give.
+[[ ${1:-} != "-y" ]] || export OMISU_UPDATE_UNATTENDED=1
+
+if [[ ${1:-} == "-y" ]] || omisu-update-confirm; then
+  # Before the snapshot: the cache is on the snapshotted subvolume, so pruning
+  # after it frees nothing until that snapshot ages out.
+  omisu-update-pkg-prune
+
+  # 127 means Snapper is deliberately absent. Any other failure already said
+  # what went wrong, and a missing snapshot is not worth blocking an update
+  # over, but it must not pass for one either.
+  omisu-snapshot create || (($? == 127)) ||
+    echo -e "\e[33mContinuing the update without a snapshot.\e[0m" >&2
+
+  omisu-update-stay-awake start
+
+  omisu-update-dev
+  omisu-update-keyring
+
+  # Migrations ship with the packages installed here and are written against
+  # them, so everything below waits on this finishing. An upgrade that stopped
+  # takes the update with it rather than migrating against what is still on disk.
+  omisu-update-system-pkgs
+  omisu-migrate
+  omisu-hook post-update
+  omisu-update-aur-pkgs
+  omisu-update-mise
+  omisu-update-orphan-pkgs
+
+  omisu-update-analyze-logs
+  omisu-update-status
+
+  # Release update-owned inhibitors before offering a reboot. A confirmed
+  # reboot can terminate this process before its EXIT trap gets a chance to
+  # remove the persistent Stay Awake marker.
+  omisu-update-stay-awake stop
+  trap - EXIT
+
+  omisu-update-restart
+fi

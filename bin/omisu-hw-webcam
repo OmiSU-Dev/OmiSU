@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Check whether a webcam is available
+
+[[ -n $(omisu-capture-webcam-list) ]]

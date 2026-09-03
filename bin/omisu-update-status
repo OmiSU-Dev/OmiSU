@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# omisu:summary=Refresh the shell update status
+# omisu:hidden=true
+
+set -e
+
+if omisu-update-available >/dev/null; then
+  omisu-shell -q omisu.system-update refresh
+else
+  omisu-shell -q omisu.system-update clear
+fi

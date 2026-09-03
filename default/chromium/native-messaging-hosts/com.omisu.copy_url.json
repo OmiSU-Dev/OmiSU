@@ -1,0 +1,9 @@
+{
+  "name": "com.omisu.copy_url",
+  "description": "OmiSu Copy URL clipboard host",
+  "path": "__HOST_PATH__",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://bgpiichlckmfanooecilcjemknkcpngb/"
+  ]
+}

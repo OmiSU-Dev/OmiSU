@@ -1,0 +1,7 @@
+[SddmGreeterTheme]
+Name=OmiSu
+Description=OmiSu login theme — ASCII lock screen
+Author=OmiSu
+Type=sddm-theme
+Version=1.0
+QtVersion=6

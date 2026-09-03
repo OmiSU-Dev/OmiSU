@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# omisu:summary=Toggle screensaver availability
+
+omisu-toggle screensaver-off
+
+if omisu-toggle-enabled screensaver-off; then
+  omisu-notification-send -g 󱄄 "Screensaver disabled"
+else
+  omisu-notification-send -g 󱄄 "Screensaver enabled"
+fi

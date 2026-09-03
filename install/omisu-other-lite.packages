@@ -1,0 +1,31 @@
+# OmiSu Lite — ISO offline mirror (generic laptop / Intel iGPU).
+# Hardware-specific drivers ship via install/hardware/* profiles, not the USB image.
+# See install/omisu-lite-alternatives.md for full DROP/REPLACE map.
+
+base
+base-devel
+btrfs-progs
+dkms
+egl-wayland
+gst-plugin-pipewire
+gtk4-layer-shell
+libpulse
+intel-media-driver
+libva-intel-driver
+limine
+limine-mkinitcpio-hook
+limine-snapper-sync
+linux-firmware
+linux-headers
+pipewire
+pipewire-alsa
+pipewire-jack
+pipewire-pulse
+qt6-wayland
+snapper
+sof-firmware
+thermald
+vulkan-intel
+vulkan-radeon
+webp-pixbuf-loader
+zram-generator

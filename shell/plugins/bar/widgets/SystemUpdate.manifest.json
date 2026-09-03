@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "omisu.system-update",
+  "name": "OmiSu update",
+  "version": "1.0.0",
+  "author": "OmiSu",
+  "description": "Indicates available OmiSu updates",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "SystemUpdate.qml"
+  },
+  "barWidget": {
+    "displayName": "OmiSu update",
+    "description": "Indicates available OmiSu updates",
+    "category": "System",
+    "allowMultiple": false
+  }
+}

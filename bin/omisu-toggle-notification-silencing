@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Toggle notification do-not-disturb mode
+
+state=$(omisu-shell notifications toggleDnd 2>/dev/null || echo "")
+omisu-shell -q omisu.indicators refresh

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# omisu:summary=Returns true when clamshell mode is active
+# omisu:hidden=true
+
+# Clamshell = lid closed while driving one or more external monitors.
+omisu-hw-laptop-closed && omisu-hw-external-monitors

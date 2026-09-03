@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# omisu:summary=Overwrite the user config for the Plymouth drive decryption and boot sequence with the OmiSu default and rebuild it.
+# omisu:requires-sudo=true
+
+sudo cp -r "$OMISU_PATH/default/plymouth/." /usr/share/plymouth/themes/omisu/
+sudo plymouth-set-default-theme omisu
+
+# plymouthd still reads plymouthd.defaults (upstream Theme=bgrt). bgrt is not
+# in the UKI, so the daemon exits and encrypt falls back to the text LUKS prompt.
+if [[ -f /usr/share/plymouth/plymouthd.defaults ]]; then
+  sudo sed -i 's/^Theme=.*/Theme=omisu/' /usr/share/plymouth/plymouthd.defaults
+fi
+
+if omisu-cmd-present limine-mkinitcpio; then
+  sudo limine-mkinitcpio
+else
+  sudo mkinitcpio -P
+fi

@@ -1,0 +1,461 @@
+# OmiSu storm Plymouth theme — waves, soft pulse, quiet status lines.
+
+Window.SetBackgroundTopColor(0.055, 0.063, 0.133);
+Window.SetBackgroundBottomColor(0.090, 0.102, 0.188);
+
+global.animation_frame = 0;
+global.fake_progress_limit = 0.72;
+global.fake_progress_duration = 14.0;
+global.fake_progress = 0.0;
+global.real_progress = 0.0;
+global.fake_progress_active = 0;
+global.fake_progress_start_time = 0.0;
+global.password_shown = 0;
+global.max_progress = 0.0;
+global.status_phase = 0;
+global.flash_frames = 0;
+global.last_milestone = 0.0;
+global.storm_visible = 0;
+
+#----------------------------------------- Storm layers --------------------------------
+
+fun wave_y_offset(layer, t) {
+  if (layer == 0) {
+    return Math.Sin(t * 1.6) * 7;
+  }
+  if (layer == 1) {
+    return Math.Sin(t * 2.1 + 1.2) * 5;
+  }
+  return Math.Sin(t * 2.8 + 2.4) * 4;
+}
+
+fun wave_x_drift(layer, t) {
+  if (layer == 0) {
+    return Math.Sin(t * 0.55) * 18;
+  }
+  if (layer == 1) {
+    return Math.Sin(t * 0.75 + 0.8) * 12;
+  }
+  return Math.Sin(t * 0.95 + 1.6) * 8;
+}
+
+wave.count = 3;
+wave.sprites = [];
+wave.base_x = [];
+wave.base_y = [];
+
+wave1.image = Image("wave1.png");
+wave1.sprite = Sprite(wave1.image);
+wave.sprites[0] = wave1.sprite;
+wave.base_x[0] = Window.GetWidth() / 2 - wave1.image.GetWidth() / 2;
+wave.base_y[0] = Window.GetHeight() * 0.62;
+wave1.sprite.SetPosition(wave.base_x[0], wave.base_y[0], 2);
+wave1.sprite.SetOpacity(0);
+
+wave2.image = Image("wave2.png");
+wave2.sprite = Sprite(wave2.image);
+wave.sprites[1] = wave2.sprite;
+wave.base_x[1] = Window.GetWidth() / 2 - wave2.image.GetWidth() / 2;
+wave.base_y[1] = Window.GetHeight() * 0.62 + 10;
+wave2.sprite.SetPosition(wave.base_x[1], wave.base_y[1], 3);
+wave2.sprite.SetOpacity(0);
+
+wave3.image = Image("wave3.png");
+wave3.sprite = Sprite(wave3.image);
+wave.sprites[2] = wave3.sprite;
+wave.base_x[2] = Window.GetWidth() / 2 - wave3.image.GetWidth() / 2;
+wave.base_y[2] = Window.GetHeight() * 0.62 + 20;
+wave3.sprite.SetPosition(wave.base_x[2], wave.base_y[2], 4);
+wave3.sprite.SetOpacity(0);
+
+rain.image = Image("rain_drop.png");
+rain.count = 14;
+rain.sprites = [];
+
+for (index = 0; index < rain.count; index++) {
+  rain.sprites[index] = Sprite(rain.image);
+  rain.sprites[index].SetOpacity(0);
+}
+
+flash.image = Image("flash.png");
+flash.sprite = Sprite(flash.image.Scale(Window.GetWidth(), Window.GetHeight()));
+flash.sprite.SetPosition(0, 0, 90);
+flash.sprite.SetOpacity(0);
+
+#----------------------------------------- Wordmark (sine-byte type-in) --------------------------------
+
+word.letter_count = 5;
+word.step_count = 6;
+word.letter_frames = 28;
+word.images[0] = Image("wm_0_0.png");
+word.images[1] = Image("wm_0_1.png");
+word.images[2] = Image("wm_0_2.png");
+word.images[3] = Image("wm_0_3.png");
+word.images[4] = Image("wm_0_4.png");
+word.images[5] = Image("wm_0_5.png");
+word.images[6] = Image("wm_1_0.png");
+word.images[7] = Image("wm_1_1.png");
+word.images[8] = Image("wm_1_2.png");
+word.images[9] = Image("wm_1_3.png");
+word.images[10] = Image("wm_1_4.png");
+word.images[11] = Image("wm_1_5.png");
+word.images[12] = Image("wm_2_0.png");
+word.images[13] = Image("wm_2_1.png");
+word.images[14] = Image("wm_2_2.png");
+word.images[15] = Image("wm_2_3.png");
+word.images[16] = Image("wm_2_4.png");
+word.images[17] = Image("wm_2_5.png");
+word.images[18] = Image("wm_3_0.png");
+word.images[19] = Image("wm_3_1.png");
+word.images[20] = Image("wm_3_2.png");
+word.images[21] = Image("wm_3_3.png");
+word.images[22] = Image("wm_3_4.png");
+word.images[23] = Image("wm_3_5.png");
+word.images[24] = Image("wm_4_0.png");
+word.images[25] = Image("wm_4_1.png");
+word.images[26] = Image("wm_4_2.png");
+word.images[27] = Image("wm_4_3.png");
+word.images[28] = Image("wm_4_4.png");
+word.images[29] = Image("wm_4_5.png");
+word.sprite = Sprite(word.images[0]);
+word.sprite.SetOpacity(1);
+
+fun wordmark_index() {
+  typed = Math.Int(global.animation_frame / word.letter_frames);
+  if (typed > 4) {
+    typed = 4;
+  }
+  if (typed < 4) {
+    step = Math.Int((global.animation_frame % word.letter_frames) * word.step_count / word.letter_frames);
+  } else {
+    last_start = 4 * word.letter_frames;
+    remain = global.animation_frame - last_start;
+    if (remain < word.letter_frames) {
+      step = Math.Int(remain * word.step_count / word.letter_frames);
+    } else {
+      step = 5;
+    }
+  }
+  if (step > 5) {
+    step = 5;
+  }
+  return typed * word.step_count + step;
+}
+
+fun place_wordmark() {
+  idx = wordmark_index();
+  img = word.images[idx];
+  word.sprite.SetImage(img);
+  word.sprite.SetX(Window.GetWidth() / 2 - img.GetWidth() / 2);
+  word.sprite.SetY(Window.GetHeight() / 2 - img.GetHeight() / 2 - 20 + Math.Sin((global.animation_frame / 50.0) * 1.1) * 3);
+}
+
+#----------------------------------------- Status line --------------------------------
+
+status.sprite = Sprite();
+status.sprite.SetOpacity(0);
+
+fun get_status_phrase(phase) {
+  if (phase == 0) {
+    return "Storming the clouds…";
+  }
+  if (phase == 1) {
+    return "Riding the swell…";
+  }
+  if (phase == 2) {
+    return "Weathering the storm…";
+  }
+  return "Skies clearing…";
+}
+
+fun refresh_status_label() {
+  phrase = get_status_phrase(global.status_phase);
+  status.image = Image.Text(phrase, 0.537, 0.706, 0.980);
+  status.sprite.SetImage(status.image);
+  status.sprite.SetX(Window.GetWidth() / 2 - status.image.GetWidth() / 2);
+  status.sprite.SetY(Window.GetHeight() - 72);
+  status.sprite.SetOpacity(0.82);
+}
+
+#----------------------------------------- Helpers --------------------------------
+
+fun show_storm_layers() {
+  global.storm_visible = 1;
+  for (index = 0; index < wave.count; index++) {
+    opacity = 0.34 + index * 0.08;
+    wave.sprites[index].SetOpacity(opacity);
+  }
+  for (index = 0; index < rain.count; index++) {
+    rain.sprites[index].SetOpacity(0.18 + (index % 3) * 0.06);
+  }
+}
+
+fun hide_storm_layers() {
+  global.storm_visible = 0;
+  for (index = 0; index < wave.count; index++) {
+    wave.sprites[index].SetOpacity(0);
+  }
+  for (index = 0; index < rain.count; index++) {
+    rain.sprites[index].SetOpacity(0);
+  }
+}
+
+fun trigger_soft_flash() {
+  global.flash_frames = 10;
+}
+
+fun check_progress_milestones(progress) {
+  if (progress >= 0.25 && global.last_milestone < 0.25) {
+    global.last_milestone = 0.25;
+    trigger_soft_flash();
+  }
+  if (progress >= 0.5 && global.last_milestone < 0.5) {
+    global.last_milestone = 0.5;
+    trigger_soft_flash();
+  }
+  if (progress >= 0.75 && global.last_milestone < 0.75) {
+    global.last_milestone = 0.75;
+    trigger_soft_flash();
+  }
+}
+
+fun update_progress_bar(progress) {
+  if (progress > global.max_progress) {
+    global.max_progress = progress;
+    check_progress_milestones(progress);
+
+    width = Math.Int(progress_bar.original_image.GetWidth() * progress);
+    if (width < 1) {
+      width = 1;
+    }
+
+    progress_bar.image = progress_bar.original_image.Scale(width, progress_bar.original_image.GetHeight());
+    progress_bar.sprite.SetImage(progress_bar.image);
+
+    glow_width = Math.Int(progress_glow.original_image.GetWidth() * progress);
+    if (glow_width < 1) {
+      glow_width = 1;
+    }
+    progress_glow.image = progress_glow.original_image.Scale(glow_width, progress_glow.original_image.GetHeight());
+    progress_glow.sprite.SetImage(progress_glow.image);
+  }
+}
+
+fun show_progress_bar() {
+  progress_box.sprite.SetOpacity(1);
+  progress_bar.sprite.SetOpacity(1);
+  progress_glow.sprite.SetOpacity(0.55);
+}
+
+fun hide_progress_bar() {
+  progress_box.sprite.SetOpacity(0);
+  progress_bar.sprite.SetOpacity(0);
+  progress_glow.sprite.SetOpacity(0);
+}
+
+fun start_fake_progress() {
+  global.fake_progress_active = 1;
+  global.animation_frame = 0;
+  global.max_progress = 0.0;
+  global.fake_progress = 0.0;
+  global.fake_progress_start_time = 0.0;
+  global.last_milestone = 0.0;
+}
+
+fun stop_fake_progress() {
+  global.fake_progress_active = 0;
+}
+
+fun refresh_callback() {
+  global.animation_frame++;
+  t = global.animation_frame / 50.0;
+
+  pulse = 0.86 + 0.14 * Math.Sin(t * 1.35);
+  place_wordmark();
+  word.sprite.SetOpacity(pulse);
+
+  if (progress_bar.sprite.GetOpacity() > 0) {
+    glow_pulse = 0.35 + 0.40 * (0.5 + 0.5 * Math.Sin(t * 3.2));
+    progress_glow.sprite.SetOpacity(glow_pulse);
+    progress_bar.sprite.SetOpacity(0.70 + 0.30 * (0.5 + 0.5 * Math.Sin(t * 3.2)));
+  }
+
+  if (global.storm_visible == 1) {
+    for (index = 0; index < wave.count; index++) {
+      wave.sprites[index].SetX(wave.base_x[index] + wave_x_drift(index, t));
+      wave.sprites[index].SetY(wave.base_y[index] + wave_y_offset(index, t));
+    }
+
+    for (index = 0; index < rain.count; index++) {
+      x = (index * 97 + Math.Int(t * 40 * (1 + index % 3))) % (Window.GetWidth() + 20) - 10;
+      y = (global.animation_frame * (4 + index % 5) + index * 31) % (Window.GetHeight() + 30) - 15;
+      rain.sprites[index].SetX(x);
+      rain.sprites[index].SetY(y);
+    }
+  }
+
+  if (global.flash_frames > 0) {
+    flash.sprite.SetOpacity((global.flash_frames / 10.0) * 0.12);
+    global.flash_frames--;
+  } else {
+    flash.sprite.SetOpacity(0);
+  }
+
+  if (global.fake_progress_active == 1) {
+    elapsed_time = global.animation_frame / 50.0;
+    time_ratio = elapsed_time / global.fake_progress_duration;
+    if (time_ratio > 1.0) {
+      time_ratio = 1.0;
+    }
+    eased_ratio = 1 - ((1 - time_ratio) * (1 - time_ratio));
+    global.fake_progress = eased_ratio * global.fake_progress_limit;
+    update_progress_bar(global.fake_progress);
+  }
+
+  if (global.animation_frame % 120 == 0 && status.sprite.GetOpacity() > 0) {
+    global.status_phase = (global.status_phase + 1) % 4;
+    refresh_status_label();
+  }
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
+
+#----------------------------------------- LUKS dialogue --------------------------------
+
+lock.image = Image("lock.png");
+entry.image = Image("entry.png");
+bullet.image = Image("bullet.png");
+
+entry.sprite = Sprite(entry.image);
+entry.x = Window.GetWidth() / 2 - entry.image.GetWidth() / 2;
+entry.y = word.sprite.GetY() + word.images[29].GetHeight() + 40;
+entry.sprite.SetPosition(entry.x, entry.y, 10001);
+entry.sprite.SetOpacity(0);
+
+lock_height = entry.image.GetHeight() * 0.8;
+lock_scale = lock_height / 96;
+lock_width = 84 * lock_scale;
+
+scaled_lock = lock.image.Scale(lock_width, lock_height);
+lock.sprite = Sprite(scaled_lock);
+lock.x = entry.x - lock_width - 15;
+lock.y = entry.y + entry.image.GetHeight() / 2 - lock_height / 2;
+lock.sprite.SetPosition(lock.x, lock.y, 10001);
+lock.sprite.SetOpacity(0);
+
+bullet.sprites = [];
+
+fun hide_password_dialog() {
+  lock.sprite.SetOpacity(0);
+  entry.sprite.SetOpacity(0);
+
+  for (index = 0; bullet.sprites[index]; index++) {
+    bullet.sprites[index].SetOpacity(0);
+  }
+}
+
+fun show_password_dialog() {
+  lock.sprite.SetOpacity(1);
+  entry.sprite.SetOpacity(1);
+}
+
+fun display_normal_callback() {
+  hide_password_dialog();
+
+  mode = Plymouth.GetMode();
+  if (mode == "boot" || mode == "resume") {
+    show_storm_layers();
+    show_progress_bar();
+    refresh_status_label();
+    start_fake_progress();
+  }
+}
+
+fun display_password_callback(prompt, bullets) {
+  global.password_shown = 1;
+
+  stop_fake_progress();
+  hide_progress_bar();
+  hide_storm_layers();
+  status.sprite.SetOpacity(0);
+  show_password_dialog();
+
+  for (index = 0; bullet.sprites[index]; index++) {
+    bullet.sprites[index].SetOpacity(0);
+  }
+
+  max_bullets = 21;
+  bullets_to_show = bullets;
+  if (bullets_to_show > max_bullets) {
+    bullets_to_show = max_bullets;
+  }
+
+  for (index = 0; index < bullets_to_show; index++) {
+    if (!bullet.sprites[index]) {
+      scaled_bullet = bullet.image.Scale(7, 7);
+      bullet.sprites[index] = Sprite(scaled_bullet);
+      bullet.x = entry.x + 20 + index * (7 + 5);
+      bullet.y = entry.y + entry.image.GetHeight() / 2 - 3.5;
+      bullet.sprites[index].SetPosition(bullet.x, bullet.y, 10002);
+    }
+
+    bullet.sprites[index].SetOpacity(1);
+  }
+}
+
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+
+#----------------------------------------- Progress bar --------------------------------
+
+progress_box.image = Image("progress_box.png");
+progress_box.sprite = Sprite(progress_box.image);
+progress_box.x = Window.GetWidth() / 2 - progress_box.image.GetWidth() / 2;
+progress_box.y = Window.GetHeight() * 0.72;
+progress_box.sprite.SetPosition(progress_box.x, progress_box.y, 4);
+progress_box.sprite.SetOpacity(0);
+
+progress_glow.original_image = Image("progress_glow.png");
+progress_glow.sprite = Sprite();
+progress_glow.image = progress_glow.original_image.Scale(1, progress_glow.original_image.GetHeight());
+progress_glow.x = Window.GetWidth() / 2 - progress_glow.original_image.GetWidth() / 2;
+progress_glow.y = progress_box.y + (progress_box.image.GetHeight() - progress_glow.original_image.GetHeight()) / 2 - 2;
+progress_glow.sprite.SetPosition(progress_glow.x, progress_glow.y, 5);
+progress_glow.sprite.SetOpacity(0);
+
+progress_bar.original_image = Image("progress_bar.png");
+progress_bar.sprite = Sprite();
+progress_bar.image = progress_bar.original_image.Scale(1, progress_bar.original_image.GetHeight());
+progress_bar.x = Window.GetWidth() / 2 - progress_bar.original_image.GetWidth() / 2;
+progress_bar.y = progress_box.y + (progress_box.image.GetHeight() - progress_bar.original_image.GetHeight()) / 2;
+progress_bar.sprite.SetPosition(progress_bar.x, progress_bar.y, 6);
+progress_bar.sprite.SetOpacity(0);
+
+fun progress_callback(duration, progress) {
+  if (global.fake_progress_start_time == 0.0) {
+    global.fake_progress_start_time = duration;
+  }
+
+  global.real_progress = progress;
+
+  if (duration > global.fake_progress_start_time && progress > global.fake_progress) {
+    stop_fake_progress();
+    update_progress_bar(progress);
+  }
+}
+
+Plymouth.SetBootProgressFunction(progress_callback);
+
+#----------------------------------------- Messages (themed, not raw job names) --------
+
+fun display_message_callback(text) {
+  global.status_phase = (global.status_phase + 1) % 4;
+  refresh_status_label();
+}
+
+fun hide_message_callback(text) {
+  status.sprite.SetOpacity(0);
+}
+
+Plymouth.SetDisplayMessageFunction(display_message_callback);
+Plymouth.SetHideMessageFunction(hide_message_callback);

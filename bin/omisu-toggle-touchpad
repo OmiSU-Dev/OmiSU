@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Enable, disable, or toggle the touchpad
+# omisu:args=[on|off|toggle]
+
+exec omisu-toggle-input-device touchpad "${1:-toggle}"

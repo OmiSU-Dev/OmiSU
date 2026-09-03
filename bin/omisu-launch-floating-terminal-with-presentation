@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# omisu:summary=Launch a floating terminal with the OmiSu presentation wrapper
+# omisu:args=<command>
+
+# Export the current theme's gum styling so gum widgets match the active theme
+# even after a theme switch (the inherited environment is captured at login).
+source omisu-restart-gum
+
+cmd="$*"
+presentation_script="omisu-show-logo; $cmd; if (( \$? != 130 )); then omisu-show-done; fi"
+
+exec setsid uwsm-app -- xdg-terminal-exec --app-id=org.omisu.terminal --title=OmiSu -e bash -c "$presentation_script"

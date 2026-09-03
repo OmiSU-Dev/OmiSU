@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# omisu:summary=Cache background switcher thumbnails for the current theme
+
+theme_name=$(cat "$HOME/.local/state/omisu/current/theme.name" 2>/dev/null)
+
+omisu-menu-images \
+  --cache-only \
+  "$HOME/.local/state/omisu/current/theme/backgrounds" \
+  "$HOME/.config/omisu/backgrounds/$theme_name"

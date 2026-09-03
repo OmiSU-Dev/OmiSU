@@ -1,0 +1,7 @@
+: "${OMISU_PATH:=/usr/share/omisu}"
+source "$OMISU_PATH/default/bash/envs"
+source "$OMISU_PATH/default/bash/shell"
+source "$OMISU_PATH/default/bash/aliases"
+source "$OMISU_PATH/default/bash/functions"
+source "$OMISU_PATH/default/bash/init"
+[[ $- == *i* ]] && bind -f "$OMISU_PATH/default/bash/inputrc"

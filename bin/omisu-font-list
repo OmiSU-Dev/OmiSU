@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=List available monospace fonts
+# omisu:examples=omisu font list | omisu font set "CaskaydiaMono Nerd Font"
+
+fc-list :spacing=100 -f "%{family[0]}\n" | grep -v -i -E 'emoji|signwriting|omisu' | sort -u

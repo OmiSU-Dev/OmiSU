@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# omisu:summary=Edit, set, or reset screensaver branding
+# omisu:group=branding
+# omisu:name=screensaver
+# omisu:args=<image|text|reset>
+# omisu:examples=omisu branding screensaver image | omisu branding screensaver text | omisu branding screensaver reset
+
+set -euo pipefail
+
+case "${1:-}" in
+image)
+  image=$(omisu-file-select --title "Pick PNG or SVG for screensaver" --extensions "png svg")
+  if omisu-transcode-ascii "$image" ~/.config/omisu/branding/screensaver.txt; then
+    omisu-launch-screensaver force >/dev/null 2>&1
+  fi
+  ;;
+text)
+  omisu-launch-editor ~/.config/omisu/branding/screensaver.txt >/dev/null 2>&1 && omisu-launch-screensaver force >/dev/null 2>&1
+  ;;
+reset)
+  cp "$OMISU_PATH/logo.txt" ~/.config/omisu/branding/screensaver.txt && omisu-launch-screensaver force >/dev/null 2>&1
+  ;;
+*)
+  echo "Usage: omisu-branding-screensaver <image|text|reset>" >&2
+  exit 1
+  ;;
+esac

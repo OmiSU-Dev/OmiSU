@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# omisu:summary=Launch the default AI coding agent in a terminal.
+#
+# omisu-agent — launch the default AI coding agent in a terminal.
+#
+#   omisu-agent                 launch the default agent (picks one if unset)
+#   omisu-agent --pick          choose a default agent first
+#   omisu-agent --prompt "..."  launch with a prompt
+#   omisu-agent <name>          launch a specific agent by name
+#
+# Mirrors OmiSu's omisu-agent: no default -> opens the picker; missing CLI
+# -> reports how to install it; otherwise runs the agent in a kitty window with
+# the provider's preferred non-interactive flags (override via OMISU_AGENT_FLAGS
+# in agent.conf).
+#
+set -euo pipefail
+
+CONFIG_DIR="$HOME/.config/omisu"
+AGENT_CONF="$CONFIG_DIR/agent.conf"
+SHARE="/usr/share/omisu"
+
+PICK=0
+PROMPT=""
+SPECIFIC=""
+
+for a in "$@"; do
+  case "$a" in
+    --pick|-p) PICK=1 ;;
+    --prompt) PROMPT="${2:-}"; shift 2 ;;
+    --prompt=*) PROMPT="${a#*=}" ;;
+    -*) echo "Unknown flag: $a" >&2; exit 1 ;;
+    *) SPECIFIC="$a" ;;
+  esac
+done
+
+for f in "$SHARE/config/omisu/agent.conf" "$AGENT_CONF"; do
+  [ -f "$f" ] && . "$f"
+done
+
+AGENT="${SPECIFIC:-${OMISU_AGENT:-}}"
+
+if [ "$PICK" -eq 1 ] || [ -z "$AGENT" ]; then
+  if command -v omisu-default-agent >/dev/null 2>&1; then
+    exec omisu-default-agent --pick
+  fi
+  echo "OmiSu: run 'omisu-default-agent <name>' to choose an agent." >&2
+  exit 1
+fi
+
+if ! command -v "$AGENT" >/dev/null 2>&1; then
+  echo "OmiSu: '$AGENT' not found on PATH." >&2
+  echo "Install it, then set as default: omisu-default-agent $AGENT" >&2
+  exit 1
+fi
+
+# Agent-specific unattended flags.
+default_flags() {
+  case "$AGENT" in
+    claude)   echo "--permission-mode auto" ;;
+    codex)    echo "--approve-for-me" ;;
+    opencode) echo "--auto" ;;
+    gemini)   echo "--dangerously-skip-permissions" ;;
+    copilot)  echo "--allow-all" ;;
+    grok)     echo "--permission-mode bypassPermissions" ;;
+    crush)    echo "--yolo" ;;
+    *)        echo "" ;;
+  esac
+}
+FLAGS="${OMISU_AGENT_FLAGS:-$(default_flags)}"
+
+cmd=("$AGENT")
+[ -n "$FLAGS" ] && cmd+=($FLAGS)
+if [ -n "$PROMPT" ]; then
+  case "$AGENT" in
+    claude|grok|codex|omp) cmd+=("$PROMPT") ;;
+    opencode) cmd+=(--prompt "$PROMPT") ;;
+    *) cmd+=("$PROMPT") ;;
+  esac
+fi
+
+if command -v kitty >/dev/null 2>&1; then
+  exec kitty -e bash -c 'cd "${HOME}" && exec "$@"' _ "${cmd[@]}"
+else
+  exec "${cmd[@]}"
+fi

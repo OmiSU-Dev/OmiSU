@@ -1,0 +1,1 @@
+wsl tail -f /mnt/c/Users/Legion/Desktop/OmiSU-Arc/omisu-iso-build.log

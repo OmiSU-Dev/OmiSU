@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Overwrite the user config for hyprsunset with the OmiSu default and restart the service.
+
+omisu-refresh-config hypr/hyprsunset.conf
+omisu-restart-hyprsunset

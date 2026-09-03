@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# omisu:summary=Apply OmiSu system setup in the installed target
+# omisu:group=apply
+# omisu:requires-sudo=true
+# omisu:examples=omisu apply system --install-user dhh --first-install
+# omisu:hidden=true
+
+set -euo pipefail
+
+usage() {
+  cat <<USAGE
+Usage: omisu apply system --install-user USER [--first-install|--upgrade]
+       omisu apply system --defer-provisioning --first-install
+
+Runs root-owned OmiSu system setup. The ISO calls this in the target chroot
+after packages are installed and the target user exists. It also calls
+omisu-apply-hardware, so hardware setup cannot be accidentally skipped.
+
+--defer-provisioning runs without an install user: deferred-provisioning installs create the user at
+first boot, so scripts that grant group memberships record them in
+/var/lib/omisu/provisioning/groups instead of calling usermod.
+USAGE
+}
+
+install_user="${OMISU_INSTALL_USER:-}"
+first_install=0
+upgrade=0
+defer_provisioning=0
+
+while (($#)); do
+  case "$1" in
+    --install-user)
+      install_user="${2:-}"
+      shift 2
+      ;;
+    --defer-provisioning)
+      defer_provisioning=1
+      shift
+      ;;
+    --first-install)
+      first_install=1
+      shift
+      ;;
+    --upgrade)
+      upgrade=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+if (( EUID != 0 )); then
+  echo "Error: omisu-apply-system must run as root" >&2
+  exit 1
+fi
+
+if (( defer_provisioning )); then
+  install_user=""
+else
+  if [[ -z $install_user || $install_user == "root" ]]; then
+    echo "Error: --install-user must name the target non-root user" >&2
+    exit 1
+  fi
+
+  if ! getent passwd "$install_user" >/dev/null; then
+    echo "Error: user '$install_user' does not exist" >&2
+    exit 1
+  fi
+fi
+
+export OMISU_INSTALL_USER="$install_user"
+export OMISU_FIRST_INSTALL="$first_install"
+export OMISU_UPGRADE="$upgrade"
+export OMISU_PATH="${OMISU_PATH:-/usr/share/omisu}"
+export OMISU_INSTALL="${OMISU_INSTALL:-$OMISU_PATH/install}"
+export OMISU_INSTALL_LOG_FILE="${OMISU_INSTALL_LOG_FILE:-/var/log/omisu-install.log}"
+export PATH="$OMISU_PATH/bin:$PATH"
+
+source "$OMISU_INSTALL/helpers/logging.sh"
+start_install_log
+
+source "$OMISU_INSTALL/config/all.sh"
+
+if (( defer_provisioning )); then
+  omisu-apply-hardware --defer-provisioning
+else
+  omisu-apply-hardware --install-user "$install_user"
+fi
+
+source "$OMISU_INSTALL/login/all.sh"
+source "$OMISU_INSTALL/post-install/all.sh"
+
+stop_install_log

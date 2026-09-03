@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# omisu:summary=List available themes
+# omisu:examples=omisu theme list | omisu theme phoenix
+
+OMISU_PATH="${OMISU_PATH:-/usr/share/omisu}"
+
+# shellcheck disable=SC1091
+source "$OMISU_PATH/lib/theme.sh"
+
+omisu_list_themes | sort | sed -E 's/(^|-)([a-z])/\1\u\2/g; s/-/ /g'

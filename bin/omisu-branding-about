@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# omisu:summary=Edit, set, or reset About branding
+# omisu:group=branding
+# omisu:name=about
+# omisu:args=<image|text|reset>
+# omisu:examples=omisu branding about image | omisu branding about text | omisu branding about reset
+
+set -euo pipefail
+
+case "${1:-}" in
+image)
+  image=$(omisu-file-select --title "Pick PNG or SVG for About" --extensions "png svg")
+  if omisu-transcode-ascii "$image" ~/.config/omisu/branding/about.txt --width 54 --height 26; then
+    omisu-launch-about >/dev/null 2>&1
+  fi
+  ;;
+text)
+  omisu-launch-editor ~/.config/omisu/branding/about.txt >/dev/null 2>&1 && omisu-launch-about >/dev/null 2>&1
+  ;;
+reset)
+  cp "$OMISU_PATH/icon.txt" ~/.config/omisu/branding/about.txt && omisu-launch-about >/dev/null 2>&1
+  ;;
+*)
+  echo "Usage: omisu-branding-about <image|text|reset>" >&2
+  exit 1
+  ;;
+esac

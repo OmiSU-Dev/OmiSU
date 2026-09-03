@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# omisu:summary=Control the OmiSu menu (toggle / summon / close / refresh)
+# omisu:args=[toggle|summon|close|refresh|ping] [route]
+# omisu:examples=omisu menu | omisu menu toggle system | omisu menu summon style.theme | omisu menu refresh
+
+# Thin wrapper around the standard plugin IPC surface. The menu is the
+# first-party `omisu.menu` plugin; routes are passed as JSON payload.
+
+set -euo pipefail
+
+verb="${1-toggle}"
+route="${2-root}"
+
+menu_payload() {
+  jq -nc --arg menu "$1" '{ menu: $menu }'
+}
+
+case "$verb" in
+  toggle)
+    exec omisu-shell shell toggle omisu.menu "$(menu_payload "$route")"
+    ;;
+  summon)
+    exec omisu-shell shell summon omisu.menu "$(menu_payload "$route")"
+    ;;
+  close)
+    exec omisu-shell shell hide omisu.menu
+    ;;
+  refresh | ping)
+    exec omisu-shell shell call omisu.menu "$verb" "{}"
+    ;;
+  -h | --help | help)
+    cat <<USAGE
+Usage: omisu menu [verb] [route]
+
+Verbs:
+  toggle [route]   Open the menu at <route>, or close it if already open. Default verb.
+  summon [route]   Always open the menu (no close-if-visible toggle).
+  close            Close the menu if it is visible.
+  refresh          Re-parse the menu JSONC files.
+  ping             Health check.
+
+Route is an item id (e.g. setup.power) or alias (e.g. power). Defaults to
+"root", which opens the top-level menu.
+USAGE
+    exit 0
+    ;;
+  *)
+    echo "omisu-menu: unknown verb '$verb'. Try 'omisu menu --help'." >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Overwrite the user tmux config with the OmiSu default and reload tmux.
+
+omisu-refresh-config tmux/tmux.conf
+omisu-restart-tmux

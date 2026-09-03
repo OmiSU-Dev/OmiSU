@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# omisu:summary=Disable a shell plugin
+# omisu:group=plugin
+# omisu:args=<id>
+
+set -euo pipefail
+
+fail() {
+  echo "omisu-plugin-disable: $*" >&2
+  exit 1
+}
+
+if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
+  echo "Usage: omisu plugin disable <id>"
+  exit 0
+fi
+
+id="${1:-}"
+[[ -n $id ]] || fail "plugin id is required"
+
+result=$(omisu-shell shell setPluginEnabled "$id" false)
+[[ $result == "ok" ]] ||
+  fail "plugin '$id' is not known; run: omisu-shell shell rescanPlugins"
+
+echo "Disabled $id"

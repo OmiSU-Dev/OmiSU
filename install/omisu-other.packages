@@ -1,0 +1,40 @@
+# OmiSu ISO offline mirror — generic laptops with NVIDIA driver bundle.
+# Shared by Standard and Lite editions (live ISO boots stock `linux`; Mac T2 via
+# install/hardware/apple/fix-t2.sh). Hardware-specific extras ship via profiles.
+# See install/omisu-lite-alternatives.md
+
+base
+base-devel
+btrfs-progs
+dkms
+egl-wayland
+gst-plugin-pipewire
+gtk4-layer-shell
+libpulse
+intel-media-driver
+libva-intel-driver
+libva-nvidia-driver
+limine
+limine-mkinitcpio-hook
+limine-snapper-sync
+linux-firmware
+linux-headers
+nvidia-580xx-dkms
+nvidia-dkms
+nvidia-open-dkms
+nvidia-580xx-utils
+nvidia-utils
+lib32-nvidia-580xx-utils
+lib32-nvidia-utils
+pipewire
+pipewire-alsa
+pipewire-jack
+pipewire-pulse
+qt6-wayland
+snapper
+sof-firmware
+thermald
+vulkan-intel
+vulkan-radeon
+webp-pixbuf-loader
+zram-generator

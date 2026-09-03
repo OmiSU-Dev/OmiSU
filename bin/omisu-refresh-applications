@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# omisu:summary=Ensure default application launchers and mise wrappers are installed.
+
+# Copy .desktop declarations
+mkdir -p ~/.local/share/applications
+cp "$OMISU_PATH"/applications/*.desktop ~/.local/share/applications/
+
+if omisu-cmd-present alacritty; then
+  cp "$OMISU_PATH/default/alacritty/Alacritty.desktop" ~/.local/share/applications/
+fi
+
+if [[ -f "$OMISU_PATH/install/user/mise.sh" ]]; then
+  bash "$OMISU_PATH/install/user/mise.sh"
+fi
+
+update-desktop-database ~/.local/share/applications

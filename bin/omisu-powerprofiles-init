@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Set the correct power profile on boot based on current AC/battery state.
+
+exec omisu-powerprofiles-set autodetect

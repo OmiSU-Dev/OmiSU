@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# omisu:summary=Apply Plymouth boot splash and SDDM login colors from hex values.
+#
+# omisu-plymouth-set — Plymouth boot splash + SDDM login colors/logo (OmiSu-style).
+# Usage: omisu-plymouth-set <background-hex> <text-hex> <path-to-logo.png>
+#
+set -euo pipefail
+
+if (( $# != 3 )); then
+  echo "Usage: omisu-plymouth-set <background-hex> <text-hex> <path-to-logo.png>" >&2
+  exit 1
+fi
+
+OMISU_PATH="${OMISU_PATH:-${OmiSu_ROOT:-/usr/share/omisu}}"
+bg_hex="${1#\#}"
+text_hex="${2#\#}"
+logo_path="$3"
+
+if ! [[ $bg_hex =~ ^[0-9a-fA-F]{6}$ ]]; then
+  echo "Invalid background color: $1 (expected #RRGGBB)" >&2
+  exit 1
+fi
+if ! [[ $text_hex =~ ^[0-9a-fA-F]{6}$ ]]; then
+  echo "Invalid text color: $2 (expected #RRGGBB)" >&2
+  exit 1
+fi
+if [[ ! -f $logo_path ]]; then
+  echo "Logo file not found: $logo_path" >&2
+  exit 1
+fi
+if [[ -L $logo_path ]]; then
+  echo "Logo file is a symlink, which is not accepted: $logo_path" >&2
+  exit 1
+fi
+
+bg_r=$(awk -v n=$((16#${bg_hex:0:2})) 'BEGIN{printf "%.3f", n/255}')
+bg_g=$(awk -v n=$((16#${bg_hex:2:2})) 'BEGIN{printf "%.3f", n/255}')
+bg_b=$(awk -v n=$((16#${bg_hex:4:2})) 'BEGIN{printf "%.3f", n/255}')
+
+theme_dir="/usr/share/plymouth/themes/omisu"
+sddm_dir="/usr/share/sddm/themes/omisu"
+staging_dir=$(mktemp -d)
+trap 'rm -rf "$staging_dir"' EXIT
+
+find "$OMISU_PATH/default/plymouth" -maxdepth 1 -type f -exec cp -t "$staging_dir/" {} +
+cp "$logo_path" "$staging_dir/logo.png"
+
+sed -i \
+  -e "s/^Window.SetBackgroundTopColor.*/Window.SetBackgroundTopColor($bg_r, $bg_g, $bg_b);/" \
+  -e "s/^Window.SetBackgroundBottomColor.*/Window.SetBackgroundBottomColor($bg_r, $bg_g, $bg_b);/" \
+  "$staging_dir/omisu.script"
+
+_recolor_png() {
+  local src="$1" dst="$2" color="$3"
+  if command -v magick >/dev/null 2>&1; then
+    magick "$src" -channel RGB +level-colors "#$color","#$color" "$dst"
+    return 0
+  fi
+  if python3 -c "import PIL" >/dev/null 2>&1; then
+    python3 - "$src" "$dst" "$color" <<'PY'
+import sys
+from PIL import Image
+src, dst, color = sys.argv[1:4]
+r, g, b = (int(color[i:i+2], 16) for i in (0, 2, 4))
+im = Image.open(src).convert("RGBA")
+px = im.load()
+for y in range(im.height):
+    for x in range(im.width):
+        pr, pg, pb, a = px[x, y]
+        if a:
+            px[x, y] = (r, g, b, a)
+im.save(dst)
+PY
+    return 0
+  fi
+  cp "$src" "$dst"
+}
+
+_as_root() {
+  if (( EUID == 0 )); then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
+for asset in bullet.png entry.png lock.png progress_bar.png progress_glow.png wave1.png wave2.png wave3.png rain_drop.png; do
+  recolor_dst="$staging_dir/.recolor-$asset"
+  _recolor_png "$staging_dir/$asset" "$recolor_dst" "$text_hex"
+  mv -f "$recolor_dst" "$staging_dir/$asset"
+done
+recolor_dst="$staging_dir/.recolor-progress_box.png"
+_recolor_png "$staging_dir/progress_box.png" "$recolor_dst" "313244"
+mv -f "$recolor_dst" "$staging_dir/progress_box.png"
+
+_as_root mkdir -p "$theme_dir" "$sddm_dir"
+_as_root cp -a --no-preserve=mode,ownership "$staging_dir/." "$theme_dir/"
+
+if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+  _as_root plymouth-set-default-theme omisu
+  if [[ -f /usr/share/plymouth/plymouthd.defaults ]]; then
+    _as_root sed -i 's/^Theme=.*/Theme=omisu/' /usr/share/plymouth/plymouthd.defaults
+  fi
+  if omisu-cmd-present limine-mkinitcpio; then
+    _as_root limine-mkinitcpio
+  elif command -v dracut >/dev/null 2>&1; then
+    _as_root dracut -f 2>/dev/null || true
+  fi
+fi
+
+sddm_template="$OMISU_PATH/default/sddm/omisu/Main.qml"
+sed \
+  -e "s/#1e1e2e/#$bg_hex/g" \
+  -e "s/#1a1b26/#$bg_hex/g" \
+  -e "s/#cdd6f4/#$text_hex/g" \
+  -e "s/#ffffff/#$text_hex/g" \
+  "$sddm_template" | _as_root tee "$sddm_dir/Main.qml" >/dev/null
+
+_as_root cp "$staging_dir/logo.png" "$sddm_dir/logo.png"
+for asset in bullet.png entry.png lock.png; do
+  _as_root cp "$staging_dir/$asset" "$sddm_dir/$asset"
+done
+for asset in entry lock; do
+  _recolor_png "$staging_dir/$asset.png" "$staging_dir/$asset-failed.png" "f38ba8"
+  _as_root cp "$staging_dir/$asset-failed.png" "$sddm_dir/$asset-failed.png"
+done
+_as_root rm -f "$sddm_dir/logo.svg"
+
+echo "OmiSu: Plymouth + SDDM branding applied (bg #$bg_hex, fg #$text_hex)"

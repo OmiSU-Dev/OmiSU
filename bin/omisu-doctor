@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# omisu:summary=Print structured OmiSu diagnostics for heal agents and support.
+#
+# omisu-doctor — structured diagnostics for OmiSu.
+# Prints a plain-text report covering version, theme, running services,
+# journal errors, snapper state, freefloat status, and config drift.
+# Safe to run anytime; never fails (every probe is best-effort).
+#
+set -uo pipefail
+
+hr() { printf -- '--- %s ---\n' "$1"; }
+
+hr "OmiSu version"
+cat /var/lib/omisu/version 2>/dev/null || echo "(unversioned)"
+echo "package: $(pacman -Q omisu 2>/dev/null || echo 'not packaged (script install)')"
+
+hr "Theme"
+if [ -f "$HOME/.local/share/omisu/hypr-theme.conf" ]; then
+  grep -E '^\$ACCENT|^\$BG|^\$FG|^\$INACTIVE' "$HOME/.local/share/omisu/hypr-theme.conf" 2>/dev/null || true
+else
+  echo "no generated theme found"
+fi
+
+hr "Display server / compositor"
+if command -v hyprctl >/dev/null; then
+  hyprctl version 2>/dev/null | head -3 || echo "hyprctl present but no response (not in a Hyprland session?)"
+else
+  echo "hyprctl not found"
+fi
+
+hr "Running services (OmiSu-related)"
+for p in Hyprland quickshell waybar mako hyprpaper hypridle sddm xdg-desktop-portal-hyprland; do
+  if pgrep -x "$p" >/dev/null 2>&1; then echo "  up:   $p"; else echo "  down: $p"; fi
+done
+
+hr "freefloat plugin"
+if command -v hyprpm >/dev/null; then
+  hyprpm list 2>/dev/null || echo "(hyprpm unavailable)"
+else
+  echo "hyprpm not found"
+fi
+
+hr "Recent journal errors (this boot)"
+if command -v journalctl >/dev/null; then
+  journalctl -p err -b -n 30 --no-pager 2>/dev/null || echo "(journalctl unavailable)"
+else
+  echo "journalctl not found"
+fi
+
+hr "snapper state"
+if command -v snapper >/dev/null; then
+  snapper list 2>/dev/null | tail -8 || echo "(snapper unavailable)"
+else
+  echo "snapper not found"
+fi
+
+hr "Config drift (user vs shipped)"
+for f in hypr/hyprland.conf waybar/config waybar/style.css; do
+  u="$HOME/.config/$f"; s="/usr/share/omisu/config/$f"
+  if [ -f "$u" ] && [ -f "$s" ]; then
+    if diff -q "$u" "$s" >/dev/null 2>&1; then echo "  identical: $f"; else echo "  MODIFIED:  $f"; fi
+  elif [ -f "$u" ]; then echo "  user-only: $f"; else echo "  missing:   $f"; fi
+done
+
+hr "Disk"
+df -h / 2>/dev/null | tail -2
+
+hr "Agent backend"
+if [ -f "$HOME/.config/omisu/agent.conf" ]; then . "$HOME/.config/omisu/agent.conf"
+elif [ -f /usr/share/omisu/config/omisu/agent.conf ]; then . /usr/share/omisu/config/omisu/agent.conf; fi
+echo "OMISU_AGENT=${OMISU_AGENT:-<unset>}"
+command -v "${OMISU_AGENT:-none}" >/dev/null 2>&1 && echo "  backend found on PATH" || echo "  backend NOT on PATH"

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "omisu.battery",
+  "name": "Battery",
+  "version": "1.0.0",
+  "author": "OmiSu",
+  "description": "Low battery warning service",
+  "kinds": [
+    "service"
+  ],
+  "entryPoints": {
+    "service": "Service.qml"
+  }
+}

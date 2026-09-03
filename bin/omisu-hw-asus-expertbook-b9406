@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Detect ASUS ExpertBook B9406 series laptops on Intel Panther Lake.
+
+omisu-hw-match "B9406" && omisu-hw-intel-ptl

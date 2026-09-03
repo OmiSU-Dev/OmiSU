@@ -1,0 +1,6 @@
+#!/bin/bash
+# omisu:summary=Launch emojis
+# omisu:group=menu
+# omisu:examples=omisu menu emoji
+
+omisu-shell shell toggle omisu.emojis

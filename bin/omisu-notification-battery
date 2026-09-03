@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Show the current battery status notification
+
+omisu-notification-send -g 󰁹 -u low "$(omisu-battery-status)"

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# omisu:summary=Log out after closing application windows
+# omisu:examples=omisu logout | omisu system logout
+# omisu:aliases=omisu logout
+
+nohup bash -c "sleep 2 && uwsm stop" >/dev/null 2>&1 &
+
+omisu-osd -i logout -m "Logging out" -d 5000
+
+# Now close all windows
+omisu-hyprland-window-close-all
+sleep 1 # Allow apps like Chrome to shutdown correctly

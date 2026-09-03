@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# omisu:summary=Install Heroic Games Launcher (Epic, GOG, Amazon Prime Gaming) with graphics drivers.
+# omisu:requires-sudo=true
+
+set -e
+
+echo "Installing Heroic Games Launcher..."
+omisu-pkg-add heroic-games-launcher-bin
+omisu-install-gaming-gpu-lib32
+
+setsid uwsm-app -- gtk-launch heroic >/dev/null 2>&1 &

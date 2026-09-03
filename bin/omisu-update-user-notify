@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Compatibility wrapper for omisu-migrate-notify.
+# omisu:hidden=true
+
+exec omisu-migrate-notify "$@"

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# omisu:summary=List themes that can style the Plymouth boot screen
+# omisu:examples=omisu plymouth list
+
+{
+  find ~/.config/omisu/themes/ -mindepth 1 -maxdepth 1 \( -type d -o -type l \) -printf '%f\n' 2>/dev/null
+  find "$OMISU_PATH/themes/" -mindepth 1 -maxdepth 1 -type d -printf '%f\n'
+} | sort -u | while read -r name; do
+  if [[ -f $(omisu-theme-dir "$name")/preview-unlock.png ]]; then
+    echo "$name"
+  fi
+done

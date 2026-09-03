@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# omisu:summary=Restore the default OmiSu Plymouth boot theme and SDDM login screen
+# omisu:requires-sudo=true
+
+omisu-refresh-plymouth
+omisu-refresh-sddm

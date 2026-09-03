@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# omisu:summary=Reset OmiSu user configs and shipped defaults in $HOME (destructive)
+
+set -euo pipefail
+
+if (( EUID == 0 )); then
+  echo "Error: This script should not be run as root"
+  exit 1
+fi
+
+echo "Resetting OmiSu user configs to shipped defaults..."
+
+# /etc/skel is the same tree useradd -m copies to seed a fresh user's $HOME.
+# Replaying it over an existing user resyncs every package-shipped user
+# default in one pass: .bashrc, .config/**, .local/share/applications,
+# nautilus-python extensions, branding, hypr toggles, and migration markers.
+# Trailing dot copies dotfiles; the shell wouldn't glob them with /etc/skel/*.
+cp -af /etc/skel/. ~/
+
+omisu-refresh-limine
+omisu-refresh-plymouth
+
+if omisu-cmd-present omisu-nvim-refresh; then
+  omisu-nvim-refresh
+elif omisu-cmd-present omisu-nvim-setup; then
+  omisu-nvim-setup --force
+fi

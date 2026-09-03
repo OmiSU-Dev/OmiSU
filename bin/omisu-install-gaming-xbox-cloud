@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# omisu:summary=Install Xbox Cloud Gaming as a web app and launch it.
+# omisu:group=install
+# omisu:name=gaming xbox-cloud
+
+set -e
+
+echo "Installing Xbox Cloud Gaming..."
+omisu-webapp-install "Xbox Cloud Gaming" "https://www.xbox.com/en-US/play" "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/xbox.png"
+
+setsid omisu-launch-webapp "https://www.xbox.com/en-US/play" >/dev/null 2>&1 &

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# omisu:summary=Overwrite all the user Hyprland Lua configs in ~/.config/hypr with the OmiSu defaults.
+
+omisu-refresh-config hypr/.luarc.json
+omisu-refresh-config hypr/autostart.lua
+omisu-refresh-config hypr/bindings.lua
+omisu-refresh-config hypr/input.lua
+omisu-refresh-config hypr/looknfeel.lua
+omisu-refresh-config hypr/hyprland.lua
+omisu-refresh-config hypr/monitors.lua
+
+mkdir -p ~/.local/state/omisu/toggles/hypr
+cp "$OMISU_PATH/default/hypr/toggles/flags.lua" ~/.local/state/omisu/toggles/hypr/

@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+# omisu:summary=Self-healing entry point with snapper snapshots and agent launch.
+#
+# omisu-heal — OmiSu self-healing entry point.
+#
+# Modes:
+#   omisu-heal [desc]        Manual, interactive heal. You drive the agent
+#                            (default — the agent is YOUR tool to report/fix).
+#   omisu-heal --ship <desc> Same, then scaffold a distro migration after.
+#   omisu-heal --watch       Passive mode (only if OMISU_HEAL_PASSIVE=1 in
+#                            agent.conf). Watches for breakage and self-heals
+#                            automatically, inside a snapper snapshot.
+#
+# Always:
+#   1. Snapshots (snapper/Btrfs) so every change is reversible.
+#   2. Builds context (omisu-doctor + AGENTS.md).
+#   3. Launches the configured, pluggable agent (claude/codex/gemini/ollama/herder/...).
+#
+set -euo pipefail
+
+# Defaults (agent.conf may override).
+OMISU_HEAL_PASSIVE="${OMISU_HEAL_PASSIVE:-0}"
+OMISU_HEAL_INTERVAL="${OMISU_HEAL_INTERVAL:-300}"
+
+CONFIG_DIR="$HOME/.config/omisu"
+SHARE="/usr/share/omisu"
+mkdir -p "$CONFIG_DIR"
+
+# Load backend + passive config.
+for f in "$SHARE/config/omisu/agent.conf" "$CONFIG_DIR/agent.conf"; do
+  [ -f "$f" ] && . "$f"
+done
+
+# --- helpers ---------------------------------------------------------------
+take_snapshot() {
+  local desc="$1" snap=""
+  if command -v snapper >/dev/null; then
+    snap="$(sudo snapper create -d "OmiSu heal${desc:+: $desc}" --print-number 2>/dev/null || true)"
+  fi
+  printf '%s' "$snap"
+}
+
+build_context() {
+  local desc="$1" ctx="$2"
+  {
+    echo "=== OmiSu Self-Heal Context ==="
+    echo "Generated : $(date)"
+    echo "Problem    : $desc"
+    echo
+    echo ">>> Read AGENTS.md (OmiSu conventions) before editing anything. <<<"
+    echo
+    echo "--- AGENTS.md ---"
+    [ -f "$SHARE/AGENTS.md" ] && cat "$SHARE/AGENTS.md"
+    echo
+    echo "--- Diagnostics (omisu-doctor) ---"
+    omisu-doctor 2>/dev/null
+    echo
+    echo "=== Task ==="
+    echo "Diagnose and fix the problem above within THIS OmiSu install."
+    echo "Prefer minimal edits to: $HOME/.config and $SHARE."
+    echo "After fixing, re-run: omisu-doctor  (verify hyprctl + waybar respond)."
+    echo "If the compositor needs it: hyprctl reload."
+  } > "$ctx"
+}
+
+detect_broken() {
+  REASON=""
+  [ -f "$CONFIG_DIR/heal-request" ] && { REASON="user heal-request file present"; return 0; }
+  pgrep -x waybar >/dev/null 2>&1 || { REASON="waybar not running"; return 0; }
+  timeout 3 hyprctl version >/dev/null 2>&1 || { REASON="hyprctl unresponsive (compositor issue)"; return 0; }
+  return 1
+}
+
+require_agent() {
+  AGENT="${OMISU_AGENT:-}"
+  if [ -z "$AGENT" ] || ! command -v "$AGENT" >/dev/null 2>&1; then
+    echo "OmiSu: no AI agent backend configured/found ('${AGENT:-unset}')." >&2
+    echo "Set OMISU_AGENT in $CONFIG_DIR/agent.conf (claude|codex|gemini|ollama|herder|...)." >&2
+    return 1
+  fi
+  return 0
+}
+
+launch_interactive() {
+  require_agent || exit 1
+  echo "OmiSu: launching '$AGENT' (context at $CTX)."
+  echo "Rollback if needed: ${SNAP:+sudo snapper undochange $SNAP}${SNAP:-'(no snapshot taken)'}"
+  if command -v kitty >/dev/null; then
+    kitty -e bash -c "\"$AGENT\" $OMISU_AGENT_FLAGS; echo; echo 'Agent finished. Press enter to close.'; read" \
+      || "$AGENT" $OMISU_AGENT_FLAGS
+  else
+    "$AGENT" $OMISU_AGENT_FLAGS
+  fi
+}
+
+auto_heal() {
+  local desc="$1"
+  SNAP="$(take_snapshot "$desc")"
+  CTX="$CONFIG_DIR/heal-context.txt"
+  build_context "$desc" "$CTX"
+  if ! require_agent; then
+    notify-send "OmiSu" "Auto-heal: no agent backend; manual fix needed (snapshot ${SNAP:-none})."
+    return 1
+  fi
+  notify-send "OmiSu" "Passive heal running ($AGENT) for: $desc"
+  # Headless: feed context on stdin; assumes a backend that reads a prompt.
+  "$AGENT" $OMISU_AGENT_FLAGS < "$CTX" >/dev/null 2>&1 &
+  notify-send "OmiSu" "Passive heal launched (snapshot ${SNAP:-none}). Verify with omisu-doctor."
+  rm -f "$CONFIG_DIR/heal-request"
+}
+
+# --- argument parsing ------------------------------------------------------
+WATCH=0
+SHIP=0
+DESC=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --watch) WATCH=1; shift ;;
+    --ship)  SHIP=1; DESC="${2:-fix}"; shift 2 || shift ;;
+    -*)      echo "usage: omisu-heal [desc] | omisu-heal --ship <desc> | omisu-heal --watch" >&2; exit 1 ;;
+    *)       DESC="$1"; shift ;;
+  esac
+done
+
+# --- passive watch ---------------------------------------------------------
+if [ "$WATCH" -eq 1 ]; then
+  if [ "${OMISU_HEAL_PASSIVE:-0}" != "1" ]; then
+    echo "omisu-heal: passive mode not enabled." >&2
+    echo "Set OMISU_HEAL_PASSIVE=1 in $CONFIG_DIR/agent.conf to run --watch." >&2
+    exit 1
+  fi
+  echo "OmiSu: passive heal watch started (interval ${OMISU_HEAL_INTERVAL}s)."
+  while true; do
+    if detect_broken; then
+      echo "OmiSu: breakage detected — $REASON"
+      auto_heal "auto: $REASON"
+    fi
+    sleep "${OMISU_HEAL_INTERVAL}"
+  done
+fi
+
+# --- manual (default) ------------------------------------------------------
+DESC="${DESC:-auto}"
+SNAP="$(take_snapshot "$DESC")"
+CTX="$CONFIG_DIR/heal-context.txt"
+build_context "$DESC" "$CTX"
+launch_interactive
+
+# --- optional: ship a distro migration ------------------------------------
+if [ "$SHIP" -eq 1 ]; then
+  MIG="$SHARE/migrations"
+  mkdir -p "$MIG"
+  NEXT=1
+  for f in "$MIG"/*.sh; do
+    [ -f "$f" ] || continue
+    n="$(basename "$f" | grep -oP '^\d+' || echo 0)"
+    [ "$n" -gt "$NEXT" ] 2>/dev/null && NEXT=$((n+1))
+  done
+  NEXT="$(printf '%04d' "$NEXT")"
+  slug="$(printf '%s' "$DESC" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-')"
+  out="$MIG/${NEXT}-${slug}.sh"
+  cat > "$out" <<EOF
+#!/usr/bin/env bash
+#
+# OmiSu migration ${NEXT}: ${DESC}
+# Scaffolded by omisu-heal --ship. Fill in the minimal, idempotent fix
+# that reproduces the self-healing resolution for all users.
+#
+set -euo pipefail
+
+# TODO: apply the fix the agent performed (minimal, idempotent).
+echo "OmiSu migration ${NEXT}: (TODO) ${DESC}"
+EOF
+  chmod +x "$out"
+  echo "OmiSu: scaffolded distro migration: $out"
+  echo "       Fill it in and contribute it back so omisu-update ships the fix."
+fi
+
+echo "OmiSu: heal session complete."

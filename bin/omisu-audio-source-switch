@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# omisu:summary=Cycle to the next media source and transfer playback when the current source is playing
+# omisu:args=[next|previous]
+# omisu:examples=omisu audio source switch | omisu-audio-source-switch previous
+
+direction="${1:-next}"
+
+case "$direction" in
+  next)
+    omisu-shell media sourceSwitch
+    ;;
+  previous)
+    omisu-shell media sourceSwitchPrevious
+    ;;
+  *)
+    echo "Usage: omisu-audio-source-switch [next|previous]" >&2
+    exit 1
+    ;;
+esac

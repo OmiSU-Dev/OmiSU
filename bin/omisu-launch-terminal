@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Launch a terminal in the active terminal's current directory
+# omisu:args=[command...]
+
+exec setsid uwsm-app -- xdg-terminal-exec --dir="$(omisu-cmd-terminal-cwd)" "$@"

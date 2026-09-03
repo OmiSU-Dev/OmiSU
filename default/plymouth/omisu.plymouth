@@ -1,0 +1,11 @@
+[Plymouth Theme]
+Name=OmiSu
+Description=OmiSu storm boot splash — rain, waves, sine-byte OmiSU type-in.
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/omisu
+ScriptFile=/usr/share/plymouth/themes/omisu/omisu.script
+ConsoleLogBackgroundColor=0x1e1e2e
+MonospaceFont=DejaVu Sans 11
+Font=DejaVu Sans 11

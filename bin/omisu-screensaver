@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# omisu:summary=Run the OmiSu storm screensaver (rain that writes OmiSU).
+#
+# Launched by omisu-launch-screensaver inside a fullscreen terminal. Renders
+# Matrix-style rain that stamps the OmiSU logo into place, with lightning
+# flashes. Any key or signal exits.
+
+set -uo pipefail
+
+exit_screensaver() {
+  hyprctl eval 'hl.config({ cursor = { invisible = false } })' &>/dev/null \
+    || hyprctl keyword cursor:invisible false &>/dev/null || true
+  pkill -f '[o]rg.omisu.screensaver' 2>/dev/null
+  exit 0
+}
+
+trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
+
+printf '\033]11;rgb:00/00/00\007'  # background black
+hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null \
+  || hyprctl keyword cursor:invisible true &>/dev/null
+
+# Prefer the bundled storm renderer; fall back to ttfx if present.
+STORM="${OMISU_PATH:-/usr/share/omisu}/bin/omisu-screensaver-storm.py"
+if command -v python3 >/dev/null 2>&1 && [ -f "$STORM" ]; then
+  export OMISU_PATH="${OMISU_PATH:-/usr/share/omisu}"
+  exec python3 "$STORM"
+fi
+
+if command -v ttfx >/dev/null 2>&1; then
+  ttfx -i "${HOME}/.config/omisu/branding/screensaver.txt" \
+    --frame-rate 120 --canvas-width 0 --canvas-height 0 --reuse-canvas --anchor-canvas c --anchor-text c \
+    --random-effect --no-eol --no-restore-cursor
+  exit_screensaver
+fi
+
+echo "OmiSu: no screensaver renderer available (need python3 + storm.py or ttfx)" >&2
+exit 1

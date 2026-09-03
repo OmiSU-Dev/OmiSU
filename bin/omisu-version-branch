@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# omisu:summary=Print the active OmiSu dev-link git branch
+# omisu:hidden=true
+
+omisu_path=${OMISU_PATH:-/usr/share/omisu}
+omisu_path=${omisu_path%/}
+
+[[ $omisu_path != "/usr/share/omisu" ]] || exit 1
+
+branch=$(git -C "$omisu_path" branch --show-current 2>/dev/null || true)
+if [[ -z $branch ]]; then
+  hash=$(git -C "$omisu_path" rev-parse --short HEAD 2>/dev/null || true)
+  [[ -n $hash ]] || exit 1
+  branch="detached@$hash"
+fi
+
+echo "$branch"

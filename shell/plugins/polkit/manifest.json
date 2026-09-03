@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "omisu.polkit",
+  "name": "Polkit Agent",
+  "version": "1.0.0",
+  "author": "OmiSu",
+  "description": "Theme-aware authentication dialog for privileged actions.",
+  "kinds": [
+    "service"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "PolkitAgent.qml"
+  }
+}

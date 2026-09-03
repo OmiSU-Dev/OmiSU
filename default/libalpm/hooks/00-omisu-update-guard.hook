@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Upgrade
+Type = Package
+Target = *
+
+[Action]
+Description = Checking OmiSu update entrypoint...
+When = PreTransaction
+Depends = omisu
+Exec = /usr/bin/omisu-update-pacman-guard
+AbortOnFail

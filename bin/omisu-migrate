@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# omisu:summary=Run pending numbered OmiSu migrations once each.
+#
+# omisu-migrate — run pending, ordered migrations (mirrors omisu's update flow).
+# Migrations live in $OMISU_MIGRATIONS (default /usr/share/omisu/migrations).
+# Each file is named NNNN-description.sh and runs once when its number is
+# greater than the last applied version stored in /var/lib/omisu/version.
+#
+set -euo pipefail
+
+STATE_DIR="/var/lib/omisu"
+STATE="$STATE_DIR/version"
+mkdir -p "$STATE_DIR"
+
+installed="$(cat "$STATE" 2>/dev/null || echo 0)"
+migrations_dir="${OMISU_MIGRATIONS:-/usr/share/omisu/migrations}"
+
+[ -d "$migrations_dir" ] || { echo "OmiSu: no migrations dir ($migrations_dir)"; exit 0; }
+
+max=0
+for f in "$migrations_dir"/*; do
+  [ -f "$f" ] || continue
+  name="$(basename "$f")"
+  num="$(printf '%s' "$name" | grep -oP '^\d+' || echo 0)"
+  [ "$num" -gt 0 ] 2>/dev/null || continue
+
+  if [ "$num" -gt "$installed" ]; then
+    echo "OmiSu: running migration $name"
+    bash "$f" || echo "OmiSu: migration $name failed (continuing)"
+  fi
+  [ "$num" -gt "$max" ] && max="$num"
+done
+
+if [ "$max" -gt "$installed" ]; then
+  echo "$max" > "$STATE"
+fi
+
+echo "OmiSu: migrations up to date (installed=$installed, latest=$max)"

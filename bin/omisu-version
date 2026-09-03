@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# omisu:summary=Print the installed OmiSu version
+
+omisu_path=${OMISU_PATH:-/usr/share/omisu}
+omisu_path=${omisu_path%/}
+
+if [[ $omisu_path != "/usr/share/omisu" ]]; then
+  hash=$(git -C "$omisu_path" rev-parse --short HEAD 2>/dev/null || true)
+
+  if [[ -n $hash ]]; then
+    echo "dev ($hash)"
+  else
+    echo "dev"
+  fi
+
+  exit 0
+fi
+
+# The edge channel installs omisu-dev instead of omisu, so check both.
+for package in omisu-dev omisu; do
+  version=$(pacman -Q "$package" 2>/dev/null | awk '{ print $2 }')
+  [[ -n $version ]] && break
+done
+
+[[ -n $version ]] || exit 1
+
+echo "$version"

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Restart the hyprsunset service (used for blue light filtering/night light).
+
+omisu-restart-app hyprsunset

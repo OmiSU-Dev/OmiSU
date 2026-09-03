@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# omisu:summary=Wake displays and restore brightness after idle
+# omisu:group=system
+# omisu:name=wake
+# omisu:examples=omisu system wake
+
+omisu-brightness-display on
+omisu-brightness-keyboard restore
+omisu-hyprland-monitor-clamshell >/dev/null 2>&1 || true

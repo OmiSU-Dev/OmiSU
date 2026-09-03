@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# omisu:summary=Show the OmiSu ASCII installer banner in the terminal.
+#
+# omisu-installer-banner — blue / purple / gold ASCII installer header (tty + gum).
+#
+set -euo pipefail
+
+OMISU_PATH="${OMISU_PATH:-/usr/share/omisu}"
+banner="${OMISU_INSTALLER_BANNER:-$OMISU_PATH/default/installer/banner.txt}"
+
+if [[ ! -f "$banner" ]]; then
+  gum style --foreground 141 --bold "OmiSu Installer"
+  exit 0
+fi
+
+line_no=0
+while IFS= read -r line || [[ -n "$line" ]]; do
+  color=33
+  case $((line_no % 4)) in
+    0) color=33 ;;  # blue
+    1) color=141 ;; # purple
+    2) color=220 ;; # gold
+    3) color=39 ;;  # bright blue
+  esac
+  if [[ "$line" == *"▄"* || "$line" == *"█"* || "$line" == *"▀"* ]]; then
+    color=220
+  fi
+  gum style --foreground "$color" "$line"
+  line_no=$((line_no + 1))
+done <"$banner"

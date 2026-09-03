@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# omisu:summary=Open a config file in the user's editor and surface a toast
+# omisu:args=<path>
+# omisu:examples=omisu launch config-editor ~/.config/hypr/hyprland.lua
+
+path="${1-}"
+
+if [[ -z $path ]]; then
+  echo "Usage: omisu-launch-config-editor <path>" >&2
+  exit 1
+fi
+
+omisu-notification-send -u low "Editing config file" "$path"
+exec omisu-launch-editor "$path"

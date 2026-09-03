@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Enable, disable, or toggle the touch functionality of the screen
+# omisu:args=[on|off|toggle]
+
+exec omisu-toggle-input-device touchscreen "${1:-toggle}"

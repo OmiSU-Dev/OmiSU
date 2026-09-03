@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = omisu-settings
+Target = omisu-settings-dev
+
+[Action]
+Description = Pausing Hyprland config auto-reload for OmiSu settings update...
+When = PreTransaction
+Depends = omisu
+Exec = /usr/bin/omisu-hyprland-reload-guard pause

@@ -1,0 +1,19 @@
+[Unit]
+Description=Lock OmiSu before suspend
+# The monitor calls into the running OmiSu shell. Wait until UWSM has imported
+# OMISU_PATH and WAYLAND_DISPLAY, but keep the default target ordering so the
+# monitor starts before graphical-session.target is reached.
+After=dbus.socket wayland-session-waitenv.service
+Requires=dbus.socket
+PartOf=graphical-session.target
+ConditionEnvironment=OMISU_PATH
+ConditionEnvironment=WAYLAND_DISPLAY
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/omisu-system-sleep-monitor
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# omisu:summary=Apply boot and login branding from a flat OmiSu theme file.
+#
+# omisu-plymouth-set-by-theme — apply boot/login branding from a flat OmiSu theme file.
+#
+set -euo pipefail
+
+if (( $# != 1 )); then
+  echo "Usage: omisu-plymouth-set-by-theme <theme-name>" >&2
+  exit 1
+fi
+
+OMISU_PATH="${OMISU_PATH:-${OmiSu_ROOT:-/usr/share/omisu}}"
+theme="$1"
+src="$OMISU_PATH/themes/$theme"
+logo="$OMISU_PATH/default/plymouth/logo.png"
+
+[[ -f $src ]] || { echo "OmiSu: unknown theme '$theme'" >&2; exit 1; }
+[[ -f $logo ]] || { echo "OmiSu: branding logo missing: $logo" >&2; exit 1; }
+
+BG=$(awk -F= '/^BG=/ {print $2}' "$src")
+FG=$(awk -F= '/^FG=/ {print $2}' "$src")
+
+exec omisu-plymouth-set "#$BG" "#$FG" "$logo"

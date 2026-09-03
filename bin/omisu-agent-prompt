@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# omisu:summary=Launch the default coding agent with a prompt
+# omisu:args=[--inline] <prompt...>
+# omisu:examples=omisu agent prompt "Review this project"
+
+# Prompts live here rather than on `omisu agent`, where a bare prompt would
+# shadow the subcommands under that group.
+
+set -euo pipefail
+
+inline=()
+if [[ ${1:-} == "--inline" ]]; then
+  inline=(--inline)
+  shift
+fi
+
+if (($# == 0)); then
+  echo "Usage: omisu agent prompt [--inline] <prompt...>" >&2
+  exit 1
+fi
+
+exec omisu-agent "${inline[@]}" --prompt "$*"

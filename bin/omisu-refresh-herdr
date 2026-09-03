@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# omisu:summary=Overwrite the user herdr config with the OmiSu default and reload herdr.
+
+omisu-refresh-config herdr/config.toml
+omisu-restart-herdr

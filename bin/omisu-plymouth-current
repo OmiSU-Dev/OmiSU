@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# omisu:summary=Show which theme is styling the Plymouth boot screen
+# omisu:examples=omisu plymouth current
+
+# omisu-plymouth-set installs the theme's unlock.png as a byte-for-byte
+# copy of logo.png, so matching it back identifies the current theme.
+installed_logo=/usr/share/plymouth/themes/omisu/logo.png
+
+if cmp -s "$OMISU_PATH/default/plymouth/logo.png" "$installed_logo"; then
+  echo default
+  exit
+fi
+
+omisu-plymouth-list | while read -r name; do
+  if cmp -s "$(omisu-theme-dir "$name")/unlock.png" "$installed_logo"; then
+    echo "$name"
+    exit
+  fi
+done

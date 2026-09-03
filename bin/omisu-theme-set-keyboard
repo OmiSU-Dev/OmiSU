@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# omisu:summary=Apply the current theme keyboard color to supported keyboards
+# omisu:hidden=true
+
+omisu-theme-set-keyboard-asus-rog
+omisu-theme-set-keyboard-f16

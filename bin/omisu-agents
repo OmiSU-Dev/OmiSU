@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# omisu:summary=List available AI agents or open the agent picker.
+#
+# omisu-agents — list available AI agents, or open the picker.
+#
+#   omisu-agents           list installed + configured agents
+#   omisu-agents --pick    interactively set the default agent
+#
+set -euo pipefail
+
+CONFIG_DIR="$HOME/.config/omisu"
+AGENT_CONF="$CONFIG_DIR/agent.conf"
+
+ALL=(claude codex opencode gemini ollama herder copilot grok crush)
+NAMES=(["claude"]="Claude Code" ["codex"]="Codex" ["opencode"]="OpenCode"
+       ["gemini"]="Gemini CLI" ["ollama"]="Ollama" ["herder"]="Herder"
+       ["copilot"]="GitHub Copilot" ["grok"]="Grok" ["crush"]="Crush")
+
+[ -f "$AGENT_CONF" ] && . "$AGENT_CONF" 2>/dev/null || true
+CURRENT="${OMISU_AGENT:-}"
+
+if [ "${1:-}" = "--pick" ]; then
+  exec omisu-default-agent --pick
+fi
+
+printf '%s\t%s\t%s\n' "AGENT" "INSTALLED" "DEFAULT"
+for a in "${ALL[@]}"; do
+  if command -v "$a" >/dev/null 2>&1; then inst="yes"; else inst="no"; fi
+  if [ "$a" = "$CURRENT" ]; then def="*"; else def=""; fi
+  printf '%s\t%s\t%s\n' "$a" "$inst" "$def"
+done
+
+echo
+echo "Set default:  omisu-default-agent <name>"
+echo "Launch:       omisu-agent"

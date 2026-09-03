@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# omisu:summary=Apply an OmiSu flat theme (Phoenix default palette)
+# omisu:group=theme
+# omisu:args=[theme-name]
+# omisu:examples=omisu theme | omisu theme phoenix
+
+set -euo pipefail
+
+OMISU_PATH="${OMISU_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+OMISU_USER="$(id -un)"
+OMISU_HOME="${HOME:?}"
+
+# shellcheck disable=SC1091
+source "$OMISU_PATH/lib/theme.sh"
+
+if [[ ${1:-} == --pick ]]; then
+  name="$(omisu_list_themes | sort | wofi --dmenu -i -p "Theme")"
+  [[ -n $name ]] && printf '%s\n' "$name"
+  exit 0
+fi
+
+name="${1:-}"
+if [[ -z $name ]]; then
+  if [[ -t 0 ]] && command -v wofi >/dev/null; then
+    name="$(omisu_list_themes | sort | wofi --dmenu -i -p "Theme")"
+  else
+    name="phoenix"
+  fi
+fi
+
+[[ -n "$name" ]] || exit 0
+omisu_apply_theme "$name"

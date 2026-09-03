@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# omisu:summary=Disable sudoless Docker by removing your user from the docker group
+# omisu:requires-sudo=true
+
+set -e
+
+# Ask about the configured groups, not this session's: right after enabling,
+# sudoless Docker is on for the account even though the running session still
+# needs a prompt, and this command is what turns it back off.
+if omisu-sudo-docker --configured; then
+  echo "Sudoless Docker is not enabled: $USER is not in the docker group."
+  exit 0
+fi
+
+echo "Removing $USER from the docker group..."
+sudo gpasswd -d "$USER" docker >/dev/null
+
+# Group membership is only re-read by a fresh session, and in practice logging
+# out or newgrp isn't enough — only a reboot reliably applies it. Record it so a
+# later `omisu update` still prompts (omisu-update-restart reads this), then
+# offer to do it now.
+omisu-state set reboot-required
+
+echo ""
+echo "Sudoless Docker DISABLED. Docker access goes through a polkit/sudo prompt"
+echo "again: the Docker TUI (Super + Shift + D) and the Windows VM ask when they"
+echo "need it, and the plain 'docker' CLI runs under sudo. It takes effect after a reboot."
+echo ""
+# The migration reuses this command during 'omisu update' and defers the
+# reboot to omisu-update-restart, so it doesn't cut the update short.
+if [[ -z ${OMISU_DEFER_REBOOT:-} ]] && gum confirm "Reboot now to apply?"; then
+  omisu-system-reboot
+fi

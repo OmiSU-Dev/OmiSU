@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# omisu:summary=Set the default terminal used by xdg-terminal-exec
+# omisu:args=[alacritty|foot|ghostty|kitty]
+# omisu:examples=omisu default terminal ghostty | omisu default terminal kitty
+
+installing=false
+if [[ ${1:-} == "--install" ]]; then
+  installing=true
+  shift
+fi
+
+if (($# == 0)); then
+  desktop_id=$(xdg-terminal-exec --print-id 2>/dev/null || true)
+  desktop_id=${desktop_id%%:*}
+  case "$desktop_id" in
+  Alacritty.desktop) echo "alacritty" ;;
+  foot.desktop) echo "foot" ;;
+  com.mitchellh.ghostty.desktop) echo "ghostty" ;;
+  kitty.desktop) echo "kitty" ;;
+  *) echo "$desktop_id" ;;
+  esac
+  exit 0
+fi
+
+case "$1" in
+alacritty) terminal="alacritty"; desktop_id="Alacritty.desktop"; name="Alacritty"; glyph= ;;
+foot) terminal="foot"; desktop_id="foot.desktop"; name="Foot"; glyph= ;;
+ghostty) terminal="ghostty"; desktop_id="com.mitchellh.ghostty.desktop"; name="Ghostty"; glyph= ;;
+kitty) terminal="kitty"; desktop_id="kitty.desktop"; name="Kitty"; glyph= ;;
+*)
+  echo "Usage: omisu-default-terminal <alacritty|foot|ghostty|kitty>"
+  exit 1
+  ;;
+esac
+
+if omisu-cmd-missing "$terminal"; then
+  if [[ $installing == "false" ]]; then
+    exec omisu-launch-floating-terminal-with-presentation omisu-default-terminal --install "$terminal"
+  else
+    omisu-install-terminal "$terminal" || exit 1
+  fi
+fi
+
+cat >~/.config/xdg-terminals.list <<EOF
+# Terminal emulator preference order for xdg-terminal-exec
+# The first found and valid terminal will be used
+$desktop_id
+EOF
+
+omisu-notification-send -g $glyph "$name is now the default terminal"

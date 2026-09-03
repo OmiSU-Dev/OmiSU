@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# omisu:summary=Toggle the current weather panel
+
+omisu-shell shell toggle omisu.weather

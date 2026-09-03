@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# omisu:summary=Install a packaged app, surfacing the install in a floating terminal
+# omisu:args=<display-name> <packages>
+# omisu:examples=omisu install app 'LM Studio' lmstudio-bin
+
+name="${1-}"
+packages="${2-}"
+
+if [[ -z $name || -z $packages ]]; then
+  echo "Usage: omisu-install-app <display-name> <packages>" >&2
+  exit 1
+fi
+
+exec omisu-launch-floating-terminal-with-presentation "echo 'Installing ${name}...'; omisu-pkg-add ${packages}"

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Suggestion
+    url: https://github.com/OmiSU-Dev/OmiSU/issues
+    about: Suggest a new feature or change. GitHub issues should be used for verified bugs and tracked work.
+  - name: Support
+    url: https://omisu.org/discord
+    about: Need help? Join our Discord community for support with any issues. GitHub issues should be used for verified bugs only.
