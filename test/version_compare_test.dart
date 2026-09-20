@@ -111,5 +111,30 @@ void main() {
       expect(parseBuildFromVersionString('v0.12.1-build130'), 130);
       expect(parseBuildFromApkFilename('nordi-gamesir-arm64-v8a-0.12.1+130.apk'), 130);
     });
+
+    test('newer pubspec build when installed build is ABI-encoded versionCode', () {
+      expect(normalizeInstalledBuildNumber('2133'), 133);
+      expect(
+        isNewerRelease(
+          currentVersion: '0.12.2',
+          currentBuild: '2133',
+          latestVersion: '0.12.2',
+          latestBuild: '134',
+        ),
+        isTrue,
+      );
+    });
+
+    test('same pubspec build when ABI-encoded matches release', () {
+      expect(
+        isNewerRelease(
+          currentVersion: '0.12.2',
+          currentBuild: '2134',
+          latestVersion: '0.12.2',
+          latestBuild: '134',
+        ),
+        isFalse,
+      );
+    });
   });
 }

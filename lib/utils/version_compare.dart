@@ -83,6 +83,20 @@ int? parseBuildFromApkFilename(String filename) {
   return int.tryParse(match.group(2)!);
 }
 
+/// Normalizes [PackageInfo.buildNumber] on Android split APKs.
+///
+/// Flutter sets `versionCode` to `abiOrdinal * 1000 + pubspecBuild` (arm64 → 2),
+/// so build `+133` reads as `2133`, not `133`. GitHub tags use pubspec `+N`.
+int? normalizeInstalledBuildNumber(String raw) {
+  final n = int.tryParse(raw.trim());
+  if (n == null) return null;
+  // ABI-prefixed codes from `--split-per-abi` (see FlutterPluginConstants).
+  if (n >= 1000 && n < 10000) {
+    return n % 1000;
+  }
+  return n;
+}
+
 /// Whether the remote release is newer than the installed app.
 ///
 /// When semver ties, compares integer [currentBuild] to [latestBuild] so every
@@ -96,7 +110,7 @@ bool isNewerRelease({
   if (isNewerVersion(currentVersion, latestVersion)) return true;
   if (isNewerVersion(latestVersion, currentVersion)) return false;
 
-  final local = int.tryParse(currentBuild.trim());
+  final local = normalizeInstalledBuildNumber(currentBuild);
   final remote =
       latestBuild != null ? int.tryParse(latestBuild.trim()) : null;
   if (local == null || remote == null) return false;
