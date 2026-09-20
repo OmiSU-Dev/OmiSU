@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:omisu/widgets/omisu/omisu_ascii_logo.dart';
 import 'package:omisu/widgets/omisu/omisu_retro_chrome.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:omisu/utils/version_compare.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:omisu/l10n/app_locale.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -29,7 +30,8 @@ class AboutSettingsContent extends StatefulWidget {
   State<AboutSettingsContent> createState() => AboutSettingsContentState();
 }
 
-class AboutSettingsContentState extends State<AboutSettingsContent> {
+class AboutSettingsContentState extends State<AboutSettingsContent>
+    with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
 
   /// Snaps during rapid D-pad navigation, animates on a single move.
@@ -47,9 +49,22 @@ class AboutSettingsContentState extends State<AboutSettingsContent> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    refreshVersionLabels();
+  }
+
+  /// Reloads app / systems / player version lines (e.g. after GitHub OTA).
+  void refreshVersionLabels() {
     _loadAppVersion();
     _loadSystemsVersion();
     _loadBuiltinPlayerVersions();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      refreshVersionLabels();
+    }
   }
 
   Future<void> _loadBuiltinPlayerVersions() async {
@@ -69,6 +84,7 @@ class AboutSettingsContentState extends State<AboutSettingsContent> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     super.dispose();
   }
@@ -98,7 +114,10 @@ class AboutSettingsContentState extends State<AboutSettingsContent> {
       final packageInfo = await PackageInfo.fromPlatform();
       if (mounted) {
         setState(() {
-          _appVersion = 'v${packageInfo.version}';
+          _appVersion = formatDisplayAppVersion(
+            version: packageInfo.version,
+            buildNumber: packageInfo.buildNumber,
+          );
         });
       }
     } catch (e) {

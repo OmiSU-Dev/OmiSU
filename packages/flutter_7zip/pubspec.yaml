@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.1.8
-  ffi: ^2.1.4
+  ffi: ^2.2.0
 
 dev_dependencies:
   ffigen: ^22.0.0

@@ -3,6 +3,7 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:omisu/utils/color.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:omisu/utils/version_compare.dart';
 import 'package:omisu/l10n/app_locale.dart';
 
 import '../themes/corner_radii.dart';
@@ -50,7 +51,10 @@ class _CoreFooterState extends State<CoreFooter> {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       setState(() {
-        _appVersion = 'v${packageInfo.version}';
+        _appVersion = formatDisplayAppVersion(
+          version: packageInfo.version,
+          buildNumber: packageInfo.buildNumber,
+        );
       });
     } catch (e) {
       setState(() {

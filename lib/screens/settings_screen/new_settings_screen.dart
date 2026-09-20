@@ -286,6 +286,12 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
       _focusOnMenu = false;
       _selectedContentIndex = 0;
     }
+
+    if (_menuItems[index].localeKey == AppLocale.about) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _aboutSettingsKey.currentState?.refreshVersionLabels();
+      });
+    }
   }
 
   /// Vertical Navigation Protocol: Handles wrap-around menu scrolling and content list progression.

@@ -125,6 +125,34 @@ void main() {
       );
     });
 
+    test('formatDisplayAppVersion decodes ABI-encoded build for UI', () {
+      expect(
+        formatDisplayAppVersion(version: '0.12.2', buildNumber: '2136'),
+        'v0.12.2+136',
+      );
+    });
+
+    test('formatDisplayAppVersion uses plain versionCode build', () {
+      expect(
+        formatDisplayAppVersion(version: '0.12.2', buildNumber: '136'),
+        'v0.12.2+136',
+      );
+    });
+
+    test('formatDisplayAppVersion reads +build from versionName when needed', () {
+      expect(
+        formatDisplayAppVersion(version: '0.12.2+137', buildNumber: ''),
+        'v0.12.2+137',
+      );
+    });
+
+    test('formatDisplayAppVersion strips channel suffix from semver', () {
+      expect(
+        formatDisplayAppVersion(version: '0.12.2-dev', buildNumber: '136'),
+        'v0.12.2+136',
+      );
+    });
+
     test('same pubspec build when ABI-encoded matches release', () {
       expect(
         isNewerRelease(

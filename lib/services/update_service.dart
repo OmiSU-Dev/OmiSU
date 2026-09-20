@@ -63,7 +63,10 @@ class UpdateService {
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
-        _log.e('UpdateService: API failure (Status: ${response.statusCode})');
+        _log.e(
+          'UpdateService: GitHub API ${_githubApiUrl} failed '
+          '(HTTP ${response.statusCode})',
+        );
         return null;
       }
 
@@ -82,7 +85,12 @@ class UpdateService {
 
       final assets = releaseData['assets'] as List<dynamic>;
       final platformAsset = await _findPlatformAsset(assets);
-      if (platformAsset == null) return null;
+      if (platformAsset == null) {
+        _log.w(
+          'UpdateService: release ${rawTag} has no APK asset for this device ABI',
+        );
+        return null;
+      }
 
       final assetName = platformAsset['name'].toString();
       final latestBuild =
@@ -96,8 +104,18 @@ class UpdateService {
         latestVersion: latestVersion,
         latestBuild: latestBuild,
       )) {
+        final localBuild =
+            normalizeInstalledBuildNumber(currentBuild) ?? currentBuild;
+        _log.i(
+          'UpdateService: no newer release '
+          '(installed $currentVersion+$localBuild, latest $latestVersion+${latestBuild ?? "?"}, tag $rawTag)',
+        );
         return null;
       }
+
+      _log.i(
+        'UpdateService: update available → $latestVersion+$latestBuild (${platformAsset['name']})',
+      );
 
       final displayVersion = latestBuild != null
           ? '$latestVersion+$latestBuild'

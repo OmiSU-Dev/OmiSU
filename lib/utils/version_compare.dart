@@ -97,6 +97,33 @@ int? normalizeInstalledBuildNumber(String raw) {
   return n;
 }
 
+/// User-facing label matching GitHub release tags (e.g. `v0.12.2+136`).
+///
+/// Uses [buildNumber] (`PackageInfo.buildNumber` / Android `versionCode`) when
+/// present, including ABI-prefixed codes (`2136` → `+136`). Falls back to
+/// `+N` embedded in [version] when some builds only expose the pubspec build
+/// there.
+String formatDisplayAppVersion({
+  required String version,
+  required String buildNumber,
+}) {
+  var semver = version.trim();
+  if (semver.startsWith('v') || semver.startsWith('V')) {
+    semver = semver.substring(1);
+  }
+  final baseSemver = semver.split('+').first.split('-').first;
+
+  final build =
+      parseBuildFromVersionString(version) ??
+      normalizeInstalledBuildNumber(buildNumber) ??
+      parseBuildFromVersionString(buildNumber);
+
+  if (build != null) {
+    return 'v$baseSemver+$build';
+  }
+  return 'v$baseSemver';
+}
+
 /// Whether the remote release is newer than the installed app.
 ///
 /// When semver ties, compares integer [currentBuild] to [latestBuild] so every

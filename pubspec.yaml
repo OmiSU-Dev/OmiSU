@@ -13,7 +13,7 @@ workspace:
   - packages/gamepads_platform_interface
   - packages/gamepads_windows
 
-version: 0.12.2+136
+version: 0.12.2+137
 
 environment:
   sdk: '>=3.9.2'
@@ -41,12 +41,12 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.6
   xml: ^7.0.1
-  video_player: ^2.13.0
+  video_player: ^2.14.0
   fvp: ^0.38.1
   flutter_secure_storage: ^11.2.0
   shared_preferences: ^2.5.5
   http: ^1.6.0
-  flutter_svg: ^2.0.10
+  flutter_svg: ^2.3.0
   crypto: ^3.0.7
   archive: ^4.3.0
   web_socket_channel: ^3.0.3
@@ -76,6 +76,13 @@ dev_dependencies:
   mocktail: ^1.0.5
   fake_async: ^1.3.3
   ffigen: ^22.0.0
+
+# Transitive bumps blocked by Flutter SDK / plugin caps (see `flutter pub outdated`).
+dependency_overrides:
+  cli_util: ^0.6.0
+  dbus: ^0.8.0
+  material_color_utilities: ^0.13.1
+  test_api: ^0.7.14
 
 flutter_launcher_icons:
   android: "launcher_icon"
