@@ -95,7 +95,7 @@ flutter {
 
 dependencies {
     implementation("com.github.Swordfish90:LibretroDroid:0.13.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("androidx.lifecycle:lifecycle-common:2.8.7")
     implementation("io.github.thibaultbee.streampack:streampack-core:3.2.0")
     implementation("io.github.thibaultbee.streampack:streampack-services:3.2.0")

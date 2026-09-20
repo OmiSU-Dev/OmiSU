@@ -145,6 +145,9 @@ const Map<String, dynamic> appLocaleDe = {
       'Fehler beim Konfigurieren des RetroArch-Pfads: {error}',
   AppLocale.androidSystemSettings: 'Systemeinstellungen',
   AppLocale.androidSystemSettingsSubtitle: 'Android-Systemeinstellungen öffnen',
+  AppLocale.androidSystemUpdates: 'Android-Systemupdates',
+  AppLocale.androidSystemUpdatesSubtitle:
+      'Nur Android-Systemupdates. Verbessert Stabilität und behebt Fehler.',
   AppLocale.scanOnStartup: 'Ordner beim Start scannen',
   AppLocale.nowPlayingDimAfter: 'Now Playing abdunkeln nach',
   AppLocale.nowPlayingDimAfterSubtitle:

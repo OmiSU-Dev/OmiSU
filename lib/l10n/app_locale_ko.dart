@@ -126,6 +126,9 @@ const Map<String, dynamic> appLocaleKo = {
   AppLocale.errorConfiguringRetroArchPath: 'RetroArch 경로 설정 오류: {error}',
   AppLocale.androidSystemSettings: '시스템 설정',
   AppLocale.androidSystemSettingsSubtitle: 'Android 시스템 설정 열기',
+  AppLocale.androidSystemUpdates: 'Android 시스템 업데이트',
+  AppLocale.androidSystemUpdatesSubtitle:
+      'Android 시스템 업데이트만 확인합니다. 안정성과 버그 수정에 도움이 됩니다.',
   AppLocale.scanOnStartup: '시작할 때 폴더 검색',
   AppLocale.nowPlayingDimAfter: '플레이 중 화면 어둡게',
   AppLocale.nowPlayingDimAfterSubtitle: '보조 화면의 게임 패널이 어두워질 때까지의 대기 시간입니다',

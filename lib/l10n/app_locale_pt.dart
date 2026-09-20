@@ -147,6 +147,9 @@ const Map<String, dynamic> appLocalePt = {
   AppLocale.androidSystemSettings: 'Configurações do Sistema',
   AppLocale.androidSystemSettingsSubtitle:
       'Abrir configurações do sistema Android',
+  AppLocale.androidSystemUpdates: 'Atualizações do sistema Android',
+  AppLocale.androidSystemUpdatesSubtitle:
+      'Somente atualizações do sistema Android. Ajuda na estabilidade e correções.',
   AppLocale.scanOnStartup: 'Varrer pastas ao iniciar',
   AppLocale.nowPlayingDimAfter: 'Escurecer Now Playing após',
   AppLocale.nowPlayingDimAfterSubtitle:

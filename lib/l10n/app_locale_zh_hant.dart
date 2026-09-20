@@ -124,6 +124,9 @@ const Map<String, dynamic> appLocaleZhHant = {
   AppLocale.errorConfiguringRetroArchPath: '設定 RetroArch 路徑時發生錯誤: {error}',
   AppLocale.androidSystemSettings: '系統設定',
   AppLocale.androidSystemSettingsSubtitle: '打開 Android 系統設定',
+  AppLocale.androidSystemUpdates: 'Android 系統更新',
+  AppLocale.androidSystemUpdatesSubtitle:
+      '僅檢查 Android 系統更新，有助穩定性與錯誤修復。',
   AppLocale.scanOnStartup: '啟動時掃描資料夾',
   AppLocale.nowPlayingDimAfter: 'Now Playing 變暗延時',
   AppLocale.nowPlayingDimAfterSubtitle: '在副螢幕上遊戲面板變暗前的無操作時間',

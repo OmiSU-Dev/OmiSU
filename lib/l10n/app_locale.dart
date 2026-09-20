@@ -178,6 +178,9 @@ mixin AppLocale {
   static const String androidSystemSettings = 'android_system_settings';
   static const String androidSystemSettingsSubtitle =
       'android_system_settings_subtitle';
+  static const String androidSystemUpdates = 'android_system_updates';
+  static const String androidSystemUpdatesSubtitle =
+      'android_system_updates_subtitle';
   static const String scanOnStartup = 'scan_on_startup';
   static const String scanOnStartupSubtitle = 'scan_on_startup_subtitle';
   static const String nowPlayingDimAfter = 'now_playing_dim_after';

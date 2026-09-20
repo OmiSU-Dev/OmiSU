@@ -459,10 +459,11 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
                           widget.isContentFocused &&
                           widget.selectedContentIndex == index,
                       title: _retailHandheld
-                          ? 'Android system updates'
+                          ? AppLocale.androidSystemUpdates.getString(context)
                           : AppLocale.androidSystemSettings.getString(context),
                       subtitle: _retailHandheld
-                          ? 'Open the ROM system update screen'
+                          ? AppLocale.androidSystemUpdatesSubtitle
+                              .getString(context)
                           : AppLocale.androidSystemSettingsSubtitle
                               .getString(context),
                       trailing: Icon(
