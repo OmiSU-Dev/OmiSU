@@ -8,6 +8,8 @@ Use Wi‑Fi ADB from the monorepo: `../scripts/deploy-nordi-wifi.sh` (see monore
 
 Uninstall **NeoStation** (`com.neogamelab.neostation`) if it was installed from the old upstream channel.
 
+Step-by-step **Option A** (CI → Releases → in-app update): [`github-ota-option-a.md`](github-ota-option-a.md).
+
 ## GitHub secrets (Production environment)
 
 | Secret | Purpose |
