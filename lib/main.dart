@@ -43,6 +43,7 @@ import 'package:omisu/services/launch/device_profile_service.dart';
 import 'package:omisu/services/nordi/nordi_bootstrap_service.dart';
 import 'package:omisu/services/nordi/nordi_safe_mode_service.dart';
 import 'package:omisu/config/nordi_config.dart';
+import 'package:omisu/services/embedded/libretro_cheat_bootstrap.dart';
 import 'package:omisu/services/logger_service.dart';
 import 'package:omisu/services/streaming/stream_settings_service.dart';
 import 'package:omisu/services/streaming/streaming_service.dart';
@@ -381,6 +382,7 @@ void main() async {
 
   // Inicializar listener de Android para tracking de tiempo de juego
   if (Platform.isAndroid) {
+    unawaited(LibretroCheatBootstrap.ensureInstalled());
     try {
       GameService.initializeAndroidGameListener();
       // Verificar si hay una sesion de juego pendiente (app fue matada)

@@ -723,6 +723,27 @@ const Map<String, dynamic> appLocaleEn = {
   AppLocale.noAchievements: 'No Achievements',
   AppLocale.gameInfo: 'Game Info',
   AppLocale.manage: 'Manage',
+  AppLocale.gameSettingsPlay: 'Play',
+  AppLocale.gameSettingsPlayAppliesNextLaunch:
+      'Applies the next time you start this game with the built-in player.',
+  AppLocale.gameSettingsPlayTweaks: 'Tweaks',
+  AppLocale.gameSettingsPlayCheats: 'Cheats',
+  AppLocale.gameSettingsResetPlayTweaks: 'Reset tweaks to defaults',
+  AppLocale.gameSettingsImportCht: 'Import .cht file next to ROM',
+  AppLocale.gameSettingsImportLibretroCheats:
+      'Import from libretro-database',
+  AppLocale.gameSettingsLibretroCheatsNotFound:
+      'No libretro-database cheats found. Install the cht folder under user-data/libretro-database/cht.',
+  AppLocale.gameSettingsLibretroCheatsImported: 'Imported %1 cheat codes',
+  AppLocale.gameSettingsAddCheat: 'Add cheat code',
+  AppLocale.gameSettingsNoPlayOptions:
+      'No built-in play options for this system.',
+  AppLocale.gameSettingsNoCheatsForGame:
+      'No cheat codes found for this game in the database.',
+  AppLocale.gameSettingsRaCheatWarning:
+      'Cheats may affect RetroAchievements hardcore mode.',
+  AppLocale.gameSettingsCheatDescriptionHint: 'Description',
+  AppLocale.gameSettingsCheatCodeHint: 'Cheat code',
   AppLocale.forceRescrape: 'Force Rescrape',
   AppLocale.scrapingData: 'Scraping Data',
   AppLocale.scrapingMedia: 'Scraping Media',

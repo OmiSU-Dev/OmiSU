@@ -33,6 +33,8 @@ import 'package:omisu/widgets/header_sort_dropdown.dart';
 import 'package:omisu/widgets/native_carousel.dart';
 import 'system_list_builder.dart';
 import 'system_card.dart';
+import 'my_systems_grid.dart';
+import 'package:omisu/services/embedded/embedded_exit_destination.dart';
 import 'package:omisu/services/gamepad/gamepad_navigation_manager.dart';
 
 /// Navigation-layer id the systems screen's own carousel registers under.
@@ -181,6 +183,8 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
   /// Set while game launch dialog is active to hide carousel content and free RAM.
   bool _isGameLaunching = false;
 
+  late final VoidCallback _revealHomeUnderEmbeddedExit;
+
   // ── Pull-to-refresh (Android) ──────────────────────────────────────────
   static const double _maxPull = 75.0;
   final ValueNotifier<double> _pullOffsetNotifier = ValueNotifier(0.0);
@@ -234,6 +238,11 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
   @override
   void initState() {
     super.initState();
+    _revealHomeUnderEmbeddedExit = () {
+      if (!mounted || !_isGameLaunching) return;
+      setState(() => _isGameLaunching = false);
+    };
+    EmbeddedExitHandler.registerHomeRevealListener(_revealHomeUnderEmbeddedExit);
     _currentIndex = widget.selectedIndex;
     _pageOffsetNotifier.value = _currentIndex.toDouble();
     _initializeGamepad();
@@ -294,6 +303,7 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
 
   @override
   void dispose() {
+    EmbeddedExitHandler.unregisterHomeRevealListener(_revealHomeUnderEmbeddedExit);
     // Shared singleton — detach our listener, never dispose the instance.
     _secondaryDisplayState?.removeListener(_onSecondaryStateChanged);
     _cleanupGamepad();
@@ -462,6 +472,7 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
 
       try {
         _gamepadNav.deactivate();
+        MySystems.gridLaunchNotifier.value = true;
         setState(() => _isGameLaunching = true);
 
         // Free maximum RAM before handing off to the emulator.

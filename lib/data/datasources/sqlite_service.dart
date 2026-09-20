@@ -461,7 +461,7 @@ class SqliteService {
   SqliteService._internal();
 
   // Database configuration
-  static const int _databaseVersion = 161;
+  static const int _databaseVersion = 163;
   static const String _databaseName = 'data.sqlite';
 
   DatabaseAdapter? _database;
@@ -2033,6 +2033,7 @@ class SqliteService {
         genre TEXT,
         players TEXT,
         box2d_aspect_ratio TEXT,
+        embedded_core_variables_json TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (app_system_id) REFERENCES app_systems(id) ON DELETE CASCADE,
@@ -2040,6 +2041,7 @@ class SqliteService {
         UNIQUE(rom_path)
       );
       ''',
+      SqliteMigrations.createUserRomCheatsTableSql,
       '''
       CREATE TABLE IF NOT EXISTS user_screenscraper_credentials (
         id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -2187,6 +2189,7 @@ class SqliteService {
       'CREATE INDEX IF NOT EXISTS idx_user_roms_filename ON user_roms(filename);',
       'CREATE INDEX IF NOT EXISTS idx_user_roms_is_favorite ON user_roms(is_favorite);',
       'CREATE INDEX IF NOT EXISTS idx_user_roms_id_ra ON user_roms(id_ra);',
+      SqliteMigrations.createUserRomCheatsIndexSql,
 
       // Indexes for user_screenscraper_metadata
       'CREATE INDEX IF NOT EXISTS idx_user_screenscraper_metadata_filename ON user_screenscraper_metadata(filename);',
@@ -5214,6 +5217,133 @@ class SqliteService {
       where: 'app_system_id = ? AND filename = ?',
       whereArgs: [system.id, filename],
     );
+  }
+
+  /// Per-game libretro core variable overrides for embedded play (JSON object).
+  static Future<Map<String, String>> getRomEmbeddedCoreVariables(
+    String systemFolderName,
+    String filename,
+  ) async {
+    final db = await instance.database;
+    final system = await getSystemByFolderName(systemFolderName);
+    final rows = await db.query(
+      'user_roms',
+      columns: ['embedded_core_variables_json'],
+      where: 'app_system_id = ? AND filename = ?',
+      whereArgs: [system.id, filename],
+      limit: 1,
+    );
+    if (rows.isEmpty) return {};
+    final raw = rows.first['embedded_core_variables_json']?.toString();
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return decoded.map(
+        (key, value) => MapEntry(key, value?.toString() ?? ''),
+      );
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> setRomEmbeddedCoreVariables(
+    String systemFolderName,
+    String filename,
+    Map<String, String> variables,
+  ) async {
+    final db = await instance.database;
+    final system = await getSystemByFolderName(systemFolderName);
+    final payload = variables.isEmpty ? null : jsonEncode(variables);
+    await db.update(
+      'user_roms',
+      {'embedded_core_variables_json': payload},
+      where: 'app_system_id = ? AND filename = ?',
+      whereArgs: [system.id, filename],
+    );
+  }
+
+  static Future<List<Map<String, Object?>>> getRomCheats(
+    String systemFolderName,
+    String filename,
+  ) async {
+    final db = await instance.database;
+    final system = await getSystemByFolderName(systemFolderName);
+    return db.query(
+      'user_rom_cheats',
+      where: 'app_system_id = ? AND filename = ?',
+      whereArgs: [system.id, filename],
+      orderBy: 'sort_order ASC, id ASC',
+    );
+  }
+
+  static Future<int> insertRomCheat({
+    required String systemFolderName,
+    required String filename,
+    required String description,
+    required String code,
+    bool enabled = false,
+  }) async {
+    final db = await instance.database;
+    final system = await getSystemByFolderName(systemFolderName);
+    final existing = await db.query(
+      'user_rom_cheats',
+      columns: ['sort_order'],
+      where: 'app_system_id = ? AND filename = ?',
+      whereArgs: [system.id, filename],
+      orderBy: 'sort_order DESC',
+      limit: 1,
+    );
+    final nextOrder = existing.isEmpty
+        ? 0
+        : (existing.first['sort_order'] as int? ?? 0) + 1;
+    return db.insert('user_rom_cheats', {
+      'app_system_id': system.id,
+      'filename': filename,
+      'sort_order': nextOrder,
+      'description': description,
+      'code': code,
+      'enabled': enabled ? 1 : 0,
+    });
+  }
+
+  static Future<void> setRomCheatEnabled(int cheatId, bool enabled) async {
+    final db = await instance.database;
+    await db.update(
+      'user_rom_cheats',
+      {'enabled': enabled ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [cheatId],
+    );
+  }
+
+  static Future<void> deleteRomCheat(int cheatId) async {
+    final db = await instance.database;
+    await db.delete('user_rom_cheats', where: 'id = ?', whereArgs: [cheatId]);
+  }
+
+  static Future<void> replaceRomCheats(
+    String systemFolderName,
+    String filename,
+    List<({String description, String code, bool enabled})> cheats,
+  ) async {
+    final db = await instance.database;
+    final system = await getSystemByFolderName(systemFolderName);
+    await db.delete(
+      'user_rom_cheats',
+      where: 'app_system_id = ? AND filename = ?',
+      whereArgs: [system.id, filename],
+    );
+    for (var i = 0; i < cheats.length; i++) {
+      final entry = cheats[i];
+      await db.insert('user_rom_cheats', {
+        'app_system_id': system.id,
+        'filename': filename,
+        'sort_order': i,
+        'description': entry.description,
+        'code': entry.code,
+        'enabled': entry.enabled ? 1 : 0,
+      });
+    }
   }
 
   /// Retrieves all emulators available for a system on the current operating system.

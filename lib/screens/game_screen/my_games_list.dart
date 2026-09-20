@@ -18,6 +18,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:math';
 import '../../services/game_service.dart';
+import 'package:omisu/services/embedded/embedded_exit_destination.dart';
 import '../../utils/game_launch_utils.dart';
 import '../../services/music_player_service.dart';
 import '../../repositories/system_repository.dart';
@@ -356,9 +357,16 @@ class _SystemGamesListState extends State<SystemGamesList> {
   late ScrapingProvider _scrapingProvider;
   int _lastArtworkRevision = 0;
 
+  late final VoidCallback _revealHomeUnderEmbeddedExit;
+
   @override
   void initState() {
     super.initState();
+    _revealHomeUnderEmbeddedExit = () {
+      if (!mounted || !_isGameLaunching) return;
+      setState(() => _isGameLaunching = false);
+    };
+    EmbeddedExitHandler.registerHomeRevealListener(_revealHomeUnderEmbeddedExit);
     _fileProvider = widget.fileProvider;
     _backButtonFocusNode = FocusNode(skipTraversal: true);
     _loadGames();
@@ -466,6 +474,7 @@ class _SystemGamesListState extends State<SystemGamesList> {
 
   @override
   void dispose() {
+    EmbeddedExitHandler.unregisterHomeRevealListener(_revealHomeUnderEmbeddedExit);
     // Detach listeners before disposal.
     _configProvider.removeListener(_onConfigChanged);
     _databaseProvider.removeListener(_onDatabaseUpdated);

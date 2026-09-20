@@ -38,6 +38,25 @@ class SqliteMigrations {
     );
   ''';
 
+  /// Per-ROM cheat codes for embedded play (v162).
+  static const String createUserRomCheatsTableSql = '''
+    CREATE TABLE IF NOT EXISTS user_rom_cheats (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      app_system_id TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      description TEXT NOT NULL,
+      code TEXT NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (app_system_id) REFERENCES app_systems(id) ON DELETE CASCADE,
+      UNIQUE(app_system_id, filename, sort_order)
+    );
+  ''';
+
+  static const String createUserRomCheatsIndexSql =
+      'CREATE INDEX IF NOT EXISTS idx_user_rom_cheats_rom '
+      'ON user_rom_cheats(app_system_id, filename);';
+
   /// CREATE for the local-game → RomM rom_id save-sync map (v111).
   static const String createAppRommRomMapTableSql = '''
     CREATE TABLE IF NOT EXISTS app_romm_rom_map (
@@ -620,6 +639,12 @@ class SqliteMigrations {
         break;
       case 161:
         await _migrateToVersion161(db);
+        break;
+      case 162:
+        await _migrateToVersion162(db);
+        break;
+      case 163:
+        await _migrateToVersion163(db);
         break;
       default:
         _log.w('No migration defined for version $version');
@@ -7124,7 +7149,39 @@ class SqliteMigrations {
     }
   }
 
-  /// Migration v161: Ambient shell backdrop mode (off / subtle / reactive).
+  /// Migration v162: Per-game embedded core variable overrides.
+  static Future<void> _migrateToVersion162(Database db) async {
+    _log.i('Migration v162: Per-game embedded tweaks');
+    try {
+      final romInfo = db.select('PRAGMA table_info(user_roms)');
+      final romColumns = romInfo.map((c) => c['name'].toString()).toList();
+      if (!romColumns.contains('embedded_core_variables_json')) {
+        db.execute(
+          'ALTER TABLE user_roms ADD COLUMN embedded_core_variables_json TEXT',
+        );
+      }
+      _log.i('Migration v162 completed');
+    } catch (e, stackTrace) {
+      _log.e('Error in migration v162: $e');
+      _log.e('   StackTrace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// Migration v163: Per-ROM cheat storage (fixes DBs stamped v162 before cheats shipped).
+  static Future<void> _migrateToVersion163(Database db) async {
+    _log.i('Migration v163: user_rom_cheats table');
+    try {
+      db.execute(createUserRomCheatsTableSql);
+      db.execute(createUserRomCheatsIndexSql);
+      _log.i('Migration v163 completed');
+    } catch (e, stackTrace) {
+      _log.e('Error in migration v163: $e');
+      _log.e('   StackTrace: $stackTrace');
+      rethrow;
+    }
+  }
+
   static Future<void> _migrateToVersion161(Database db) async {
     _log.i('Migration v161: Adding ambient_backdrop_mode to user_config');
     try {

@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:omisu/l10n/app_locale.dart';
+import 'package:omisu/models/embedded_core_config.dart';
 import 'package:omisu/models/game_model.dart';
 import 'package:omisu/models/system_model.dart';
 import 'package:omisu/providers/file_provider.dart';
@@ -17,6 +20,7 @@ import 'package:omisu/widgets/core_footer.dart';
 
 import 'game_settings_emulator_tab.dart';
 import 'game_settings_manage_tab.dart';
+import 'game_settings_play_tab.dart';
 import 'game_settings_scrapping_tab.dart';
 
 /// Steam-style settings dialog for a single game, reachable from the game
@@ -25,6 +29,7 @@ import 'game_settings_scrapping_tab.dart';
 /// Mirrors the [SystemEmulatorSettingsDialog] chrome: a header, an LB/RB
 /// tab strip, a content area, and a gamepad-hint footer. Tabs:
 ///  * Emulator  — per-game emulator override.
+///  * Play      — built-in player tweaks and cheats (Android embedded only).
 ///  * Scrapping — force rescrape plus manual metadata/artwork editing.
 ///  * Manage    — view mode, play-time reset, hiding, and game deletion.
 class GameSettingsDialog extends StatefulWidget {
@@ -74,10 +79,22 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> {
   late final GamepadNavigation _gamepadNav;
 
   final _emulatorTabKey = GlobalKey<GameSettingsEmulatorTabState>();
+  final _playTabKey = GlobalKey<GameSettingsPlayTabState>();
   final _scrappingTabKey = GlobalKey<GameSettingsScrappingTabState>();
   final _manageTabKey = GlobalKey<GameSettingsManageTabState>();
 
-  static const _tabCount = 3;
+  bool get _showPlayTab {
+    if (!Platform.isAndroid) return false;
+    final folder =
+        widget.game.systemFolderName ?? _effectiveSystem.folderName;
+    return EmbeddedCoreRegistry.supports(folder);
+  }
+
+  int get _tabCount => _showPlayTab ? 4 : 3;
+
+  int get _scrappingTabIndex => _showPlayTab ? 2 : 1;
+
+  int get _manageTabIndex => _showPlayTab ? 3 : 2;
 
   @override
   void initState() {
@@ -121,15 +138,29 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      switch (_currentTab) {
-        case 0:
-          _emulatorTabKey.currentState?.scrollFocusedItemIntoView();
-        case 1:
-          _scrappingTabKey.currentState?.scrollFocusedItemIntoView();
-        case 2:
-          _manageTabKey.currentState?.scrollFocusedItemIntoView();
-      }
+      _scrollFocusedTabIntoView();
     });
+  }
+
+  void _scrollFocusedTabIntoView() {
+    switch (_currentTab) {
+      case 0:
+        _emulatorTabKey.currentState?.scrollFocusedItemIntoView();
+      case 1:
+        if (_showPlayTab) {
+          _playTabKey.currentState?.scrollFocusedItemIntoView();
+        } else {
+          _scrappingTabKey.currentState?.scrollFocusedItemIntoView();
+        }
+      case 2:
+        if (_showPlayTab) {
+          _scrappingTabKey.currentState?.scrollFocusedItemIntoView();
+        } else {
+          _manageTabKey.currentState?.scrollFocusedItemIntoView();
+        }
+      case 3:
+        _manageTabKey.currentState?.scrollFocusedItemIntoView();
+    }
   }
 
   void _moveUp() {
@@ -137,8 +168,18 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> {
       case 0:
         _emulatorTabKey.currentState?.moveUp();
       case 1:
-        _scrappingTabKey.currentState?.moveUp();
+        if (_showPlayTab) {
+          _playTabKey.currentState?.moveUp();
+        } else {
+          _scrappingTabKey.currentState?.moveUp();
+        }
       case 2:
+        if (_showPlayTab) {
+          _scrappingTabKey.currentState?.moveUp();
+        } else {
+          _manageTabKey.currentState?.moveUp();
+        }
+      case 3:
         _manageTabKey.currentState?.moveUp();
     }
   }
@@ -148,22 +189,30 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> {
       case 0:
         _emulatorTabKey.currentState?.moveDown();
       case 1:
-        _scrappingTabKey.currentState?.moveDown();
+        if (_showPlayTab) {
+          _playTabKey.currentState?.moveDown();
+        } else {
+          _scrappingTabKey.currentState?.moveDown();
+        }
       case 2:
+        if (_showPlayTab) {
+          _scrappingTabKey.currentState?.moveDown();
+        } else {
+          _manageTabKey.currentState?.moveDown();
+        }
+      case 3:
         _manageTabKey.currentState?.moveDown();
     }
   }
 
   void _moveLeft() {
-    // Only the Scrapping tab has internal sub-tabs (Data / Media).
-    if (_currentTab == 1) {
+    if (_currentTab == _scrappingTabIndex) {
       _scrappingTabKey.currentState?.moveLeft();
     }
   }
 
   void _moveRight() {
-    // Only the Scrapping tab has internal sub-tabs (Data / Media).
-    if (_currentTab == 1) {
+    if (_currentTab == _scrappingTabIndex) {
       _scrappingTabKey.currentState?.moveRight();
     }
   }
@@ -173,14 +222,24 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> {
       case 0:
         _emulatorTabKey.currentState?.trigger();
       case 1:
-        _scrappingTabKey.currentState?.trigger();
+        if (_showPlayTab) {
+          _playTabKey.currentState?.trigger();
+        } else {
+          _scrappingTabKey.currentState?.trigger();
+        }
       case 2:
+        if (_showPlayTab) {
+          _scrappingTabKey.currentState?.trigger();
+        } else {
+          _manageTabKey.currentState?.trigger();
+        }
+      case 3:
         _manageTabKey.currentState?.trigger();
     }
   }
 
   bool get _activeTabIsEditingText =>
-      _currentTab == 1 &&
+      _currentTab == _scrappingTabIndex &&
       (_scrappingTabKey.currentState?.isEditingText ?? false);
 
   void _handleBack() {
@@ -273,6 +332,15 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> {
                     isAllMode: widget.isAllMode,
                     onGameUpdated: widget.onGameUpdated,
                   ),
+                  if (_showPlayTab)
+                    GameSettingsPlayTab(
+                      key: _playTabKey,
+                      game: widget.game,
+                      system: effectiveSystem,
+                      isAllMode: widget.isAllMode,
+                    )
+                  else
+                    const SizedBox.shrink(),
                   GameSettingsScrappingTab(
                     key: _scrappingTabKey,
                     game: widget.game,
@@ -383,10 +451,26 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> {
             ),
           ),
           _buildTabItem(theme, 0, AppLocale.emulator.getString(context)),
+          if (_showPlayTab) ...[
+            SizedBox(width: 16.r),
+            _buildTabItem(
+              theme,
+              1,
+              AppLocale.gameSettingsPlay.getString(context),
+            ),
+          ],
           SizedBox(width: 16.r),
-          _buildTabItem(theme, 1, AppLocale.scraping.getString(context)),
+          _buildTabItem(
+            theme,
+            _scrappingTabIndex,
+            AppLocale.scraping.getString(context),
+          ),
           SizedBox(width: 16.r),
-          _buildTabItem(theme, 2, AppLocale.manage.getString(context)),
+          _buildTabItem(
+            theme,
+            _manageTabIndex,
+            AppLocale.manage.getString(context),
+          ),
           const Spacer(),
           Padding(
             padding: EdgeInsets.only(left: 8.r),

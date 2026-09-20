@@ -129,6 +129,30 @@ class EmbeddedEmulatorService {
     return result ?? false;
   }
 
+  static Future<void> applyCheats(
+    List<({String code, bool enabled})> cheats,
+  ) async {
+    if (!Platform.isAndroid) return;
+    await _channel.invokeMethod<void>('applyCheats', {
+      'cheats': cheats
+          .map((c) => {'code': c.code, 'enabled': c.enabled})
+          .toList(),
+    });
+  }
+
+  static Future<void> setCheatEnabled({
+    required int index,
+    required bool enabled,
+    required String code,
+  }) async {
+    if (!Platform.isAndroid) return;
+    await _channel.invokeMethod<void>('setCheatEnabled', {
+      'index': index,
+      'enabled': enabled,
+      'code': code,
+    });
+  }
+
   /// Android [KeyEvent] action constants for touch overlays.
   static const int keyActionDown = 0;
   static const int keyActionUp = 1;

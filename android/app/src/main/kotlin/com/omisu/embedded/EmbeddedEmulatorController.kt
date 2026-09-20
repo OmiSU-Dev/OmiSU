@@ -10,6 +10,7 @@ import com.omisu.streaming.EmbeddedStreamCapture
 import com.swordfish.libretrodroid.GLRetroView
 import com.swordfish.libretrodroid.GLRetroViewData
 import com.swordfish.libretrodroid.ImmersiveMode
+import com.swordfish.libretrodroid.LibretroDroid
 import com.swordfish.libretrodroid.Variable
 import java.io.File
 import java.util.Locale
@@ -21,11 +22,17 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
+data class EmbeddedCheatEntry(
+    val code: String,
+    val enabled: Boolean,
+)
+
 data class LaunchTuning(
     val skipDuplicateFrames: Boolean = true,
     val preferLowLatencyAudio: Boolean = true,
     val rumbleEventsEnabled: Boolean = true,
     val variables: Map<String, String> = emptyMap(),
+    val cheats: List<EmbeddedCheatEntry> = emptyList(),
     val shaderFilter: String = "auto",
     val hdMode: Boolean = false,
     val hdModeQuality: EmbeddedHdModeQuality = EmbeddedHdModeQuality.MEDIUM,
@@ -46,10 +53,12 @@ class EmbeddedEmulatorController {
     private var frameMetricsJob: Job? = null
     private var fpsCounterEnabled: Boolean = false
     private var autosaveRestoreJob: Job? = null
+    private var postFirstFrameJob: Job? = null
     private var adaptiveGovernor: EmbeddedAdaptiveHdGovernor? = null
     private var effectiveHdQuality: EmbeddedHdModeQuality = EmbeddedHdModeQuality.MEDIUM
     private var activeSystemId: String? = null
     private var displayTuning: LaunchTuning = LaunchTuning()
+    private var pendingCheats: List<EmbeddedCheatEntry> = emptyList()
     private var preparedRom: ResolvedRom? = null
     private var preparedRomSourcePath: String? = null
     private var viewDetached: Boolean = false
@@ -140,6 +149,7 @@ class EmbeddedEmulatorController {
         romBase = romBaseName
         activeSystemId = systemId
         displayTuning = effectiveTuning
+        pendingCheats = emptyList()
         appContext = activity.applicationContext
         autosaveOnExit = effectiveTuning.autosaveOnExit
         audioEnabled = true
@@ -195,7 +205,7 @@ class EmbeddedEmulatorController {
                 EmbeddedRumbleLooper(activity.applicationContext).also { it.start(view) }
         }
         scheduleErrorMonitoring(view)
-        scheduleAutosaveRestore(view)
+        schedulePostFirstFrameTasks(view)
         configureAdaptiveHd(activity, systemId, effectiveTuning)
         restartFrameMetrics(view)
         return view
@@ -319,25 +329,28 @@ class EmbeddedEmulatorController {
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    private fun scheduleAutosaveRestore(view: GLRetroView) {
-        if (!autosaveOnExit) return
-        val ctx = appContext ?: return
-        val core = coreName ?: return
-        val rom = romBase ?: return
-
+    private fun schedulePostFirstFrameTasks(view: GLRetroView) {
+        postFirstFrameJob?.cancel()
         autosaveRestoreJob?.cancel()
-        autosaveRestoreJob =
+        postFirstFrameJob =
             GlobalScope.launch {
                 waitForFirstFrame(view)
-                if (EmbeddedSavesCoherency.shouldDiscardAutosave(ctx, core, rom)) {
-                    Log.i(
-                        TAG,
-                        "Skipping autosave restore for $rom: SRAM is newer than autosave",
-                    )
-                    return@launch
+                applyPendingCheats(view)
+                if (autosaveOnExit) {
+                    val ctx = appContext ?: return@launch
+                    val core = coreName ?: return@launch
+                    val rom = romBase ?: return@launch
+                    if (EmbeddedSavesCoherency.shouldDiscardAutosave(ctx, core, rom)) {
+                        Log.i(
+                            TAG,
+                            "Skipping autosave restore for $rom: SRAM is newer than autosave",
+                        )
+                        return@launch
+                    }
+                    restoreAutosaveWithRetry(view, ctx, core, rom)
                 }
-                restoreAutosaveWithRetry(view, ctx, core, rom)
             }
+        autosaveRestoreJob = postFirstFrameJob
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -464,6 +477,59 @@ class EmbeddedEmulatorController {
                 "value" to variable.value,
                 "description" to variable.description,
             )
+        }
+    }
+
+    fun applyCheats(entries: List<EmbeddedCheatEntry>) {
+        pendingCheats = entries
+        val view = retroView ?: return
+        GlobalScope.launch {
+            waitForFirstFrame(view)
+            applyCheatsOnView(view, entries)
+        }
+    }
+
+    fun setCheatAtIndex(index: Int, enabled: Boolean, code: String) {
+        if (code.isBlank()) return
+        val updated = pendingCheats.toMutableList()
+        if (index in updated.indices) {
+            updated[index] = EmbeddedCheatEntry(code = code, enabled = enabled)
+        } else {
+            while (updated.size < index) {
+                updated.add(EmbeddedCheatEntry(code = "", enabled = false))
+            }
+            updated.add(EmbeddedCheatEntry(code = code, enabled = enabled))
+        }
+        pendingCheats = updated
+        val view = retroView ?: return
+        applyCheatsOnView(view, updated)
+    }
+
+    private fun applyPendingCheats(view: GLRetroView) {
+        if (pendingCheats.isEmpty()) return
+        applyCheatsOnView(view, pendingCheats)
+    }
+
+    /**
+     * Clears libretro cheat state, then enables only [EmbeddedCheatEntry.enabled] slots
+     * (stable index per list position). Disabling requires reset — toggling enable alone
+     * does not reliably undo patches on all cores.
+     */
+    private fun applyCheatsOnView(view: GLRetroView, entries: List<EmbeddedCheatEntry>) {
+        view.queueEvent {
+            runCatching {
+                LibretroDroid.resetCheat()
+                var applied = 0
+                entries.forEachIndexed { index, entry ->
+                    val code = entry.code.trim()
+                    if (code.isEmpty() || !entry.enabled) return@forEachIndexed
+                    LibretroDroid.setCheat(index, true, code)
+                    applied++
+                }
+                Log.i(TAG, "Cheats active: $applied of ${entries.size} defined")
+            }.onFailure { e ->
+                Log.w(TAG, "applyCheats failed: $e")
+            }
         }
     }
 
@@ -605,6 +671,8 @@ class EmbeddedEmulatorController {
         adaptiveGovernor = null
         autosaveRestoreJob?.cancel()
         autosaveRestoreJob = null
+        postFirstFrameJob?.cancel()
+        postFirstFrameJob = null
         rumbleLooper?.stop()
         rumbleLooper = null
         val core = coreName
@@ -621,6 +689,8 @@ class EmbeddedEmulatorController {
         adaptiveGovernor = null
         autosaveRestoreJob?.cancel()
         autosaveRestoreJob = null
+        postFirstFrameJob?.cancel()
+        postFirstFrameJob = null
         rumbleLooper?.stop()
         rumbleLooper = null
         flushSessionState(flushAutosave)
@@ -675,6 +745,16 @@ class EmbeddedEmulatorController {
                 (raw["variables"] as? Map<String, Any>)?.mapNotNull { (key, value) ->
                     value?.toString()?.let { key to it }
                 }?.toMap() ?: emptyMap()
+            val cheats =
+                (raw["cheats"] as? List<*>)?.mapNotNull { item ->
+                    val map = item as? Map<String, Any> ?: return@mapNotNull null
+                    val code = map["code"]?.toString()?.trim() ?: return@mapNotNull null
+                    if (code.isEmpty()) return@mapNotNull null
+                    EmbeddedCheatEntry(
+                        code = code,
+                        enabled = parseBool(map["enabled"]),
+                    )
+                } ?: emptyList()
             return LaunchTuning(
                 skipDuplicateFrames =
                     if (raw.containsKey("skipDuplicateFrames")) {
@@ -695,6 +775,7 @@ class EmbeddedEmulatorController {
                         true
                     },
                 variables = variables,
+                cheats = cheats,
                 shaderFilter = raw["shaderFilter"]?.toString() ?: "auto",
                 hdMode = parseBool(raw["hdMode"]),
                 hdModeQuality = EmbeddedHdModeQuality.parse(raw["hdModeQuality"]),

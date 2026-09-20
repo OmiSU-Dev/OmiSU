@@ -695,6 +695,30 @@ mixin AppLocale {
   static const String noAchievements = 'no_achievements';
   static const String gameInfo = 'game_info';
   static const String manage = 'manage';
+  static const String gameSettingsPlay = 'game_settings_play';
+  static const String gameSettingsPlayAppliesNextLaunch =
+      'game_settings_play_applies_next_launch';
+  static const String gameSettingsPlayTweaks = 'game_settings_play_tweaks';
+  static const String gameSettingsPlayCheats = 'game_settings_play_cheats';
+  static const String gameSettingsResetPlayTweaks =
+      'game_settings_reset_play_tweaks';
+  static const String gameSettingsImportCht = 'game_settings_import_cht';
+  static const String gameSettingsImportLibretroCheats =
+      'game_settings_import_libretro_cheats';
+  static const String gameSettingsLibretroCheatsNotFound =
+      'game_settings_libretro_cheats_not_found';
+  static const String gameSettingsLibretroCheatsImported =
+      'game_settings_libretro_cheats_imported';
+  static const String gameSettingsAddCheat = 'game_settings_add_cheat';
+  static const String gameSettingsNoPlayOptions =
+      'game_settings_no_play_options';
+  static const String gameSettingsNoCheatsForGame =
+      'game_settings_no_cheats_for_game';
+  static const String gameSettingsRaCheatWarning =
+      'game_settings_ra_cheat_warning';
+  static const String gameSettingsCheatDescriptionHint =
+      'game_settings_cheat_description_hint';
+  static const String gameSettingsCheatCodeHint = 'game_settings_cheat_code_hint';
   static const String forceRescrape = 'force_rescrape';
   static const String gameTitle = 'game_title';
   static const String publisher = 'publisher';

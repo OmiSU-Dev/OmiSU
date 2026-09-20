@@ -25,6 +25,10 @@ fi
 echo "Building Nordi (GameSir / Nord N30) APK..."
 echo "  ROM root: $NORDI_ROM_ROOT"
 
+if [ -x "$PROJECT_ROOT/scripts/sync_libretro_cheats_asset.sh" ]; then
+  "$PROJECT_ROOT/scripts/sync_libretro_cheats_asset.sh"
+fi
+
 FVM_FLUTTER="$PROJECT_ROOT/.fvm/flutter_sdk/bin/flutter"
 if ! command -v flutter &> /dev/null; then
   if [ -x "$FVM_FLUTTER" ]; then

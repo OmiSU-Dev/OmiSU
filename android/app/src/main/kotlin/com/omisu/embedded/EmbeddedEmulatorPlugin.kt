@@ -144,6 +144,31 @@ class EmbeddedEmulatorPlugin :
                     }
                     result.success(controller.updateCoreVariable(key, value))
                 }
+                "applyCheats" -> {
+                    val raw = call.argument<List<Map<String, Any?>>>("cheats") ?: emptyList()
+                    val entries =
+                        raw.mapNotNull { map ->
+                            val code = map["code"]?.toString()?.trim() ?: return@mapNotNull null
+                            if (code.isEmpty()) return@mapNotNull null
+                            EmbeddedCheatEntry(
+                                code = code,
+                                enabled = EmbeddedEmulatorController.parseBool(map["enabled"]),
+                            )
+                        }
+                    controller.applyCheats(entries)
+                    result.success(true)
+                }
+                "setCheatEnabled" -> {
+                    val index = call.argument<Int>("index") ?: 0
+                    val enabled = call.argument<Boolean>("enabled") ?: false
+                    val code = call.argument<String>("code") ?: ""
+                    if (code.isBlank()) {
+                        result.error("invalid_args", "code is required", null)
+                        return
+                    }
+                    controller.setCheatAtIndex(index, enabled, code)
+                    result.success(true)
+                }
                 "reset" -> {
                     controller.reset()
                     result.success(true)

@@ -57,6 +57,7 @@ class EmbeddedPauseMenu extends StatefulWidget {
     required this.onSaveAutosave,
     required this.onLoadAutosave,
     required this.onOpenGameOptions,
+    this.onOpenPlaySettings,
     required this.onExitToHome,
     this.showStreamingControls = false,
     this.isStreaming = false,
@@ -84,6 +85,7 @@ class EmbeddedPauseMenu extends StatefulWidget {
   final VoidCallback onSaveAutosave;
   final VoidCallback onLoadAutosave;
   final VoidCallback onOpenGameOptions;
+  final VoidCallback? onOpenPlaySettings;
   final VoidCallback onExitToHome;
   final bool showStreamingControls;
   final bool isStreaming;
@@ -148,6 +150,14 @@ class _EmbeddedPauseMenuState extends State<EmbeddedPauseMenu> {
         onPressed: widget.onOpenGameOptions,
       ),
     );
+    if (widget.onOpenPlaySettings != null) {
+      entries.add(
+        _PauseMenuEntry(
+          label: 'Cheats',
+          onPressed: widget.onOpenPlaySettings!,
+        ),
+      );
+    }
     entries.add(
       _PauseMenuEntry(
         label: 'Autosave',

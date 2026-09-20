@@ -11,6 +11,26 @@ class EmbeddedExitHandler {
 
   static bool _pendingHomeExit = false;
   static int _homeNavigationGeneration = 0;
+  static final List<VoidCallback> _homeRevealListeners = [];
+
+  /// Lets systems UI (carousel, games list) remount before the game route pops.
+  static void registerHomeRevealListener(VoidCallback listener) {
+    if (!_homeRevealListeners.contains(listener)) {
+      _homeRevealListeners.add(listener);
+    }
+  }
+
+  static void unregisterHomeRevealListener(VoidCallback listener) {
+    _homeRevealListeners.remove(listener);
+  }
+
+  /// Show home shell under the embedded route (avoids black gap after [Navigator.pop]).
+  static void revealHomeUnderEmbeddedExit() {
+    MySystems.gridLaunchNotifier.value = false;
+    for (final listener in List<VoidCallback>.from(_homeRevealListeners)) {
+      listener();
+    }
+  }
 
   static void markPendingHome() {
     _pendingHomeExit = true;
@@ -25,7 +45,7 @@ class EmbeddedExitHandler {
   /// Pops pushed routes and switches to the Systems tab.
   static void navigateToHome() {
     final generation = ++_homeNavigationGeneration;
-    MySystems.gridLaunchNotifier.value = false;
+    revealHomeUnderEmbeddedExit();
     AppNavigation.goToTab(NavTab.systems.index);
     GamepadNavigationManager.clearLaunchFocusOwner();
 

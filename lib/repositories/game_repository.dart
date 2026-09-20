@@ -2,10 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:omisu/services/logger_service.dart';
 import '../models/database_game_model.dart';
+import '../models/embedded_rom_cheat.dart';
 import '../data/datasources/sqlite_database_service.dart';
 import '../data/datasources/sqlite_service.dart';
 import '../providers/file_provider.dart';
+import '../services/config_service.dart';
+import '../services/embedded/libretro_cheat_bootstrap.dart';
+import '../services/embedded/libretro_cheat_database.dart';
+import '../services/embedded/retroarch_cheat_file.dart';
 import '../services/saf_directory_service.dart';
+import 'package:path/path.dart' as p;
 
 /// Repository for game data access operations.
 class GameRepository {
@@ -413,6 +419,146 @@ class GameRepository {
   /// Resets play time and last played timestamp for a ROM.
   static Future<void> resetPlayTime(String systemFolderName, String romname) =>
       SqliteService.resetRomPlayTime(systemFolderName, romname);
+
+  static Future<Map<String, String>> getEmbeddedCoreVariables(
+    String systemFolderName,
+    String romname,
+  ) => SqliteService.getRomEmbeddedCoreVariables(systemFolderName, romname);
+
+  static Future<void> setEmbeddedCoreVariables(
+    String systemFolderName,
+    String romname,
+    Map<String, String> variables,
+  ) => SqliteService.setRomEmbeddedCoreVariables(
+    systemFolderName,
+    romname,
+    variables,
+  );
+
+  static Future<void> clearEmbeddedCoreVariables(
+    String systemFolderName,
+    String romname,
+  ) => SqliteService.setRomEmbeddedCoreVariables(
+    systemFolderName,
+    romname,
+    const {},
+  );
+
+  static Future<List<EmbeddedRomCheat>> getRomCheats(
+    String systemFolderName,
+    String romname,
+  ) async {
+    final rows = await SqliteService.getRomCheats(systemFolderName, romname);
+    return rows.map(EmbeddedRomCheat.fromRow).toList();
+  }
+
+  /// Loads cheats from a local `.cht` (ROM-adjacent or libretro pack) into SQLite.
+  ///
+  /// When [onlyIfEmpty] is true (default), skips if the ROM already has saved cheats.
+  /// Returns the number of cheat rows imported, or 0 if nothing matched.
+  static Future<int> syncCheatsFromSources({
+    required String systemFolderName,
+    required String romname,
+    String? romPath,
+    String? displayName,
+    String? titleName,
+    bool onlyIfEmpty = true,
+  }) async {
+    if (onlyIfEmpty) {
+      final existing = await getRomCheats(systemFolderName, romname);
+      if (existing.isNotEmpty) return 0;
+    }
+
+    await LibretroCheatBootstrap.ensureInstalled();
+
+    if (romPath != null && romPath.isNotEmpty) {
+      final besideRom = File(p.setExtension(romPath, '.cht'));
+      if (await besideRom.exists()) {
+        final parsed = parseRetroArchCheatFile(await besideRom.readAsString());
+        if (parsed.isNotEmpty) {
+          await importRomCheats(
+            systemFolderName,
+            romname,
+            parsed,
+            replaceExisting: !onlyIfEmpty,
+          );
+          return parsed.length;
+        }
+      }
+    }
+
+    final userData = await ConfigService.getUserDataPath();
+    final roots = await LibretroCheatDatabase.discoverCheatRoots(
+      userDataPath: userData,
+      romPath: romPath,
+    );
+    final file = await LibretroCheatDatabase.findBestCheatFile(
+      systemFolderName: systemFolderName,
+      romname: romname,
+      romPath: romPath,
+      displayName: displayName,
+      titleName: titleName,
+      cheatRoots: roots,
+    );
+    if (file == null) return 0;
+
+    final parsed = parseRetroArchCheatFile(await file.readAsString());
+    if (parsed.isEmpty) return 0;
+
+    await importRomCheats(
+      systemFolderName,
+      romname,
+      parsed,
+      replaceExisting: !onlyIfEmpty,
+    );
+    return parsed.length;
+  }
+
+  static Future<int> addRomCheat({
+    required String systemFolderName,
+    required String romname,
+    required String description,
+    required String code,
+    bool enabled = false,
+  }) => SqliteService.insertRomCheat(
+    systemFolderName: systemFolderName,
+    filename: romname,
+    description: description,
+    code: code,
+    enabled: enabled,
+  );
+
+  static Future<void> setRomCheatEnabled(int cheatId, bool enabled) =>
+      SqliteService.setRomCheatEnabled(cheatId, enabled);
+
+  static Future<void> deleteRomCheat(int cheatId) =>
+      SqliteService.deleteRomCheat(cheatId);
+
+  static Future<void> importRomCheats(
+    String systemFolderName,
+    String romname,
+    List<({String description, String code})> cheats, {
+    bool replaceExisting = false,
+  }) async {
+    if (replaceExisting) {
+      await SqliteService.replaceRomCheats(
+        systemFolderName,
+        romname,
+        cheats
+            .map((c) => (description: c.description, code: c.code, enabled: false))
+            .toList(),
+      );
+      return;
+    }
+    for (final cheat in cheats) {
+      await SqliteService.insertRomCheat(
+        systemFolderName: systemFolderName,
+        filename: romname,
+        description: cheat.description,
+        code: cheat.code,
+      );
+    }
+  }
 
   /// Sets per-ROM emulator override.
   static Future<void> setEmulatorOverride(

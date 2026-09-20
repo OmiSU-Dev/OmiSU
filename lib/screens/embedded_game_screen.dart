@@ -7,15 +7,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:omisu/models/embedded_core_config.dart';
 import 'package:omisu/models/game_model.dart';
 import 'package:omisu/models/system_model.dart';
 import 'package:omisu/services/embedded/embedded_audio_session.dart';
+import 'package:omisu/services/embedded/embedded_core_option_allowlist.dart';
 import 'package:omisu/services/embedded/embedded_emulator_service.dart';
 import 'package:omisu/services/embedded/embedded_launch_status.dart';
 import 'package:omisu/themes/omisu_accent.dart';
 import 'package:omisu/services/embedded/embedded_exit_destination.dart';
 import 'package:omisu/l10n/app_locale.dart';
+import 'package:omisu/repositories/game_repository.dart';
 import 'package:omisu/services/embedded/play_settings_service.dart';
+import 'package:omisu/services/launch/launch_tuning_merge.dart';
 import 'package:omisu/services/streaming/stream_settings_service.dart';
 import 'package:omisu/services/streaming/streaming_service.dart';
 import 'package:omisu/services/game/favorites_service.dart';
@@ -27,6 +31,7 @@ import 'package:omisu/services/launch/launch_tuning.dart';
 import 'package:omisu/services/launch/launch_tuning_resolver.dart';
 import 'package:omisu/services/logger_service.dart';
 import 'package:omisu/widgets/embedded/embedded_core_options_sheet.dart';
+import 'package:omisu/widgets/embedded/embedded_play_settings_sheet.dart';
 import 'package:omisu/widgets/embedded/embedded_pause_menu.dart';
 import 'package:omisu/widgets/embedded/embedded_touch_overlay.dart';
 import 'package:omisu/utils/root_navigator_key.dart';
@@ -64,7 +69,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   Map<int, EmbeddedSaveSlotInfo> _slotInfo = const {};
   EmbeddedSaveSlotInfo _autosaveInfo = const EmbeddedSaveSlotInfo(hasSave: false);
   StreamSubscription<dynamic>? _statusSub;
-  late final LaunchTuning _tuning;
+  late LaunchTuning _tuning;
   Map<String, dynamic>? _embeddedParams;
   bool _exitTeardownStarted = false;
   OverlayEntry? _topChromeEntry;
@@ -73,6 +78,10 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   bool _isStreaming = false;
   StreamSubscription<StreamingLifecycleState>? _streamStateSub;
   late final GamepadNavigation _inGameGamepadNav;
+  List<({String code, bool enabled})> _pendingLaunchCheats = const [];
+
+  String get _embeddedSystemFolder =>
+      widget.game.systemFolderName ?? widget.system.folderName;
 
   @override
   void setState(VoidCallback fn) {
@@ -140,44 +149,126 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   }
 
   Future<void> _bootstrapEmbeddedSession() async {
-    await EmbeddedAudioSession.enter();
-    await PlaySettingsService.load();
-    if (Platform.isAndroid) {
-      await StreamSettingsService.ensureStreamCredentials();
-      _streamOnLaunch = await StreamSettingsService.getStreamOnLaunch(
-        widget.game.romPath ?? widget.game.romname,
+    try {
+      await EmbeddedAudioSession.enter();
+      await PlaySettingsService.load();
+      if (Platform.isAndroid) {
+        await StreamSettingsService.ensureStreamCredentials();
+        _streamOnLaunch = await StreamSettingsService.getStreamOnLaunch(
+          widget.game.romPath ?? widget.game.romname,
+        );
+      }
+      await _refreshGamepadPresence();
+
+      Map<String, String> perGameVars = const {};
+      List<({String code, bool enabled})> launchCheats = const [];
+      try {
+        final saved = await GameRepository.getEmbeddedCoreVariables(
+          _embeddedSystemFolder,
+          widget.game.romname,
+        );
+        final allowed = allowedCoreOptionKeysFor(_embeddedSystemFolder);
+        perGameVars = Map.fromEntries(
+          saved.entries.where((e) => allowed.contains(e.key)),
+        );
+        final cheats = await GameRepository.getRomCheats(
+          _embeddedSystemFolder,
+          widget.game.romname,
+        );
+        launchCheats = cheats
+            .map((c) => (code: c.code, enabled: c.enabled))
+            .toList();
+        unawaited(_syncCheatsInBackground());
+      } catch (e, st) {
+        _log.w(
+          'Per-game play settings skipped for ${widget.game.romname}: $e\n$st',
+        );
+      }
+
+      _tuning = mergeLaunchTuning(
+        base: _tuning,
+        perGameCoreVariables: perGameVars,
       );
-    }
-    await _refreshGamepadPresence();
-    final play = PlaySettingsService.current;
-    final params = _tuning.toEmbeddedParamsWithPlay(play.toEmbeddedParams());
-    _log.i(
-      '[LaunchTune] embedded/${widget.system.folderName}/${widget.game.romname}: '
-      'hdMode=${play.hdMode} hdQuality=${play.hdModeQuality} '
-      'shader=${play.shaderFilter}',
-    );
-    if (play.immersiveMode) {
-      unawaited(
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky),
+      final play = PlaySettingsService.current;
+      final params = _tuning.toEmbeddedParamsWithPlay(play.toEmbeddedParams());
+      _log.i(
+        '[LaunchTune] embedded/$_embeddedSystemFolder/${widget.game.romname}: '
+        'hdMode=${play.hdMode} hdQuality=${play.hdModeQuality} '
+        'shader=${play.shaderFilter} perGameVars=${perGameVars.length} '
+        'cheats=${launchCheats.length}',
       );
+      if (play.immersiveMode) {
+        unawaited(
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky),
+        );
+      }
+      if (!mounted) return;
+      setState(() {
+        _embeddedParams = params;
+        _pendingLaunchCheats = launchCheats;
+        _touchControlsEnabled = play.touchControlsEnabled;
+        _showFpsCounter = play.showFpsCounter;
+        _hdMode = play.hdMode;
+        _hdModeQuality = play.hdModeQuality;
+        _shaderFilter = play.shaderFilter;
+      });
+      await _prepareEmbeddedLaunch();
+    } catch (e, st) {
+      _log.e('Embedded bootstrap failed: $e\n$st');
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _launchError =
+            e is PlatformException
+                ? (e.message ??
+                    'Could not start the built-in player. Try again.')
+                : e.toString();
+      });
     }
-    if (!mounted) return;
-    setState(() {
-      _embeddedParams = params;
-      _touchControlsEnabled = play.touchControlsEnabled;
-      _showFpsCounter = play.showFpsCounter;
-      _hdMode = play.hdMode;
-      _hdModeQuality = play.hdModeQuality;
-      _shaderFilter = play.shaderFilter;
-    });
-    await _prepareEmbeddedLaunch();
+  }
+
+  Future<void> _applyLaunchCheats() async {
+    if (_pendingLaunchCheats.isEmpty || !Platform.isAndroid) return;
+    try {
+      await EmbeddedEmulatorService.applyCheats(_pendingLaunchCheats);
+    } catch (e, st) {
+      _log.w('Launch cheat apply failed: $e\n$st');
+    }
+  }
+
+  /// Libretro `.cht` import can scan thousands of files — never block core startup.
+  Future<void> _syncCheatsInBackground() async {
+    try {
+      final displayName = widget.game.name.isNotEmpty
+          ? widget.game.name
+          : widget.game.realname;
+      await GameRepository.syncCheatsFromSources(
+        systemFolderName: _embeddedSystemFolder,
+        romname: widget.game.romname,
+        romPath: widget.game.romPath,
+        displayName: displayName,
+        titleName: widget.game.titleName ?? widget.game.realname,
+      );
+      final cheats = await GameRepository.getRomCheats(
+        _embeddedSystemFolder,
+        widget.game.romname,
+      );
+      final payloads = cheats
+          .map((c) => (code: c.code, enabled: c.enabled))
+          .toList();
+      if (!mounted) return;
+      _pendingLaunchCheats = payloads;
+      await _applyLaunchCheats();
+    } catch (e, st) {
+      _log.w('Background cheat sync failed for ${widget.game.romname}: $e\n$st');
+    }
   }
 
   Future<void> _prepareEmbeddedLaunch() async {
     try {
       await EmbeddedEmulatorService.ensureCoreIdle();
       await EmbeddedEmulatorService.ensureCoreReady(
-        widget.system.folderName,
+        _embeddedSystemFolder,
         romPath: widget.game.romPath,
       );
       if (!mounted) return;
@@ -340,6 +431,10 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
     if (_exitTeardownStarted) return;
     EmbeddedExitHandler.markPendingHome();
     _exitTeardownStarted = true;
+    // Remount systems/games UI before pop — they hide with SizedBox.shrink during play.
+    _removeTopChromeOverlay();
+    EmbeddedExitHandler.revealHomeUnderEmbeddedExit();
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
     // Finish native save/teardown before popping so it does not race navigation.
     await StreamingService.stopStream();
     await EmbeddedEmulatorService.unload();
@@ -490,7 +585,15 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   Future<void> _openGameOptions() async {
     await EmbeddedCoreOptionsSheet.show(
       context,
-      systemFolder: widget.system.folderName,
+      systemFolder: _embeddedSystemFolder,
+    );
+  }
+
+  Future<void> _openPlaySettings() async {
+    await EmbeddedPlaySettingsSheet.show(
+      context,
+      game: widget.game,
+      system: widget.system,
     );
   }
 
@@ -589,6 +692,10 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
               onSaveAutosave: () => _saveSlot(0),
               onLoadAutosave: () => _loadSlot(0),
               onOpenGameOptions: _openGameOptions,
+              onOpenPlaySettings:
+                  EmbeddedCoreRegistry.supports(_embeddedSystemFolder)
+                      ? _openPlaySettings
+                      : null,
               onExitToHome: _exitGame,
               showStreamingControls: Platform.isAndroid,
               isStreaming: _isStreaming,
@@ -680,7 +787,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
         final layoutDirection =
             Directionality.maybeOf(context) ?? TextDirection.ltr;
         final creationParams = <String, dynamic>{
-          'systemId': widget.system.folderName,
+          'systemId': _embeddedSystemFolder,
           'romPath': romPath,
           'tuning': _embeddedParams!,
         };
@@ -713,6 +820,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
                 setState(() => _loading = false);
               }
               unawaited(_syncFpsCounter());
+              unawaited(_applyLaunchCheats());
               unawaited(_maybeAutoStartStream());
             });
             controller.create();
