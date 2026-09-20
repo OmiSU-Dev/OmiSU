@@ -1208,6 +1208,23 @@ mixin AppLocale {
   static const String streamingRtmpSection = 'streaming_rtmp_section';
   static const String streamingServerUrl = 'streaming_server_url';
   static const String streamingStreamKey = 'streaming_stream_key';
+  static const String streamingPlatformSection = 'streaming_platform_section';
+  static const String streamingPlatformSelectedHint =
+      'streaming_platform_selected_hint';
+  static const String streamingPlatformHelpTitle =
+      'streaming_platform_help_title';
+  static const String streamingPlatformTwitch = 'streaming_platform_twitch';
+  static const String streamingPlatformYoutube = 'streaming_platform_youtube';
+  static const String streamingPlatformKick = 'streaming_platform_kick';
+  static const String streamingTwitchSteps = 'streaming_twitch_steps';
+  static const String streamingYoutubeSteps = 'streaming_youtube_steps';
+  static const String streamingKickSteps = 'streaming_kick_steps';
+  static const String streamingOpenDashboard = 'streaming_open_dashboard';
+  static const String streamingOpenDashboardFailed =
+      'streaming_open_dashboard_failed';
+  static const String streamingPasteStreamKey = 'streaming_paste_stream_key';
+  static const String streamingPasteStreamKeyEmpty =
+      'streaming_paste_stream_key_empty';
   static const String streamingPresetTwitch = 'streaming_preset_twitch';
   static const String streamingPresetYoutube = 'streaming_preset_youtube';
   static const String streamingPresetKick = 'streaming_preset_kick';

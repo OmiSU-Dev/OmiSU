@@ -106,11 +106,9 @@ class StreamingPlugin :
                 val audioMode =
                     StreamAudioMode.fromWire(call.argument<String>("audioMode"))
                 pendingFaceCam = call.argument<Boolean>("faceCamEnabled") ?: false
-                pendingNeedsMic =
-                    audioMode == StreamAudioMode.MIC ||
-                        audioMode == StreamAudioMode.MIXED ||
-                        (audioMode == StreamAudioMode.GAME &&
-                            Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                // All modes use AudioRecord (mic, playback capture, or both). Android
+                // requires RECORD_AUDIO even for MediaProjection game-audio capture.
+                pendingNeedsMic = true
 
                 pendingStartConfig =
                     StreamStartConfig(
@@ -163,7 +161,7 @@ class StreamingPlugin :
             ContextCompat.checkSelfPermission(act, Manifest.permission.RECORD_AUDIO) !=
                 PackageManager.PERMISSION_GRANTED
         ) {
-            failPendingStart("Microphone permission is required for streaming")
+            failPendingStart("Microphone permission is required to capture game audio for streaming")
             return
         }
         requestNotificationPermissionIfNeeded()
@@ -309,7 +307,7 @@ class StreamingPlugin :
                 ) {
                     onAudioPermissionReady()
                 } else {
-                    failPendingStart("Microphone permission is required for streaming")
+                    failPendingStart("Microphone permission is required to capture game audio for streaming")
                 }
                 true
             }

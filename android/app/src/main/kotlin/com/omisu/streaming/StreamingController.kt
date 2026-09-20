@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileMain
 import android.media.MediaFormat
+import android.media.AudioFormat
 import android.os.IBinder
 import android.util.Log
 import android.util.Range
@@ -200,8 +201,10 @@ object StreamingController {
                     mimeType = MediaFormat.MIMETYPE_AUDIO_AAC,
                     startBitrate = AUDIO_BITRATE_BPS,
                     sampleRate = 48_000,
-                    channelConfig = AudioConfig.getChannelConfig(2),
-                    byteFormat = 2,
+                    // Mono: MediaProjection playback capture and many devices' mic paths
+                    // fail to initialize stereo AudioRecord (channelConfig=12).
+                    channelConfig = AudioFormat.CHANNEL_IN_MONO,
+                    byteFormat = AudioFormat.ENCODING_PCM_16BIT,
                 )
             withContext(Dispatchers.Main) {
                 when (streamer) {

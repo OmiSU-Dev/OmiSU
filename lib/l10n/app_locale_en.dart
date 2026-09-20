@@ -1113,11 +1113,28 @@ const Map<String, dynamic> appLocaleEn = {
       'How games launch and which emulators are used',
   AppLocale.streaming: 'Streaming',
   AppLocale.streamingSubtitle:
-      'RTMP live broadcast while playing with the built-in player',
+      'Twitch, YouTube, or Kick — pick a platform, paste your stream key, go live from embedded play',
   AppLocale.streamingAndroidOnly: 'Streaming is available on Android only.',
   AppLocale.streamingRtmpSection: 'RTMP ingest',
   AppLocale.streamingServerUrl: 'Server URL',
   AppLocale.streamingStreamKey: 'Stream key',
+  AppLocale.streamingPlatformSection: 'Platform',
+  AppLocale.streamingPlatformSelectedHint:
+      'Pick where you stream. We fill the ingest URL; paste your stream key below.',
+  AppLocale.streamingPlatformHelpTitle: 'Copy your stream key',
+  AppLocale.streamingPlatformTwitch: 'Twitch',
+  AppLocale.streamingPlatformYoutube: 'YouTube',
+  AppLocale.streamingPlatformKick: 'Kick',
+  AppLocale.streamingTwitchSteps:
+      '1. Tap Open stream settings below.\n2. In Twitch, copy your Primary Stream key.\n3. Tap Paste stream key and save.',
+  AppLocale.streamingYoutubeSteps:
+      '1. Tap Open stream settings below.\n2. In YouTube Studio, go to Go live → Stream settings and copy the Stream key.\n3. Tap Paste stream key and save.',
+  AppLocale.streamingKickSteps:
+      '1. Tap Open stream settings below.\n2. In Kick Creator Dashboard, copy your Stream key (confirm RTMP ingest if needed).\n3. Tap Paste stream key and save.',
+  AppLocale.streamingOpenDashboard: 'Open stream settings',
+  AppLocale.streamingOpenDashboardFailed: 'Could not open browser',
+  AppLocale.streamingPasteStreamKey: 'Paste stream key',
+  AppLocale.streamingPasteStreamKeyEmpty: 'Clipboard is empty',
   AppLocale.streamingPresetTwitch: 'Use Twitch ingest URL',
   AppLocale.streamingPresetYoutube: 'Use YouTube ingest URL',
   AppLocale.streamingPresetKick: 'Use Kick ingest URL',
