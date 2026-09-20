@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:omisu/services/streaming/streaming_local_secrets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Global RTMP streaming preferences (Android).
@@ -109,10 +108,6 @@ class StreamSettingsService {
 
   static bool get isSupported => Platform.isAndroid;
 
-  /// True when prefs or baked-in Kick defaults are enough to go live.
-  static bool get isConfiguredForStream =>
-      _applyLocalKickDefaults(_cached).isConfigured;
-
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     _cached = StreamSettings(
@@ -125,49 +120,11 @@ class StreamSettingsService {
       faceCamCorner: prefs.getString('${_prefix}face_corner') ?? 'bottomRight',
       faceCamSize: prefs.getString('${_prefix}face_size') ?? 'medium',
     );
-    await _persistLocalKickDefaultsIfNeeded();
   }
 
-  /// Merges gitignored [StreamingLocalSecrets] into prefs before RTMP start.
   static Future<StreamSettings> ensureStreamCredentials() async {
     await load();
-    await _persistLocalKickDefaultsIfNeeded();
     return _cached;
-  }
-
-  static Future<void> _persistLocalKickDefaultsIfNeeded() async {
-    final merged = _applyLocalKickDefaults(_cached);
-    if (merged.rtmpServerUrl == _cached.rtmpServerUrl &&
-        merged.streamKey == _cached.streamKey) {
-      return;
-    }
-    await save(merged);
-  }
-
-  static StreamSettings _applyLocalKickDefaults(StreamSettings settings) {
-    final kickKey = StreamingLocalSecrets.kickStreamKey.trim();
-    if (kickKey.isEmpty) {
-      return settings;
-    }
-    if (settings.streamKey.trim().isNotEmpty) {
-      return settings;
-    }
-
-    final server = settings.rtmpServerUrl.trim();
-    if (server.isNotEmpty && !_isKickIngestServer(server)) {
-      return settings;
-    }
-
-    return settings.copyWith(
-      rtmpServerUrl: server.isEmpty ? StreamSettings.kickServer : server,
-      streamKey: kickKey,
-    );
-  }
-
-  static bool _isKickIngestServer(String server) {
-    return server == StreamSettings.kickServer.trim() ||
-        server.contains('global-contribute.live-video.net') ||
-        server.contains('live-video.net');
   }
 
   static Future<void> save(StreamSettings settings) async {

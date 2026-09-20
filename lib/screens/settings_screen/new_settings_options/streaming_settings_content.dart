@@ -10,7 +10,6 @@ import 'package:omisu/l10n/app_locale.dart';
 import 'package:omisu/services/sfx_service.dart';
 import 'package:omisu/services/streaming/stream_platform.dart';
 import 'package:omisu/services/streaming/stream_settings_service.dart';
-import 'package:omisu/services/streaming/streaming_local_secrets.dart';
 import 'package:omisu/utils/adaptive_scroll.dart';
 import 'package:omisu/widgets/custom_toggle_switch.dart';
 import 'package:omisu/widgets/omisu/omisu_retro_chrome.dart';
@@ -153,14 +152,7 @@ class StreamingSettingsContentState extends State<StreamingSettingsContent> {
   }
 
   Future<void> _selectPlatform(StreamPlatform platform) async {
-    var streamKey = _keyController.text.trim();
-    if (platform == StreamPlatform.kick) {
-      final kickKey = StreamingLocalSecrets.kickStreamKey.trim();
-      if (kickKey.isNotEmpty) {
-        streamKey = kickKey;
-        _keyController.text = kickKey;
-      }
-    }
+    final streamKey = _keyController.text.trim();
     final serverUrl = platform.ingestUrl;
     _serverController.text = serverUrl;
     setState(() => _selectedPlatform = platform);
