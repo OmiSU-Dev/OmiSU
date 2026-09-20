@@ -45,6 +45,13 @@ echo "# Nordi ${FULL}"
 echo ""
 echo "**Tag:** \`${RELEASE_TAG}\` · **Commit:** [\`${SHORT_SHA}\`](https://github.com/${REPO}/commit/${SHA})"
 echo ""
+
+HIGHLIGHTS_FILE="$ROOT/build-utils/release-highlights/v${SEMVER}-build${BUILD}.md"
+if [ -n "$BUILD" ] && [ -f "$HIGHLIGHTS_FILE" ]; then
+  cat "$HIGHLIGHTS_FILE"
+  echo ""
+fi
+
 echo "## What's changed"
 echo ""
 
