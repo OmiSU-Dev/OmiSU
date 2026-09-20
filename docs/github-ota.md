@@ -17,6 +17,8 @@ Uninstall **NeoStation** (`com.neogamelab.neostation`) if it was installed from 
 | `ANDROID_KEY_ALIAS` | Key alias |
 | `ANDROID_KEY_PASSWORD` | Key password |
 
+Step-by-step: [`github-secrets-setup.md`](github-secrets-setup.md).
+
 Workflow: [`.github/workflows/nordi-android-main.yml`](../.github/workflows/nordi-android-main.yml) runs on every push to `main`.
 
 ## Release loop
@@ -38,7 +40,7 @@ curl -s https://api.github.com/repos/OmiSU-Dev/OmiSU/releases/latest \
 
 ## Monorepo developers
 
-If you edit Nordi inside `Desktop/OmiSU/Nordi`, sync and push from that directory — see monorepo [`docs/nordi-github-sync.md`](../../docs/nordi-github-sync.md).
+See [`monorepo-sync.md`](monorepo-sync.md) when this tree lives under `Desktop/OmiSU/Nordi`.
 
 ## Built-in player / cores
 
