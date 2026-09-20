@@ -57,6 +57,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get --enforce-lockfile
 
+      # gitignored locally; release builds need an empty-key stub on CI.
+      - name: Streaming secrets stub (CI)
+        run: cp lib/services/streaming/streaming_local_secrets.values.dart.example lib/services/streaming/streaming_local_secrets.values.dart
+
       - name: Setup Android Keystore
         shell: bash
         env:
