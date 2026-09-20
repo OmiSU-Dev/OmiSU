@@ -21,7 +21,10 @@ class ReleaseNotesDisplay {
       RegExp(r'\[([^\]]+)\]\([^)]+\)'),
       (m) => m.group(1) ?? '',
     );
-    text = text.replaceAll(RegExp(r'`([^`]+)`'), r'$1');
+    text = text.replaceAllMapped(
+      RegExp(r'`([^`]+)`'),
+      (m) => m.group(1) ?? '',
+    );
     text = text.replaceAll('**', '').replaceAll('__', '');
     text = text.replaceAll(RegExp(r'^#{1,6}\s*', multiLine: true), '');
     text = text.replaceAll(RegExp(r'^[-*+]\s+', multiLine: true), '• ');

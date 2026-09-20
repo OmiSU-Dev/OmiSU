@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,7 +10,7 @@ import 'package:omisu/repositories/retro_achievements_repository.dart';
 import 'package:omisu/repositories/scraper_repository.dart';
 import 'package:omisu/services/sfx_service.dart';
 import 'package:omisu/utils/adaptive_scroll.dart';
-import 'package:omisu/utils/nav_tabs.dart';
+import 'package:omisu/utils/nav_tabs.dart' show NavTab, visibleNavTabs;
 import 'package:omisu/widgets/info_dialog.dart';
 import 'package:omisu/widgets/omisu/omisu_retro_chrome.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ import '../../../providers/sqlite_config_provider.dart';
 import '../../../screens/app_screen.dart';
 import '../../../widgets/custom_toggle_switch.dart';
 import '../../romm_screen/romm_connect_content.dart';
+import '../scraper_account_settings_screen.dart';
 import 'settings_title.dart';
 import 'widgets/setting_row.dart';
 
@@ -111,6 +113,16 @@ class ServicesSettingsContentState extends State<ServicesSettingsContent> {
     );
   }
 
+  Future<void> _openScreenScraperAccount() async {
+    final config = context.read<SqliteConfigProvider>().config;
+    if (visibleNavTabs(config).contains(NavTab.scraper)) {
+      AppNavigation.goToTab(NavTab.scraper.index);
+      return;
+    }
+    await ScraperAccountSettingsScreen.open(context);
+    await _loadScraperCredentials();
+  }
+
   void selectItem(int index) {
     SfxService().playNavSound();
     final provider = context.read<SqliteConfigProvider>();
@@ -118,16 +130,21 @@ class ServicesSettingsContentState extends State<ServicesSettingsContent> {
     switch (index) {
       case 0:
         provider.updateAutoScrapeNewGames(!provider.config.autoScrapeNewGames);
+        return;
       case 1:
         provider.updateAutoScrapeWifiOnly(!provider.config.autoScrapeWifiOnly);
+        return;
       case 2:
-        AppNavigation.goToTab(NavTab.scraper.index);
+        unawaited(_openScreenScraperAccount());
+        return;
       case 3:
-        _setRaMatchOnStartup(!provider.config.raMatchOnStartup);
+        unawaited(_setRaMatchOnStartup(!provider.config.raMatchOnStartup));
+        return;
       case 4:
         if (!_hideNeoSync) {
           AppNavigation.goToTab(NavTab.sync.index);
         }
+        return;
     }
   }
 
@@ -206,7 +223,10 @@ class ServicesSettingsContentState extends State<ServicesSettingsContent> {
                   final connected = _scraperUsername?.isNotEmpty == true;
                   return SettingRow(
                     key: _itemKeys[row],
-                    onTap: () => selectItem(row),
+                    onTap: () {
+                      SfxService().playNavSound();
+                      unawaited(_openScreenScraperAccount());
+                    },
                     focused: widget.isContentFocused &&
                         widget.selectedContentIndex == row,
                     title: AppLocale.screenscraper.getString(context),

@@ -52,6 +52,17 @@ Either:
 
 Wait until the run is **green** (failed step is usually **Setup Android Keystore** when secrets are missing).
 
+### Release changelog (in-app “What’s new”)
+
+Every successful run **must** publish a GitHub Release whose **body** matches the build being shipped:
+
+1. **Bump** `version` in `pubspec.yaml` (`0.12.2+N`) on the commit you push to `main`.
+2. Use a **clear commit subject** (it becomes a bullet under “What’s changed”), e.g. `Release 0.12.2+139: fix OTA release notes display.`
+3. CI runs `build-utils/generate-github-release-body.sh` (commits since the previous release tag + file/pubspec diffs) and **`verify-github-release-notes.sh`** (fails if the body is empty, missing the version/tag, or still uses the old boilerplate).
+4. The Nordi app reads `releases/latest` → `body` and shows it in the update dialog (after the in-app markdown cleanup in `ReleaseNotesDisplay`).
+
+Do **not** hand-edit the workflow `body:` with static text. To fix an already-published release, edit the release on GitHub or re-run notes generation locally and `gh release edit <tag> --notes-file …`.
+
 ### 4. Confirm release + app behavior
 
 ```bash
