@@ -56,7 +56,10 @@ class UpdateService {
       // keeps an offline/unreachable network from stalling the startup
       // sequence, which defers the ROM scan until the update checks finish.
       final response = await http
-          .get(Uri.parse(_githubApiUrl))
+          .get(
+            Uri.parse(_githubApiUrl),
+            headers: const {'User-Agent': 'Nordi-OmiSU-Updater'},
+          )
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {

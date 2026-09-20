@@ -8,7 +8,7 @@ import 'package:omisu/services/builtin_player_update_service.dart';
 import 'package:omisu/services/global_notification_service.dart';
 import 'package:omisu/services/logger_service.dart';
 import 'package:omisu/services/systems_update_service.dart';
-import 'package:omisu/services/update_service.dart';
+import 'package:omisu/services/app_update_availability_service.dart';
 import 'package:omisu/widgets/builtin_player_update_dialog.dart';
 import 'package:omisu/widgets/systems_update_dialog.dart';
 import 'package:omisu/widgets/update_dialog.dart';
@@ -106,7 +106,10 @@ class UnifiedUpdateCoordinator {
       }
 
       if (NordiUpdatePolicy.appGithubOtaEnabled) {
-        final hadAppUpdate = await _showAppUpdateIfAvailable(context);
+        final hadAppUpdate = await _showAppUpdateIfAvailable(
+          context,
+          forceRefresh: true,
+        );
         if (hadAppUpdate) return;
       }
 
@@ -177,11 +180,17 @@ class UnifiedUpdateCoordinator {
     }
   }
 
-  static Future<bool> _showAppUpdateIfAvailable(BuildContext context) async {
+  static Future<bool> _showAppUpdateIfAvailable(
+    BuildContext context, {
+    bool forceRefresh = false,
+  }) async {
     if (!NordiUpdatePolicy.appGithubOtaEnabled) return false;
 
     try {
-      final updateInfo = await UpdateService.checkForUpdates();
+      await AppUpdateAvailabilityService.instance.refresh(
+        force: forceRefresh,
+      );
+      final updateInfo = AppUpdateAvailabilityService.instance.available.value;
       if (updateInfo != null && context.mounted) {
         final accepted = await showDialog<bool>(
           context: context,

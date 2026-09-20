@@ -266,7 +266,10 @@ class AppScreenState extends State<AppScreen> with WidgetsBindingObserver {
     }
     await _runStartupRaMatch(configProvider, holdsSplash: true);
 
-    if (mounted && NordiUpdatePolicy.appGithubOtaEnabled) {
+    // Toast + bell when launch dialog is off (coordinator already refreshed when on).
+    if (mounted &&
+        NordiUpdatePolicy.appGithubOtaEnabled &&
+        !configProvider.config.autoUpdateApp) {
       unawaited(AppUpdateAvailabilityService.instance.refresh(force: true));
     }
   }
@@ -750,9 +753,13 @@ class AppScreenState extends State<AppScreen> with WidgetsBindingObserver {
 
                 if (showChrome && NordiUpdatePolicy.appGithubOtaEnabled)
                   Positioned(
-                    top: kOmisuTopBarHeight.r + 6.r,
-                    right: 36.r,
-                    child: const AppUpdateStatusToast(),
+                    top: kOmisuTopBarHeight.r + 4.r,
+                    right: 8.r,
+                    left: 48.r,
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: const AppUpdateStatusToast(),
+                    ),
                   ),
 
                 // Global footer — Y · nav dock · A.

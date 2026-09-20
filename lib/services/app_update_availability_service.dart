@@ -20,8 +20,15 @@ class AppUpdateAvailabilityService {
 
   final ValueNotifier<UpdateInfo?> available = ValueNotifier(null);
 
+  /// Bumped when banner visibility changes so [AppUpdateStatusToast] rebuilds.
+  final ValueNotifier<int> uiTick = ValueNotifier(0);
+
   DateTime? _lastCheckAt;
   String? _bannerDismissedForVersion;
+
+  void _notifyUi() {
+    uiTick.value++;
+  }
 
   bool get isBannerVisible {
     final info = available.value;
@@ -33,6 +40,7 @@ class AppUpdateAvailabilityService {
     final version = available.value?.latestVersion;
     if (version != null) {
       _bannerDismissedForVersion = version;
+      _notifyUi();
     }
   }
 
@@ -67,6 +75,7 @@ class AppUpdateAvailabilityService {
       } else {
         GlobalNotificationService().dismiss(_notificationId);
       }
+      _notifyUi();
     } catch (e) {
       _log.w('AppUpdateAvailabilityService: refresh failed: $e');
     }

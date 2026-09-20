@@ -30,12 +30,14 @@ class _AppUpdateStatusToastState extends State<AppUpdateStatusToast>
       duration: const Duration(milliseconds: 280),
     );
     _service.available.addListener(_onAvailabilityChanged);
+    _service.uiTick.addListener(_onAvailabilityChanged);
     _syncFromService();
   }
 
   @override
   void dispose() {
     _service.available.removeListener(_onAvailabilityChanged);
+    _service.uiTick.removeListener(_onAvailabilityChanged);
     _slide.dispose();
     super.dispose();
   }
