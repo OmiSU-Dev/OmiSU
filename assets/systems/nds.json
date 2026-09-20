@@ -1,0 +1,38 @@
+{
+  "system": {
+    "id": "nds",
+    "multidisc": false,
+    "name": "Nintendo DS",
+    "short_name": "NDS",
+    "details": {
+      "manufacturer": "Nintendo",
+      "release_date": "2004-11-21",
+      "description": "Nintendo dual-screen handheld with touch input.",
+      "type": "handheld"
+    },
+    "ids": {
+      "screenscraper": 15,
+      "retroachievements": 18
+    },
+    "ra_hash": {
+      "algo": "file",
+      "mode": "hash_only"
+    },
+    "folders": [
+      "nds",
+      "Nintendo DS",
+      "NDS"
+    ],
+    "colors": [
+      "#607D8B",
+      "#CFD8DC"
+    ],
+    "extensions": [
+      "nds",
+      "zip",
+      "7z"
+    ],
+    "embedded_core": true
+  },
+  "emulators": []
+}

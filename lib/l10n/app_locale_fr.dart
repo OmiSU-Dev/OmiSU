@@ -1,0 +1,1438 @@
+part of 'app_locale.dart';
+
+const Map<String, dynamic> appLocaleFr = {
+  AppLocale.navigate: 'Naviguer',
+  AppLocale.select: 'Sélectionner',
+  AppLocale.back: 'Retour',
+  AppLocale.close: 'Fermer',
+  AppLocale.cancel: 'Annuler',
+  AppLocale.ok: 'OK',
+  AppLocale.retry: 'Réessayer',
+  AppLocale.confirm: 'Confirmer',
+  AppLocale.apply: 'Appliquer',
+  AppLocale.save: 'Enregistrer',
+  AppLocale.delete: 'Supprimer',
+  AppLocale.edit: 'Modifier',
+  AppLocale.refresh: 'Actualiser',
+  AppLocale.upload: 'Téléverser',
+  AppLocale.download: 'Télécharger',
+  AppLocale.stop: 'Arrêter',
+  AppLocale.reset: 'Réinitialiser',
+  AppLocale.startupStorageUnavailable:
+      'OmiSU n\'a pas pu accéder au dossier où vos données sont enregistrées. Vérifiez que la carte SD ou le lecteur est connecté.',
+  AppLocale.startupStorageRetry: 'Réessayer',
+  AppLocale.startupStorageUseDefault: 'Continuer sans',
+  AppLocale.startupLoading:
+      'Préparation de OmiSU. En attente du stockage et des services…',
+
+  AppLocale.play: 'Jouer',
+  AppLocale.playButton: 'JOUER',
+  AppLocale.favorite: 'Favori',
+  AppLocale.random: 'Aléatoire',
+  AppLocale.randomGame: 'Jeu Aléatoire',
+  AppLocale.selected: 'Sélectionné !',
+  AppLocale.noGamesAvailable: 'Aucun jeu disponible',
+  AppLocale.launch: 'Lancer',
+  AppLocale.launchingGame: 'Lancement du jeu...',
+  AppLocale.gameExecuting: 'Jeu en cours...',
+  AppLocale.closingGame: 'Fermeture du jeu...',
+
+  AppLocale.settings: 'Paramètres',
+  AppLocale.general: 'Général',
+  AppLocale.secondaryDisplay: 'Écran secondaire',
+  AppLocale.directories: 'Répertoires',
+  AppLocale.themes: 'Thèmes',
+  AppLocale.systemArt: 'System Art',
+  AppLocale.systemArtSubtitle:
+      'Personnalisez les arrière-plans et logos des cartes de systèmes avec des packs System Art',
+  AppLocale.systemArtNone: 'Aucun',
+  AppLocale.systemArtNoneSubtitle: 'Apparence par défaut',
+  AppLocale.systemArtLoading: 'Chargement de System Art...',
+  AppLocale.systemArtError: 'Impossible de charger System Art',
+  AppLocale.systemArtApplyTitle: 'Appliquer System Art ?',
+  AppLocale.systemArtApplyBody:
+      'Le pack System Art sera téléchargé pour tous les systèmes. Cela peut prendre quelques instants.',
+  AppLocale.systemArtRedownloadTitle: 'Retélécharger System Art ?',
+  AppLocale.systemArtRedownloadBody:
+      'Le pack en cache sera supprimé puis téléchargé à nouveau. Utilisez cette option si certains arrière-plans de systèmes sont manquants.',
+  AppLocale.systemArtDownloading: 'Téléchargement du pack System Art...',
+  AppLocale.about: 'À propos',
+  AppLocale.exit: 'Quitter',
+  AppLocale.launcher: 'Lanceur',
+  AppLocale.emulators: 'Émulateurs',
+  AppLocale.appearance: 'Apparence',
+  AppLocale.systemsSettings: 'Systèmes',
+  AppLocale.systemsSettingsSubtitle:
+      'Afficher ou masquer des systèmes de votre bibliothèque',
+  AppLocale.hideRecentCard: 'Carte Récents',
+  AppLocale.hideRecentCardSubtitle:
+      'Afficher la carte des jeux récents dans la grille',
+  AppLocale.recentCardSize: 'Taille de la carte',
+  AppLocale.recentCardSizeSubtitle:
+      'Taille de la carte des jeux récents dans la grille',
+  AppLocale.recentCardSizeDefault: 'Par défaut',
+  AppLocale.recentCardSize2x1: 'Compact',
+  AppLocale.themesSubtitle: 'Personnalisez le look de OmiSU',
+  AppLocale.neoglassGroup: 'NeoGlass',
+  AppLocale.neoglassBlur: 'Flou du verre',
+  AppLocale.neoglassBlurSubtitle: 'Intensité du flou: désactivé, 1 ou 2',
+  AppLocale.neoglassBlurOff: 'Désactivé',
+  AppLocale.neoglassBlurGpuWarning:
+      'À activer uniquement sur un GPU puissant — sur du matériel modeste, le flou givré peut ne pas rester fluide.',
+  AppLocale.neoglassTransparency: 'Transparence du verre',
+  AppLocale.neoglassTransparencySubtitle:
+      '0 = aucune transparence, 30 = 50 % de transparence',
+  AppLocale.neoglassBorderWidth: 'Bordure du verre',
+  AppLocale.neoglassBorderWidthSubtitle: 'Épaisseur du bord du verre',
+  AppLocale.systemTheme: 'Thème du Système',
+  AppLocale.importTheme: 'Importer un thème',
+  AppLocale.importThemeSuccess: 'Thème « %s » importé',
+  AppLocale.importThemeExists: 'Le thème « %s » est déjà importé',
+  AppLocale.importThemeError:
+      'Impossible d’importer le thème — fichier invalide',
+  AppLocale.deleteThemeTitle: 'Supprimer le thème ?',
+  AppLocale.deleteThemeConfirm: 'Supprimer le thème importé « %s » ?',
+
+  AppLocale.generalSettings: 'Paramètres Généraux',
+  AppLocale.alwaysShowRomName: 'Toujours afficher le nom du ROM',
+  AppLocale.hideExtension:
+      "Masquer l'extension du fichier (nom du ROM uniquement)",
+  AppLocale.hideParentheses: 'Masquer les parenthèses () du nom du fichier',
+  AppLocale.hideBrackets: 'Masquer les crochets [] du nom du fichier',
+  AppLocale.hideSystemLogo: 'Masquer le logo du système',
+  AppLocale.hideSystemLogoSubtitle:
+      'Masquer la superposition du logo du système',
+  AppLocale.recursiveScan: 'Analyse récursive des ROMs',
+  AppLocale.recursiveScanSubtitle:
+      'Analyser les ROMs dans les sous-répertoires',
+  AppLocale.alwaysShowRomNameSubtitle:
+      'Utiliser le nom du fichier ROM dans la liste (ignore les titres scrapés)',
+  AppLocale.hideExtensionSubtitle:
+      'Masque les extensions comme .iso ou .zip quand la liste utilise des noms de fichier',
+  AppLocale.hideParenthesesSubtitle:
+      'Supprime le texte entre parenthèses () quand la liste utilise des noms de fichier',
+  AppLocale.hideBracketsSubtitle:
+      'Supprime le texte entre crochets [] quand la liste utilise des noms de fichier',
+  AppLocale.recursiveScanEnabled:
+      'Analyse récursive activée. Analyse de {name}...',
+  AppLocale.recursiveScanDisabled:
+      'Analyse récursive désactivée. Analyse de {name}...',
+  AppLocale.subfolderView: 'Afficher les sous-dossiers',
+  AppLocale.subfolderViewSubtitle:
+      'Regrouper les ROMs des sous-dossiers dans des dossiers navigables au lieu de les mélanger avec les jeux',
+  AppLocale.subfolderViewAll:
+      'Afficher les sous-dossiers dans tous les systèmes',
+  AppLocale.subfolderViewAllSubtitle:
+      'Appliquer d’un coup l’option Afficher les sous-dossiers à tous les systèmes',
+  AppLocale.subfolderViewAllOverridesNotice:
+      '{count} système(s) avaient leur propre réglage Afficher les sous-dossiers. Tous les systèmes suivent désormais cet interrupteur ; vous pouvez toujours modifier chacun d’eux dans ses propres réglages.',
+  AppLocale.subfolderViewEnabled: 'Sous-dossiers affichés comme dossiers',
+  AppLocale.subfolderViewDisabled: 'Sous-dossiers mélangés aux jeux',
+  AppLocale.errorScanningSystem:
+      'Erreur lors de l’analyse du système : {error}',
+  AppLocale.scrapedTitlesUsed:
+      'Les titres scrapés seront utilisés si disponibles',
+  AppLocale.gameExtensionsHidden: 'Les extensions de jeu seront masquées',
+  AppLocale.gameExtensionsShown: 'Les extensions de jeu seront affichées',
+  AppLocale.parenthesesHidden: 'Le contenu entre parenthèses sera masqué',
+  AppLocale.parenthesesShown: 'Le contenu entre parenthèses sera affiché',
+  AppLocale.bracketsHidden: 'Le contenu entre crochets sera masqué',
+  AppLocale.bracketsShown: 'Le contenu entre crochets sera affiché',
+  AppLocale.systemLogoHidden: 'Le logo du système sera masqué',
+  AppLocale.systemLogoShown: 'Le logo du système sera affiché',
+  AppLocale.romFileNamesUsed:
+      'La liste de jeux utilisera les noms de fichiers ROM',
+  AppLocale.selectedFileNotExist: 'Le fichier sélectionné n’existe pas',
+  AppLocale.emulatorPathConfigured: 'Chemin vers {name} configuré avec succès',
+  AppLocale.errorConfiguringPath:
+      'Erreur lors de la configuration du chemin : {error}',
+  AppLocale.retroArchPathConfigured: 'Chemin RetroArch configuré avec succès',
+  AppLocale.errorConfiguringRetroArchPath:
+      'Erreur lors de la configuration du chemin RetroArch : {error}',
+  AppLocale.androidSystemSettings: 'Paramètres du Système',
+  AppLocale.androidSystemSettingsSubtitle:
+      'Ouvrir les paramètres système Android',
+  AppLocale.scanOnStartup: 'Analyser les dossiers au démarrage',
+  AppLocale.nowPlayingDimAfter: 'Atténuer Now Playing après',
+  AppLocale.nowPlayingDimAfterSubtitle:
+      'Inactivité avant que le panneau ne s\'atténue sur l\'écran secondaire',
+  AppLocale.nowPlayingDimDarkness: 'Niveau d\'atténuation',
+  AppLocale.nowPlayingDimDarknessSubtitle:
+      'À quel point le panneau s\'assombrit lorsqu\'il s\'atténue',
+  AppLocale.nowPlayingDimNever: 'Jamais',
+  AppLocale.nowPlayingDockEnabled: 'Dock d\'applications',
+  AppLocale.nowPlayingDockEnabledSubtitle:
+      'Afficher le dock d\'applications sur l\'écran secondaire',
+  AppLocale.nowPlayingDockSlots: 'Emplacements du dock',
+  AppLocale.nowPlayingDockSlotsSubtitle:
+      'Combien d\'emplacements le dock affiche (1-5)',
+  AppLocale.nowPlayingFanartDim: 'Atténuer le fanart',
+  AppLocale.nowPlayingFanartDimSubtitle:
+      'Assombrir l\'arrière-plan derrière le logo pour éviter les conflits visuels',
+  AppLocale.nowPlayingDimOff: 'Désactivé',
+  AppLocale.secondarySectionNowPlaying: 'Panneau Now Playing',
+  AppLocale.secondarySectionDock: 'Dock d\'applications',
+  AppLocale.screenshotAccess: 'Screen return & screenshots',
+  AppLocale.screenshotAccessSubtitle:
+      'Restores the Now Playing screen when you close an app opened from the dock, and lets the screenshot button capture the screen (opens Android accessibility settings)',
+  AppLocale.scanOnStartupSubtitle:
+      'Analyse automatiquement les dossiers de ROMs à l’ouverture de l’application',
+  AppLocale.ignoreHiddenFiles: 'Ignorer les éléments cachés',
+  AppLocale.ignoreHiddenFilesSubtitle:
+      'Masquer les fichiers et dossiers cachés lors des analyses de ROMs',
+  AppLocale.autoUpdateApp: 'Mise à jour auto - App',
+  AppLocale.autoUpdateAppSubtitle:
+      'Vérifier les nouvelles versions au démarrage et proposer une mise à jour',
+  AppLocale.autoUpdateSystems: 'Mise à jour Systèmes & Émulateurs',
+  AppLocale.autoUpdateSystemsSubtitle:
+      'Vérifier les mises à jour des systèmes et émulateurs au démarrage',
+  AppLocale.checkForUpdatesNow: 'Check for updates now',
+  AppLocale.checkForUpdatesNowSubtitle:
+      'LibretroDroid engine and libretro cores (Nordi app updates via PC, not NeoStation GitHub)',
+  AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
+  AppLocale.nordiAutoUpdatePlayerSubtitle:
+      'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi',
+  AppLocale.updatesUpToDate: 'Everything is up to date',
+  AppLocale.updatesCheckFailed:
+      'Update check failed. Check your Wi‑Fi connection and try again.',
+  AppLocale.sfxSounds: 'Sons de l’Interface',
+  AppLocale.sfxSoundsSubtitle:
+      'Joue des sons pour la navigation à la manette, au clavier et au tactile',
+  AppLocale.sfxVolume: 'Volume des sons de l’interface',
+  AppLocale.sfxVolumeSubtitle: 'Ajustez le volume et écoutez un son de test',
+  AppLocale.sfxVolumeLow: 'Faible',
+  AppLocale.sfxVolumeMedium: 'Moyen',
+  AppLocale.sfxVolumeHigh: 'Élevé',
+  AppLocale.use12HourClock: 'Horloge 12 heures',
+  AppLocale.use12HourClockSubtitle:
+      'Afficher l\'heure au format 12 heures avec AM/PM au lieu de 24 heures',
+  AppLocale.showAchievementsBadge: 'Badges de succès',
+  AppLocale.showAchievementsBadgeSubtitle:
+      'Afficher le nombre de succès sur les jeux associés à RetroAchievements',
+  AppLocale.showCloudSyncIcon: 'Icône de sauvegarde cloud',
+  AppLocale.showCloudSyncIconSubtitle:
+      'Afficher l\'état de synchronisation cloud à côté du jeu sélectionné',
+  AppLocale.raMatchOnStartup: 'Associer les succès au démarrage',
+  AppLocale.raMatchOnStartupSubtitle:
+      'Associe les nouvelles ROMs après le scan de démarrage. Pour toute une bibliothèque, lancez d’abord Associer les jeux RetroAchievements dans Outils.',
+  AppLocale.raMatchOnStartupBacklogWarning:
+      '{count} jeux n’ont jamais été vérifiés. Les associer tous au prochain démarrage peut prendre plusieurs minutes. Lancez plutôt Associer les jeux RetroAchievements dans Outils, avec une progression visible.',
+  AppLocale.raMatchNotificationTitle: 'RetroAchievements',
+  AppLocale.raMatchProgressBusy: 'Correspondance RetroAchievements...',
+  AppLocale.raMatchProgressCounted:
+      'Correspondance RetroAchievements... {done}/{total}',
+  AppLocale.fullscreenMode: 'Mode Plein Écran',
+  AppLocale.fullscreenModeSubtitle: 'Affiche l’application en plein écran',
+  AppLocale.allFilesAccess: 'Accès à Tous les Fichiers',
+  AppLocale.permissionGranted: 'Autorisation Accordée',
+  AppLocale.permissionDisabled: 'Autorisation Désactivée',
+  AppLocale.allFilesAccessSubtitle:
+      'Requis pour les configurations de RetroArch et la synchronisation des sauvegardes',
+  AppLocale.defaultLauncherSubtitle: 'OmiSU est votre lanceur par défaut',
+  AppLocale.isDefaultLauncher: 'OmiSU est votre lanceur par défaut',
+  AppLocale.setAsDefaultLauncher: 'Définir OmiSU comme écran d’accueil',
+  AppLocale.disableSecondaryScreen: 'Désactiver sur l’écran secondaire',
+  AppLocale.disableSecondaryScreenSub:
+      'Ferme l’application sur l’écran secondaire',
+  AppLocale.bartopShutdown: 'Éteindre BarTOP en quittant',
+  AppLocale.bartopShutdownSubtitle:
+      'Éteint l’ordinateur à la fermeture de l’application',
+
+  AppLocale.showSyncTab: 'Afficher l’onglet NeoSync',
+  AppLocale.showSyncTabSubtitle:
+      'Affiche l’onglet NeoSync dans la barre de navigation',
+  AppLocale.showAchievementsTab: 'Afficher l’onglet Succès',
+  AppLocale.showAchievementsTabSubtitle:
+      'Affiche l’onglet RetroAchievements dans la barre de navigation',
+  AppLocale.showScraperTab: 'Afficher l’onglet Scraper',
+  AppLocale.showScraperTabSubtitle:
+      'Affiche l’onglet de scraping dans la barre de navigation',
+  AppLocale.showRommTab: 'Afficher l’onglet RomM',
+  AppLocale.showRommTabSubtitle:
+      'Affiche l’onglet RomM dans la barre de navigation',
+  AppLocale.showSearchTab: 'Afficher l’onglet Rechercher',
+  AppLocale.showSearchTabSubtitle:
+      'Affiche l’onglet de recherche dans la barre de navigation',
+
+  AppLocale.configureDirectories: 'Configurer les Répertoires',
+  AppLocale.configureRomsFolder: 'Configurer le Dossier des ROMs',
+  AppLocale.cannotAccessFolder: 'Impossible d’accéder au dossier',
+  AppLocale.backgroundImage: 'Image de Fond',
+  AppLocale.backgroundImageSubtitle:
+      'jpg, png, webp, gif | 1024x1024px ou plus petit',
+  AppLocale.logoImage: 'Logo du système',
+  AppLocale.logoImageSubtitle: 'jpg, png, webp | 512x512px ou plus petit',
+  AppLocale.selectRetroArchExe: 'Sélectionner l’exécutable RetroArch',
+  AppLocale.selectExecutablePath: 'Sélectionner le chemin de l’exécutable',
+
+  AppLocale.exitApplication: 'Quitter l’Application',
+  AppLocale.exitConfirmation: 'Êtes-vous sûr de vouloir quitter OmiSU ?',
+  AppLocale.confirmExit: 'Confirmer la Sortie',
+  AppLocale.rescanAllFolders: 'Analyser à nouveau tous les dossiers ROM',
+  AppLocale.rescanAllFoldersSubtitle:
+      'Rechercher manuellement de nouveaux systèmes et ROMs',
+  AppLocale.organizeMultiDiscGames: 'Organiser les jeux multi-disques',
+  AppLocale.organizeMultiDiscGamesSubtitle:
+      'Crée automatiquement des fichiers .m3u pour les jeux multi-disques et les organise dans des dossiers',
+  AppLocale.organizeMultiDiscScanning:
+      'Analyse des dossiers ROM à la recherche de jeux multi-disques...',
+  AppLocale.organizeMultiDiscNoRomFoldersConfigured:
+      'Aucun dossier ROM configuré.',
+  AppLocale.organizeMultiDiscSkippedSuffix:
+      ' ({count} chemin(s) de dossier ignoré(s))',
+  AppLocale.organizeMultiDiscDone:
+      'Terminé : {groups} lot(s) organisé(s), {files} fichier(s) déplacé(s), {playlists} playlist(s) créée(s){skipped}.',
+  AppLocale.organizeMultiDiscNoSetsFound:
+      'Aucun lot multi-disques à organiser{skipped}.',
+  AppLocale.organizeMultiDiscFailed:
+      'Échec de l’organisation des jeux multi-disques : {error}',
+  AppLocale.organizeMultiDiscPartialFailure:
+      '{failed} ensemble(s) n’ont pas pu être organisés. {result}',
+  AppLocale.organizeMultiDiscWarning:
+      'Cette opération déplacera les ROM correspondantes dans de nouveaux dossiers de jeux et créera des listes .m3u sur votre stockage. Elle ne peut pas être annulée automatiquement.',
+  AppLocale.cleanOrphanedMetadata: 'Nettoyer les métadonnées orphelines',
+  AppLocale.cleanOrphanedMetadataSubtitle:
+      'Supprime les métadonnées et les médias laissés par les ROMs supprimés',
+  AppLocale.cleanOrphanedMetadataWarning:
+      'Cela supprime définitivement les lignes de métadonnées et les fichiers média des ROMs qui ne sont plus dans votre bibliothèque. Les entrées importées depuis ES-DE ne seront pas supprimées.',
+  AppLocale.cleanOrphanedMetadataScanning:
+      'Nettoyage des métadonnées orphelines...',
+  AppLocale.cleanOrphanedMetadataCleaningItem: 'Nettoyage de {filename}...',
+  AppLocale.cleanOrphanedMetadataNothingFound:
+      'Aucune métadonnée orpheline trouvée.',
+  AppLocale.cleanOrphanedMetadataDone:
+      'Nettoyé {entries} entrée(s) de métadonnées et {files} fichier(s) multimédia.',
+  AppLocale.cleanOrphanedMetadataEsdeSkippedSuffix:
+      ' {count} entrée(s) importée(s) depuis ES-DE ont été laissées intactes.',
+  AppLocale.cleanOrphanedMetadataFailed:
+      'Échec du nettoyage des métadonnées orphelines : {error}',
+  AppLocale.rematchAchievements: 'Associer les jeux RetroAchievements',
+  AppLocale.rematchAchievementsSubtitle:
+      'Analyse toute la bibliothèque à la recherche de sets de succès, au lieu d\'un jeu à la fois',
+  AppLocale.rematchAchievementsWarning:
+      'Cela lit chaque ROM non associée pour l’identifier, ce qui peut prendre du temps sur une grande bibliothèque. Sélectionnez-le à nouveau pour mettre en pause : tout ce qui a été trouvé est conservé, et une nouvelle exécution reprend là où elle s’est arrêtée. Les images de disque sont lues aussi, mais seulement quelques secteurs de chacune. Rien n’est déplacé ni supprimé.',
+  AppLocale.rematchAchievementsSignedOut:
+      'La correspondance fonctionne même déconnecté, mais vous devez vous connecter à RetroAchievements pour voir les résultats.',
+  AppLocale.rematchAchievementsLookingUp:
+      'Vérification des jeux déjà hachés...',
+  AppLocale.rematchAchievementsHashing: 'Correspondance {done} sur {total}',
+  AppLocale.rematchAchievementsDone:
+      'Terminé : {matched} jeu(x) associé(s), {hashed} nouvellement identifié(s).',
+  AppLocale.rematchAchievementsNothingToDo:
+      'Tous les jeux pris en charge ont déjà été vérifiés.',
+  AppLocale.rematchAchievementsPaused:
+      'En pause : {matched} jeu(x) associé(s) jusqu’ici. Relancez-le pour continuer.',
+  AppLocale.rematchAchievementsFailed:
+      'Échec de l\'association des jeux RetroAchievements : {error}',
+  AppLocale.raFixMatch: 'Corriger l’association',
+  AppLocale.raFixMatchTitle: 'Choisir le bon jeu',
+  AppLocale.raFixMatchSearchHint: 'Rechercher des titres RetroAchievements',
+  AppLocale.raFixMatchNoResults: 'Aucun jeu correspondant trouvé.',
+  AppLocale.raFixMatchUseAutomatic: 'Utiliser l’association automatique',
+  AppLocale.raFixMatchUpdated: 'Association mise à jour.',
+  AppLocale.raFixMatchAchievements: '{count} succès',
+  AppLocale.raHash: 'Empreinte RA',
+  AppLocale.notifications: 'Notifications',
+  AppLocale.clearAll: 'Tout effacer',
+  AppLocale.noActiveNotifications: 'Aucune notification active',
+  AppLocale.romsFolderSubtitle:
+      'Ajoutez les dossiers contenant vos fichiers ROM',
+  AppLocale.pressToRemoveFolder:
+      'Appuyez sur Confirmer pour supprimer ce dossier',
+  AppLocale.maxRomFoldersReached: 'Maximum de 5 dossiers de ROMs autorisé',
+  AppLocale.romFolderRemoved: 'Dossier de ROMs supprimé',
+  AppLocale.selectRomsFolder: 'Sélectionner le dossier des ROMs',
+  AppLocale.scanningSystem: 'Analyse du système en cours',
+
+  AppLocale.thankYou: 'Merci d’utiliser OmiSU !',
+  AppLocale.visitWebsite: 'Visitez notre site officiel',
+  AppLocale.joinCommunity: 'Rejoignez notre communauté pour de l’aide',
+  AppLocale.specialThanks: 'Remerciements Spéciaux',
+  AppLocale.forInvaluableContributions: 'pour ses contributions inestimables',
+  AppLocale.supportOnKofi: 'Soutenez-nous sur Ko-fi',
+  AppLocale.supportOnPatreon: 'Soutenez-nous sur Patreon',
+  AppLocale.openSourceLicense: 'Projet Open Source',
+  AppLocale.openSourceLicenseDesc: 'Sous licence GPLv3',
+  AppLocale.leadMaintainer: 'Mainteneur Principal',
+
+  AppLocale.gameSettings: 'Paramètres du Jeu',
+  AppLocale.cloudSync: 'Synchronisation Cloud',
+  AppLocale.cloudSyncEnabled: 'Synchronisation cloud activée',
+  AppLocale.cloudSyncDisabled: 'Synchronisation cloud désactivée',
+  AppLocale.cloudSyncOn: 'Les sauvegardes seront synchronisées avec le cloud',
+  AppLocale.cloudSyncOff: 'Synchronisation cloud désactivée pour ce jeu',
+  AppLocale.playTime: 'Temps de jeu',
+  AppLocale.systemDefault: 'Par défaut du Système',
+  AppLocale.emulator: 'Émulateur',
+
+  AppLocale.localSave: 'Sauvegarde Locale',
+  AppLocale.localSaveSubtitle: 'Sur cet appareil',
+  AppLocale.cloudSaveTitle: 'Sauvegarde Cloud',
+  AppLocale.cloudSaveSubtitle: 'Depuis NeoSync',
+  AppLocale.scrapingUnavailableAndroid: 'Scraping indisponible sur Android.',
+  AppLocale.achievements: 'Succès',
+
+  AppLocale.neoSync: 'NeoSync',
+  AppLocale.neoSyncLogin: 'Connexion NeoSync',
+  AppLocale.neoSyncSynchronizing: 'NeoSync : Synchronisation...',
+  AppLocale.neoSyncNotConnected: 'NeoSync : Non connecté',
+  AppLocale.neoSyncSynchronized: 'NeoSync : Sauvegardes synchronisées',
+  AppLocale.neoSyncSavesSync:
+      'Les fichiers de sauvegarde seront synchronisés avec NeoSync',
+  AppLocale.neoSyncNoSave: 'NeoSync : Aucune sauvegarde trouvée',
+  AppLocale.logout: 'Se déconnecter',
+  AppLocale.logoutConfirm: 'Confirmer la déconnexion',
+  AppLocale.failedToLoadProfile: 'Échec du chargement du profil',
+  AppLocale.verifyEmail: 'Vérifier l’e-mail',
+  AppLocale.forgotPassword: 'Mot de passe oublié ?',
+  AppLocale.resetPassword: 'Réinitialiser le Mot de Passe',
+  AppLocale.joinNeoSync: 'Rejoindre NeoSync',
+  AppLocale.verificationToken: 'Jeton de Vérification',
+  AppLocale.enterTokenFromEmail: 'Entrez le jeton envoyé à votre e-mail',
+  AppLocale.resendVerificationEmail: 'Renvoyer l’e-mail de vérification',
+  AppLocale.backToLogin: 'Retour à la connexion',
+  AppLocale.username: 'Utilisateur',
+  AppLocale.chooseUsername: 'Choisissez un nom d’utilisateur',
+  AppLocale.email: 'E-mail',
+  AppLocale.password: 'Mot de passe',
+  AppLocale.enterPassword: 'Entrez votre mot de passe',
+  AppLocale.login: 'Se connecter',
+  AppLocale.signUp: 'S’inscrire',
+  AppLocale.dontHaveAccount: 'Pas de compte ? S’inscrire',
+  AppLocale.alreadyHaveAccount: 'Déjà un compte ? Se connecter',
+  AppLocale.pleaseEnterUsername: 'Veuillez entrer le nom d’utilisateur',
+  AppLocale.pleaseEnterEmail: 'Veuillez entrer l’e-mail',
+  AppLocale.pleaseEnterValidEmail: 'Veuillez entrer un e-mail valide',
+  AppLocale.pleaseEnterPassword: 'Veuillez entrer le mot de passe',
+  AppLocale.passwordTooShort:
+      'Le mot de passe doit faire au moins 8 caractères',
+  AppLocale.anErrorOccurred: 'Une erreur est survenue',
+  AppLocale.checkEmailVerification:
+      'Veuillez vérifier votre e-mail et cliquer sur le lien de vérification.',
+  AppLocale.emailVerifiedSuccess:
+      'E-mail vérifié avec succès ! Connexion en cours...',
+  AppLocale.emailVerifiedLoginFailed:
+      'E-mail vérifié mais la connexion a échoué',
+  AppLocale.emailNotVerified:
+      'E-mail non vérifié. Veuillez vérifier votre boîte de réception.',
+  AppLocale.registrationSuccessCheckEmail:
+      'Inscription réussie ! Vérifiez votre e-mail pour activer le compte.',
+  AppLocale.passwordResetSuccess:
+      'Mot de passe réinitialisé avec succès ! Connectez-vous avec votre nouveau mot de passe.',
+  AppLocale.pleaseEnterTokenAndPassword:
+      'Entrez le jeton et le nouveau mot de passe',
+  AppLocale.enterTokenFromEmailShort: 'Entrez le jeton de l’e-mail',
+  AppLocale.emailVerifiedWait:
+      'E-mail vérifié ! Patientez ou essayez de vous connecter manuellement.',
+  AppLocale.forgotPasswordQuestion: 'Mot de passe oublié ?',
+  AppLocale.helloUser: 'Bonjour, {name} !',
+  AppLocale.enterRegisteredEmail: 'Entrez votre e-mail enregistré',
+  AppLocale.sendResetToken: 'Envoyer le Jeton de Réinitialisation',
+  AppLocale.resetTokenLabel: 'Jeton de Réinitialisation',
+  AppLocale.newPassword: 'Nouveau Mot de Passe',
+  AppLocale.atLeast8Characters: 'Au moins 8 caractères',
+
+  AppLocale.storageQuotaExceeded: 'Quota de Stockage Dépassé',
+  AppLocale.storageQuotaDesc:
+      'Votre stockage est plein. Liberez de l’espace pour continuer à synchroniser vos sauvegardes cloud.',
+  AppLocale.currentStorageUsage: 'Utilisation actuelle du stockage :',
+  AppLocale.recommendedSolutions: 'Solutions recommandées :',
+  AppLocale.upgradePlan: 'Mettre à niveau le Plan',
+  AppLocale.upgradePlanDesc: 'Obtenez plus d’espace pour vos sauvegardes',
+  AppLocale.deleteOldSaves: 'Supprimer les Anciennes Sauvegardes',
+  AppLocale.deleteOldSavesDesc:
+      'Supprimez les sauvegardes dont vous n’avez plus besoin',
+  AppLocale.downloadAndDelete: 'Télécharger et Supprimer',
+  AppLocale.downloadAndDeleteDesc:
+      'Téléchargez la sauvegarde localement et supprimez-la du cloud',
+  AppLocale.dismiss: 'Fermer',
+  AppLocale.manageFiles: 'Gérer les Fichiers',
+  AppLocale.cloudStorageRefreshed: 'Stockage cloud actualisé',
+  AppLocale.failedToRefreshCloud: 'Échec de l’actualisation du stockage cloud',
+  AppLocale.onlineSaves: 'Sauvegardes en Ligne',
+  AppLocale.noOnlineSavesFound: 'Aucune sauvegarde en ligne trouvée',
+  AppLocale.whatIsNeoSync: 'Qu’est-ce que NeoSync Cloud ?',
+  AppLocale.neoSyncDescription:
+      'NeoSync est le partenaire cloud unifié de votre OmiSU.',
+  AppLocale.crossPlatform: 'Multiplateforme',
+  AppLocale.crossPlatformDesc:
+      'Continuez là où vous vous étiez arrêté sur n’importe quel appareil OmiSU.',
+  AppLocale.securePrivate: 'Sécurisé et Privé',
+  AppLocale.securePrivateDesc:
+      'Vos données sont cryptées et accessibles uniquement par vous.',
+  AppLocale.learnMoreEcosystem: 'En savoir plus sur l’écosystème sur',
+  AppLocale.manageYourPlan: 'Gérer votre plan {plan}',
+  AppLocale.choosePerfectPlan: 'Choisissez le plan parfait pour vos besoins',
+  AppLocale.loadingPlans: 'Chargement des plans...',
+  AppLocale.noPlansAvailable: 'Aucun plan disponible',
+  AppLocale.checkBackLater: 'Réessayez plus tard ou contactez le support',
+  AppLocale.currentBadge: 'Actuel',
+  AppLocale.monthly: 'Mensuel',
+  AppLocale.yearly: 'Annuel',
+  AppLocale.upgrade: 'Mettre à niveau',
+  AppLocale.downgrade: 'Rétrograder',
+  AppLocale.subscriptionEnding: 'Abonnement se terminant',
+  AppLocale.endsOn: 'Se termine le {date}',
+  AppLocale.renewsOn: 'Se renouvelle le {date}',
+  AppLocale.endSubscription: 'Terminer l’Abonnement',
+  AppLocale.backWithB: 'Retour (B)',
+  AppLocale.cancelSubscription: 'Annuler l’Abonnement',
+  AppLocale.cancelSubscriptionConfirm:
+      'Êtes-vous sûr de vouloir annuler ? Vous garderez l’accès jusqu’à la fin de la période.',
+  AppLocale.keepSubscription: 'Garder l’Abonnement',
+  AppLocale.deleteCloudSave: 'Supprimer la Sauvegarde Cloud',
+  AppLocale.deleteCloudSaveConfirm:
+      'Supprimer définitivement ce fichier de sauvegarde du cloud ?',
+  AppLocale.alsoDisableNeoSync: 'Désactiver NeoSync également',
+  AppLocale.preventsAutoSaves:
+      'Empêche les futures sauvegardes automatiques pour ce jeu.',
+  AppLocale.refreshing: 'Actualisation...',
+  AppLocale.refreshed: 'Actualisé',
+  AppLocale.failedToDisableNeoSync:
+      'Échec de la désactivation de NeoSync pour ce jeu',
+  AppLocale.saveFileDeleted: 'Fichier de sauvegarde supprimé avec succès',
+  AppLocale.failedToDeleteSave:
+      'Échec de la suppression du fichier de sauvegarde',
+  AppLocale.storageLabel: 'Stockage',
+  AppLocale.lastSyncedSave: 'Dernière sauvegarde synchronisée',
+  AppLocale.saveListMenu: 'Liste des Sauvegardes',
+  AppLocale.customSaveFoldersMenu: 'Dossiers de Sauvegarde Standalone',
+  AppLocale.updateYourPlanMenu: 'Mettre à Jour Votre Plan',
+  AppLocale.customFoldersSubtitle:
+      'Ajoutez un dossier personnalisé depuis un émulateur autonome pour synchroniser aussi ses sauvegardes.',
+  AppLocale.noCustomFoldersConfigured: 'Aucun dossier standalone configuré',
+  AppLocale.foldersConfigured: '{count} configurés',
+  AppLocale.searchSavesHint: 'Rechercher des sauvegardes...',
+  AppLocale.filterAll: 'Tous',
+  AppLocale.filterPerGameSaves: 'Sauvegardes par Jeu',
+  AppLocale.filterMemoryCards: 'Cartes Mémoire',
+  AppLocale.filterScope: 'Portée',
+  AppLocale.filterSystem: 'Système',
+  AppLocale.filterEmulator: 'Émulateur',
+  AppLocale.filterSort: 'Trier',
+  AppLocale.sortNewest: 'Plus Récent',
+  AppLocale.sortOldest: 'Plus Ancien',
+  AppLocale.sortNameAsc: 'Nom A–Z',
+  AppLocale.sortNameDesc: 'Nom Z–A',
+  AppLocale.scopePerGame: 'Par Jeu',
+  AppLocale.scopeMemCards: 'Cartes Mém.',
+  AppLocale.pageOf: 'Page {current} sur {total}',
+  AppLocale.noSavesMatchFilters: 'Aucune sauvegarde ne correspond aux filtres',
+  AppLocale.statSaves: 'Sauvegardes',
+  AppLocale.statStates: 'États',
+  AppLocale.statShared: 'Partagés',
+
+  AppLocale.syncConflictDetected: 'Conflit de Synchronisation Détecté',
+  AppLocale.localVersion: 'Version Locale',
+  AppLocale.cloudVersion: 'Version Cloud',
+  AppLocale.chooseConflictRes: 'Choisissez comment résoudre ce conflit :',
+  AppLocale.keepLocal: 'Garder la Version Locale',
+  AppLocale.keepLocalDesc: 'Utiliser le fichier de cet appareil',
+  AppLocale.keepCloud: 'Garder la Version Cloud',
+  AppLocale.keepCloudDesc: 'Télécharger et remplacer par le fichier du cloud',
+  AppLocale.keepBoth: 'Garder les Deux',
+  AppLocale.keepBothDesc: 'Créer une copie de sauvegarde du fichier local',
+  AppLocale.keepBothWithDate:
+      'Garder les Deux (Local : {localDate}, Cloud : {cloudDate})',
+  AppLocale.applyToAll: 'Appliquer à tous les conflits',
+  AppLocale.applyToAllDesc: 'Utiliser ce choix pour les conflits restants',
+
+  AppLocale.account: 'Compte',
+  AppLocale.scraping: 'Scraping',
+  AppLocale.scrapeMode: 'Mode de Scraping',
+  AppLocale.scrapeModeSub: 'Choisissez quoi rechercher',
+  AppLocale.media: 'Médias',
+  AppLocale.mediaSub: 'Choisissez les types de médias à télécharger',
+  AppLocale.language: 'Langue',
+  AppLocale.languageSub: 'Langue préférée pour les métadonnées',
+  AppLocale.preferredLanguage: 'Langue Préférée',
+  AppLocale.region: 'Région',
+  AppLocale.regionSub: 'Définir la priorité de région pour le scraping',
+  AppLocale.regionPriority: 'Priorité de Région',
+  AppLocale.regionPrioritySub:
+      'Les régions prioritaires sont préférées pour les noms, dates et médias. Appuyez sur A pour saisir, Haut/Bas pour déplacer, B pour déposer.',
+  AppLocale.regionUpdated: 'Priorité de région mise à jour',
+  AppLocale.regionError:
+      'Erreur lors de la mise à jour de la priorité de région',
+  AppLocale.systems: 'Systèmes',
+  AppLocale.screenscraper: 'Compte ScreenScraper',
+  AppLocale.totalGames: 'Total de Jeux',
+  AppLocale.successFailed: 'Succès / Échec',
+  AppLocale.request: 'Requête',
+  AppLocale.logoutConfirmationDesc:
+      'Êtes-vous sûr de vouloir vous déconnecter de ScreenScraper ?',
+  AppLocale.logoutSuccess: 'Déconnexion réussie',
+  AppLocale.logoutError: 'Erreur lors de la déconnexion',
+  AppLocale.newContentOnly: 'Nouveau contenu uniquement',
+  AppLocale.allContent: 'Tout le contenu',
+  AppLocale.scrapeModeUpdated: 'Mode de scraping mis à jour :',
+  AppLocale.scrapeModeError:
+      'Erreur lors de la mise à jour du mode de scraping',
+  AppLocale.languageUpdated: 'Langue mise à jour avec succès',
+  AppLocale.languageError: 'Erreur lors de la mise à jour de la langue',
+  AppLocale.mediaSettingsError:
+      'Erreur lors de l’enregistrement des paramètres médias',
+  AppLocale.newContentOnlyDesc:
+      'Rechercher uniquement les jeux qui n’ont pas encore été recherchés',
+  AppLocale.allContentDesc:
+      'Rechercher tous les jeux, y compris ceux déjà recherchés',
+  AppLocale.scrapeImages: 'Images (Captures, Couvertures)',
+  AppLocale.scrapeImagesDesc:
+      'Rechercher les captures, couvertures, logos et autres médias visuels',
+  AppLocale.scrapeVideos: 'Vidéos',
+  AppLocale.scrapeVideosDesc: 'Rechercher les aperçus vidéo des jeux',
+  AppLocale.scrapeFanart: 'Fanart',
+  AppLocale.scrapeFanartDesc: 'Rechercher les fonds d\'écran des jeux.',
+  AppLocale.scrapeScreenshot: 'Captures',
+  AppLocale.scrapeScreenshotDesc: 'Rechercher les captures de gameplay.',
+  AppLocale.scrapeWheel: 'Logos',
+  AppLocale.scrapeWheelDesc: 'Rechercher les logos des jeux.',
+  AppLocale.scrapeBox2D: 'Box Art 2D',
+  AppLocale.scrapeBox2DDesc: 'Rechercher les jaquettes 2D.',
+  AppLocale.scrapeVideo: 'Vidéos',
+  AppLocale.scrapeVideoDesc: 'Rechercher les aperçus vidéo des jeux.',
+  AppLocale.scrapingInProgress: 'Scraping en cours',
+  AppLocale.scraperSubtitle: 'Télécharger les métadonnées depuis ScreenScraper',
+  AppLocale.estimatedTimeLeft: 'Temps restant estimé :',
+  AppLocale.fetchingMetadata: 'Obtention des métadonnées',
+  AppLocale.scanningImages: 'Vérification des images existantes',
+  AppLocale.downloadingImages: 'Téléchargement des images',
+  AppLocale.idle: 'Inactif',
+  AppLocale.allGamesUpToDate: 'Tous les jeux sont à jour !',
+  AppLocale.scrapingCompleted: 'Scraping terminé avec succès !',
+  AppLocale.scrapingCancelled: 'Scraping annulé',
+  AppLocale.stoppingScraping: 'Arrêt du processus de scraping...',
+  AppLocale.syncError: 'Erreur lors de la synchronisation des IDs système',
+  AppLocale.metadataError: 'Erreur lors du processus de scraping',
+  AppLocale.scrapeQuotaExceeded:
+      'Quota de scraping quotidien ScreenScraper dépassé',
+  AppLocale.start: 'Démarrer',
+  AppLocale.systemsSub: 'Sélectionner les systèmes à rechercher',
+  AppLocale.disableAll: 'Tout Désactiver',
+  AppLocale.enableAll: 'Tout Activer',
+  AppLocale.enabled: 'Activé',
+  AppLocale.disabled: 'Désactivé',
+  AppLocale.allSystemsEnabled: 'Tous les systèmes activés',
+  AppLocale.allSystemsDisabled: 'Tous les systèmes désactivés',
+  AppLocale.updateError: 'Erreur lors de la mise à jour des systèmes',
+  AppLocale.maxThreads: 'Maximum de Threads',
+  AppLocale.dailyTotalRequests: 'Total de Requêtes Quotidiennes',
+  AppLocale.disconnectAccount: 'Déconnecter le Compte',
+  AppLocale.unknownUser: 'Utilisateur Inconnu',
+  AppLocale.free: 'Gratuit',
+  AppLocale.bronze: 'Bronze',
+  AppLocale.silver: 'Argent',
+  AppLocale.gold: 'Or',
+  AppLocale.developer: 'Développeur',
+  AppLocale.member: 'Membre',
+  AppLocale.defaultLauncher: 'Lanceur par Défaut',
+
+  AppLocale.hintNavigate: 'Naviguer',
+  AppLocale.hintSelect: 'Sélectionner',
+  AppLocale.hintSettings: 'Paramètres',
+  AppLocale.hintBack: 'Retour',
+  AppLocale.hintPlay: 'Jouer',
+  AppLocale.hintFavorite: 'Favori',
+  AppLocale.hintRandom: 'Aléatoire',
+  AppLocale.hintRefresh: 'Actualiser',
+  AppLocale.hintViewMode: 'Vue',
+  AppLocale.hintScrape: 'Scraper',
+  AppLocale.hintMoreActions: 'Plus',
+  AppLocale.hintOptions: 'Options',
+  AppLocale.addTo: 'Ajouter à…',
+  AppLocale.addedToCollection: 'Ajouté à {name}',
+  AppLocale.newCollection: 'Nouvelle collection…',
+  AppLocale.newCollectionDefaultName: 'Collection {number}',
+  AppLocale.collections: 'Collections',
+  AppLocale.collectionsCount: '{count} Collections',
+  AppLocale.collectionCount: '{count} Collection',
+
+  // Collections browser screen
+  AppLocale.createCollection: 'Nouvelle collection',
+  AppLocale.collectionName: 'Nom de la collection',
+  AppLocale.renameCollection: 'Renommer la collection',
+  AppLocale.changeImage: 'Changer l\'image',
+  AppLocale.removeImage: 'Supprimer l\'image',
+  AppLocale.deleteCollection: 'Supprimer la collection',
+  AppLocale.deleteCollectionConfirm:
+      'Supprimer « {name} » ? Les jeux qu\'elle contient ne sont pas supprimés.',
+  AppLocale.collectionCreated: '{name} créée',
+  AppLocale.collectionDeleted: '{name} supprimée',
+  AppLocale.emptyCollection: 'Cette collection ne contient encore aucun jeu',
+  AppLocale.noCollections: 'Aucune collection pour le moment',
+  AppLocale.noCollectionsSubtitle:
+      'Créez-en une pour regrouper des jeux de tous les systèmes.',
+  AppLocale.errorSavingCollection: 'Impossible d\'enregistrer la collection',
+  AppLocale.errorUpdatingCollection:
+      'Impossible de mettre à jour la collection',
+  AppLocale.inACollection: 'Dans une collection',
+
+  AppLocale.error: 'Erreur',
+  AppLocale.loading: 'Chargement...',
+  AppLocale.noData: 'Aucune donnée disponible',
+  AppLocale.viewMode: 'Mode de Vue',
+  AppLocale.fileName: 'Nom du Fichier',
+  AppLocale.date: 'Date',
+  AppLocale.size: 'Taille',
+  AppLocale.grantPermission: 'Accorder l’Autorisation',
+  AppLocale.cannotReadFolder: 'Impossible de lire ce dossier',
+  AppLocale.noStorageFound: 'Aucun stockage trouvé',
+  AppLocale.lastPlayed: 'Dernier joué',
+  AppLocale.apps: 'Apps',
+  AppLocale.tracks: 'Pistes',
+  AppLocale.games: 'Jeux',
+  AppLocale.enter: 'Entrer',
+  AppLocale.beta: 'Bêta',
+  AppLocale.gridView: 'Vue Grille',
+  AppLocale.listView: 'Vue Liste',
+  AppLocale.carouselView: 'Vue Carrousel',
+  AppLocale.alphabetical: 'Alphabétique',
+  AppLocale.dateAdded: 'Date d\'ajout',
+  AppLocale.sortByGameCount: 'Nombre de jeux',
+  AppLocale.releaseYear: 'Année de Sortie',
+  AppLocale.manufacturer: 'Fabricant',
+  AppLocale.manufacturerType: 'Fabricant / Type',
+  AppLocale.ascending: 'Croissant',
+  AppLocale.descending: 'Décroissant',
+  AppLocale.viewModeGroup: 'Mode de Vue',
+  AppLocale.cardSizeGroup: 'Taille de Carte',
+  AppLocale.cardStyleGroup: 'Style de Carte',
+  AppLocale.fanartCard: 'Fanart',
+  AppLocale.boxCard: 'Boîte',
+  AppLocale.sortByGroup: 'Trier par',
+  AppLocale.orderGroup: 'Ordre',
+  AppLocale.synced: 'Synchronisé',
+  AppLocale.syncing: 'Synchronisation',
+  AppLocale.conflict: 'Conflit',
+  AppLocale.ready: 'Prêt',
+  AppLocale.quota: 'Quota',
+  AppLocale.noSave: 'Pas de Save',
+  AppLocale.noEmulator: 'Émulateur non configuré',
+  AppLocale.incompleteMetadata: 'Métadonnées incomplètes',
+  AppLocale.noDescription: 'Aucune description disponible.',
+  AppLocale.scrapeToDownload:
+      'Ce jeu n’a pas encore de métadonnées. Scrapez pour télécharger description, genre, couvertures et vidéos.',
+  AppLocale.loginToScrape:
+      'Connectez-vous à ScreenScraper dans les paramètres pour activer les téléchargements.',
+  AppLocale.noAchievementsFound: 'Aucun succès trouvé pour ce jeu.',
+  AppLocale.scrapingGameData: 'Recherche des données du jeu...',
+  AppLocale.addFav: 'Favoris',
+  AppLocale.rescrape: 'Répéter le Scraping',
+  AppLocale.scrape: 'Scraping',
+  AppLocale.noAchievements: 'Sans Succès',
+  AppLocale.gameInfo: 'Info du Jeu',
+  AppLocale.manage: 'Gérer',
+  AppLocale.forceRescrape: 'Forcer le Rescrape',
+  AppLocale.scrapingData: 'Données de scraping',
+  AppLocale.scrapingMedia: 'Média de scraping',
+  AppLocale.gameTitle: 'Titre',
+  AppLocale.publisher: 'Éditeur',
+  AppLocale.genre: 'Genre',
+  AppLocale.description: 'Description',
+  AppLocale.screenshot: "Capture d'écran",
+  AppLocale.fanart: 'Fanart',
+  AppLocale.wheel: 'Wheel',
+  AppLocale.boxart: 'Jaquette',
+  AppLocale.change: 'Modifier',
+  AppLocale.metadataSaved: 'Métadonnées enregistrées',
+  AppLocale.imageUpdated: 'Image mise à jour',
+  AppLocale.unlocked: 'Débloqué !',
+  AppLocale.points: 'points',
+  AppLocale.scanningRomsRA: 'Recherche de ROMs pour RetroAchievements',
+  AppLocale.stopScan: 'Arrêter l’Analyse',
+  AppLocale.romsProcessed: 'ROMs Traitées : {processed}/{total}',
+  AppLocale.compatibleCount: 'Compatibles : {count}',
+  AppLocale.percentageCompleted: '{percentage}% Terminé',
+  AppLocale.scanningRomLibrary: 'Analyse de la bibliothèque de ROMs',
+  AppLocale.gamesWithAchievementsFound: '{count} jeux avec succès trouvés !',
+  AppLocale.cancelScan: 'Annuler l’Analyse',
+  AppLocale.progress: 'Progression',
+  AppLocale.raLogin: 'Connexion RetroAchievements',
+  AppLocale.raOfflineBanner:
+      'Hors ligne — affichage de vos derniers succès synchronisés',
+  AppLocale.raWhatIs: 'Qu’est-ce que RetroAchievements ?',
+  AppLocale.raDescription:
+      'RetroAchievements est une communauté qui propose des succès pour les jeux classiques via l’émulation.',
+  AppLocale.raEarnPoints: 'Gagnez des points Hardcore et affichez-les',
+  AppLocale.raGlobalLeaderboards: 'Classements et scores mondiaux',
+  AppLocale.raGameplayHistory: 'Historique de jeu et progression détaillés',
+  AppLocale.raCreateAccountAt: 'Créez un compte sur',
+  AppLocale.raToStartEarning: ' pour commencer à gagner.',
+  AppLocale.userProfile: 'Profil de l’Utilisateur',
+  AppLocale.disconnectedRA: 'Déconnecté de RetroAchievements',
+  AppLocale.raPlayer: 'Joueur RetroAchievements',
+  AppLocale.noMottoSet: 'Aucune devise définie',
+  AppLocale.contributions: 'Contributions',
+  AppLocale.aotw: 'Succès de la Semaine',
+  AppLocale.achievementLabel: 'Succès : {title}',
+  AppLocale.unlocks: 'déblocages',
+  AppLocale.recentlyPlayed: 'Joués Récemment',
+  AppLocale.achivs: 'Succès',
+  AppLocale.noRecentGames: 'Aucun jeu joué récemment',
+  AppLocale.noAwardsYet: 'Aucun prix encore',
+  AppLocale.latestAward: 'Dernier Prix',
+  AppLocale.totalRA: 'Total',
+  AppLocale.awardedOn: 'Décerné le',
+  AppLocale.successConnectedRA: 'Connecté à RetroAchievements avec succès !',
+  AppLocale.credentialStorageUnavailable:
+      'Connexion réussie, mais cet appareil n\'a pas pu enregistrer vos identifiants. Vous devrez vous reconnecter la prochaine fois.',
+  AppLocale.connect: 'Connecter',
+  AppLocale.enterUsername: 'Entrez votre utilisateur',
+  AppLocale.pleaseCompleteAllFields: 'Veuillez remplir tous les champs',
+  AppLocale.loginSuccessful: 'Connexion réussie',
+  AppLocale.systemIdsSyncSuccess: 'IDs système synchronisés',
+  AppLocale.systemIdsSyncWarning:
+      'Attention : Échec de la synchronisation des IDs système',
+  AppLocale.systemIdsSyncError:
+      'Attention : Erreur lors de la synchronisation des IDs système : {error}',
+  AppLocale.errorSavingCredentials:
+      'Erreur lors de l’enregistrement des identifiants',
+  AppLocale.invalidCredentials: 'Les identifiants fournis sont invalides',
+  AppLocale.loginError: 'Erreur de connexion : {error}',
+  AppLocale.whatIsScreenScraper: 'Qu’est-ce que ScreenScraper ?',
+  AppLocale.screenScraperDescription:
+      'ScreenScraper est une base de données collaborative qui fournit des métadonnées, couvertures et vidéos de haute qualité pour vos jeux.',
+  AppLocale.automaticMetadataMedia: 'Métadonnées et médias automatiques',
+  AppLocale.massiveDatabase: 'Énorme base de données communautaire',
+  AppLocale.requiresFreeAccount: 'Nécessite un compte gratuit',
+  AppLocale.createAccountAt: 'Créez un compte sur',
+  AppLocale.toGetCredentials: ' pour obtenir vos identifiants.',
+  AppLocale.screenScraperLogin: 'Connexion ScreenScraper',
+  AppLocale.scanningSystemsRoms: 'Analyse des systèmes et ROMs...',
+  AppLocale.ofSystems: '{scanned} sur {total} systèmes',
+  AppLocale.systemsDetected: '{count} systèmes détectés',
+  AppLocale.romsLabel: '{count} ROMs',
+  AppLocale.welcomeOmiSU: 'Bienvenue sur OmiSU !',
+  AppLocale.letsGetSetup: 'Faisons votre configuration',
+  AppLocale.storagePermission: 'Autorisation de Stockage',
+  AppLocale.storagePermissionDesc:
+      'OmiSU a besoin de "l’Accès à Tous les Fichiers" pour gérer vos configurations RetroArch et synchroniser vos sauvegardes correctement.\n\nVeuillez accorder cette autorisation sur l’écran suivant.',
+  AppLocale.screenReturnAccess: 'Screen Return Access',
+  AppLocale.screenReturnAccessDesc:
+      'Brings the Now Playing screen back when you close an app opened from the dock, and enables system screenshots. Only the foreground app name is read \u2014 no screen content is collected.',
+  AppLocale.screenReturnAccessHint: 'Turn on OmiSU, then tap Allow',
+  AppLocale.selectRomFolder: 'Sélectionner le Dossier des ROMs',
+  AppLocale.romFolderSelected: 'Dossier des ROMs sélectionné !',
+  AppLocale.chooseRomFolderDesc:
+      'Choisissez le dossier où vos fichiers ROM sont stockés. OmiSU analysera ce dossier pour trouver des jeux.',
+  AppLocale.setupComplete: 'Configuration terminée !',
+  AppLocale.scanningRoms: 'Analyse des ROMs',
+  AppLocale.foundSystemsWithGames: '{count} systèmes avec des jeux trouvés !',
+  AppLocale.tapFinishToStart: 'Appuyez sur Terminer pour commencer à jouer.',
+  AppLocale.finish: 'Terminer',
+  AppLocale.skipForNow: 'Passer pour l’instant',
+  AppLocale.grantAccess: 'Accorder l’Accès',
+  AppLocale.selectFolder: 'Sélectionner le Dossier',
+  AppLocale.next: 'Suivant',
+  AppLocale.romsFolderTitle: 'Dossier des ROMs',
+  AppLocale.romFolderUpdated: 'Dossier des ROMs mis à jour, analyse terminée',
+  AppLocale.ensureValidFolderDesc:
+      'Assurez-vous que : 1. Le dossier des ROMs existe ; 2. Vous avez sélectionné un dossier valide.',
+  AppLocale.scanningComplete: 'Analyse terminée',
+  AppLocale.applyingInitialConfig:
+      'Application de la configuration initiale...',
+  AppLocale.recentBadge: 'RÉCENT',
+  AppLocale.unknownGame: 'Jeu Inconnu',
+  AppLocale.unknownSystem: 'Système Inconnu',
+  AppLocale.gamesCount: '{count} jeux',
+  AppLocale.gameCount: '{count} jeu',
+  AppLocale.appsCount: '{count} apps',
+  AppLocale.appCount: '{count} app',
+  AppLocale.errorSystemNotFound: 'Erreur : Système non trouvé pour ce jeu.',
+  AppLocale.errorLaunchingGame: 'Erreur lors du lancement du jeu : {error}',
+  AppLocale.allSystems: 'Tous les Systèmes',
+  AppLocale.noSystemsFound: 'Aucun système trouvé',
+  AppLocale.setupLibrary: 'Configurez votre Bibliothèque',
+  AppLocale.chooseRomFolderOrganize:
+      'Sélectionnez votre dossier de ROMs pour détecter les systèmes et organiser votre collection automatiquement.',
+  AppLocale.scanningButton: 'Analyse...',
+  AppLocale.changeFolder: 'Modifier le Dossier',
+  AppLocale.selectRomFolderButton: 'Sélectionner le Dossier des ROMs',
+  AppLocale.configurationComplete: 'Configuration Terminée !',
+  AppLocale.foundSystemsInFolder:
+      '{count} systèmes trouvés dans votre dossier de ROMs.',
+  AppLocale.lastScanLabel: 'Dernière analyse : {date}',
+  AppLocale.howItWorks: 'Comment ça marche',
+  AppLocale.step1SelectFolder: '1. Sélectionnez votre Dossier de ROMs',
+  AppLocale.step1Desc:
+      'Choisissez le dossier principal contenant votre collection.',
+  AppLocale.step2AutoDetection: '2. Détection Automatique',
+  AppLocale.step2Desc:
+      'L’app recherchera les systèmes supportés comme "snes", "psx", "gba", etc.',
+  AppLocale.step3CountGames: '3. Comptez vos Jeux',
+  AppLocale.step3Desc:
+      'Chaque dossier de système sera analysé pour compter vos fichiers ROM.',
+  AppLocale.step4ReadyToPlay: '4. Prêt à Jouer',
+  AppLocale.step4Desc:
+      'Lancez les jeux directement depuis votre bibliothèque organisée.',
+  AppLocale.timePlayedLabel: 'Temps joué : {time}',
+  AppLocale.hour: 'heure',
+  AppLocale.minute: 'minute',
+  AppLocale.second: 'seconde',
+  AppLocale.unknown: 'inconnu',
+  AppLocale.tracksCount: '{count} pistes',
+  AppLocale.trackCount: '{count} piste',
+  AppLocale.hours: 'heures',
+  AppLocale.minutes: 'minutes',
+  AppLocale.seconds: 'secondes',
+  AppLocale.hoursShort: 'h',
+  AppLocale.minutesShort: 'm',
+  AppLocale.secondsShort: 's',
+  AppLocale.settingUpLibrary: 'Configuration de votre bibliothèque',
+  AppLocale.detectingSystems: 'Détection et configuration des systèmes...',
+  AppLocale.noSystemsFoundTitle: 'Aucun système trouvé',
+  AppLocale.noSystemsFoundDesc:
+      'Aucun système supporté n’a été trouvé. Vérifiez l’organisation des fichiers.',
+  AppLocale.selectRomFolderDescShort:
+      'Sélectionnez un dossier de ROMs pour démarrer l’analyse de la bibliothèque.',
+  AppLocale.systemSettingsNotAvailable: 'Paramètres système indisponibles',
+  AppLocale.systemSettings: 'Paramètres du Système',
+  AppLocale.systemImages: 'Images du Système',
+  AppLocale.customImageSet: '✨ Image personnalisée définie',
+  AppLocale.imageUpdatedSuccess: 'Image mise à jour avec succès',
+  AppLocale.imageResetDefault: 'Image réinitialisée par défaut',
+  AppLocale.errorUpdatingImage:
+      'Erreur lors de la mise à jour de l’image : {error}',
+  AppLocale.errorResettingImage:
+      'Erreur lors de la réinitialisation de l’image : {error}',
+  AppLocale.installed: 'Installé',
+  AppLocale.notInstalled: 'Non Installé',
+  AppLocale.configured: 'Configuré',
+  AppLocale.notConfigured: 'Non Configuré',
+  AppLocale.selectCore: 'Sélectionner le Core',
+  AppLocale.setAsDefault: 'Définir par Défaut',
+  AppLocale.defaultLabel: 'Défaut',
+  AppLocale.coreSetAsDefault: '{name} défini par défaut',
+  AppLocale.errorSettingDefault: 'Échec de la définition de {name} par défaut.',
+  AppLocale.loadingEmulators: 'Chargement des émulateurs...',
+  AppLocale.selectEmulatorExecutable: 'Sélectionner l’exécutable pour {name}',
+
+  AppLocale.neoSyncLocalSavesOnly: 'NeoSync : Sauvegardes locales uniquement',
+  AppLocale.neoSyncCloudSavesOnly: 'NeoSync : Sauvegardes cloud uniquement',
+  AppLocale.neoSyncSaveConflict: 'NeoSync : Conflit de sauvegarde détecté',
+  AppLocale.neoSyncCloudSyncDisabled:
+      'NeoSync : Synchronisation cloud désactivée',
+  AppLocale.neoSyncQuotaExceeded: 'NeoSync : Quota de stockage dépassé',
+  AppLocale.packageNameMissing: 'Nom du paquet manquant',
+  AppLocale.failedToLaunchAndroidApp: 'Échec du lancement de l’app Android',
+  AppLocale.romFileNotFound: 'Fichier ROM non trouvé',
+  AppLocale.launchFailed: 'Échec du lancement',
+  AppLocale.platformNotSupported: 'Plateforme non supportée',
+  AppLocale.coreNotConfigured: 'Core non configuré',
+  AppLocale.coreNotInstalled: 'Core "{name}" non installé',
+  AppLocale.retroArchNotFound: 'RetroArch non trouvé',
+  AppLocale.embeddedPlayDesktopTitle: 'Built-in play requires the Android app',
+  AppLocale.embeddedPlayDesktopDetails:
+      'OmiSU plays supported systems inside the app using built-in libretro cores (same engine as Lemuroid, no extra emulator install). That player is only in the Android APK, not this Linux preview. Install OmiSU on your phone to play; use this preview for library setup only.',
+  AppLocale.retroArchExecutableNotFound: 'Exécutable RetroArch non trouvé',
+  AppLocale.coresDirectoryNotFound: 'Répertoire des cores non trouvé',
+  AppLocale.coreNotFound: 'Core non trouvé',
+  AppLocale.coreFileNotFound: 'Fichier du core non trouvé',
+  AppLocale.failedToLaunchRetroArch: 'Échec du lancement de RetroArch',
+  AppLocale.executableNotFound: 'Exécutable non trouvé',
+  AppLocale.failedToLaunchStandalone: 'Échec du lancement de {name}',
+  AppLocale.emulatorNotConfigured: 'Émulateur non configuré',
+  AppLocale.noEmulatorsAvailable: 'Aucun émulateur disponible pour ce système',
+
+  AppLocale.loopActivated: 'Loop activé : piste déplacée vers le haut',
+  AppLocale.loopDeactivated: 'Loop désactivé',
+  AppLocale.shuffleEnabled: 'Aléatoire : Activé',
+  AppLocale.shuffleDisabled: 'Aléatoire : Désactivé',
+  AppLocale.favoriteUpdated: 'Favori mis à jour',
+  AppLocale.errorUpdatingFavorite: 'Erreur lors de la mise à jour du favori',
+  AppLocale.launchGameFailed: 'Échec du lancement du jeu',
+  AppLocale.launchError: 'Erreur de Lancement',
+  AppLocale.unableToLaunch: 'Impossible de lancer "{name}"',
+  AppLocale.unexpectedLaunchError:
+      'Une erreur inattendue est survenue lors de la tentative de lancement de "{name}"',
+  AppLocale.technicalDetails: 'Détails Techniques :',
+  AppLocale.tryAgainGameConfig: 'Réessayez ou vérifiez la configuration.',
+  AppLocale.unknownError: 'Erreur inconnue',
+  AppLocale.loadingGames: 'Chargement des jeux',
+  AppLocale.preparingLibrary: 'Préparation de votre bibliothèque...',
+  AppLocale.noGamesFoundFor: 'Aucun jeu trouvé pour {name}',
+  AppLocale.checkRomFiles:
+      'Vérifiez si les fichiers sont dans le bon dossier et au format supporté.',
+  AppLocale.failedToSaveSetting:
+      'Échec de l’enregistrement de la configuration',
+  AppLocale.scanningSystemOf: 'Analyse du système {current} sur {total}',
+  AppLocale.selectAGame: 'Sélectionnez un jeu',
+  AppLocale.chooseGameFromList:
+      'Choisissez un jeu dans la liste pour voir les détails',
+
+  AppLocale.nowPlaying: 'En cours de lecture',
+  AppLocale.unknownArtist: 'Artiste Inconnu',
+  AppLocale.loop: 'Boucle',
+  AppLocale.pause: 'Pause',
+  AppLocale.noTrackSelected: 'Aucune piste sélectionnée',
+
+  AppLocale.syncStoppedAfterAttempts:
+      'Synchronisation interrompue après {count} tentatives infructueuses',
+  AppLocale.storageUsed: '{amount} utilisé',
+  AppLocale.storageTotal: '{amount} total',
+  AppLocale.storageUsedPercent: '{percent}% utilisé',
+
+  AppLocale.planWelcomeTitle: 'Bienvenue !',
+  AppLocale.planWelcomeMessagePre: 'Merci d’avoir choisi le plan ',
+  AppLocale.planWelcomeMessagePost: ' . Profitez des nouvelles fonctions !',
+  AppLocale.planFarewellTitle: 'Triste de vous voir partir',
+  AppLocale.planFarewellMessagePre: 'Nous regrettons votre changement du plan ',
+  AppLocale.planFarewellMessageMid: ' vers le ',
+  AppLocale.planFarewellMessagePost: ' . Nous espérons vous revoir bientôt !',
+  AppLocale.planUpgradeAnytime:
+      'Rappelez-vous que vous pouvez mettre à niveau votre plan à tout moment.',
+  AppLocale.pressToClose: 'Appuyez sur [ESC], [ENTER] ou [ESPACE] pour fermer',
+
+  AppLocale.selectStorage: 'Sélectionner le Stockage',
+
+  AppLocale.homeFolder: 'Dossier personnel',
+
+  AppLocale.filesystemRoot: 'Système de fichiers',
+  AppLocale.internalStorage: 'Stockage Interne',
+  AppLocale.externalStorage: 'Stockage Externe ({name})',
+  AppLocale.folderRestrictedAndroid: 'Dossier restreint par Android',
+  AppLocale.storagePermissionRequired: 'Autorisation de stockage nécessaire',
+  AppLocale.folderRestrictedDesc:
+      'Ce dossier est restreint par Android et ne peut pas être accédé.',
+  AppLocale.allFilesAccessDesc:
+      'Cette app a besoin de "l’Accès à Tous les Fichiers" pour naviguer.',
+  AppLocale.setThisDirectory: 'Définir ce répertoire',
+  AppLocale.hintSelectFile: 'Sélectionner Fichier / Entrer',
+  AppLocale.hintEnterSetDir: 'Entrer / Définir / Retour',
+
+  AppLocale.updateAvailable: 'Mise à Jour Disponible',
+  AppLocale.updateVersion: 'Version {version}',
+  AppLocale.updateCurrentVersion: 'Votre version actuelle est {version}',
+  AppLocale.updateLater: 'Plus tard',
+  AppLocale.updateNow: 'Mettre à Jour Maintenant',
+  AppLocale.updateDownloading: 'Téléchargement de la mise à jour...',
+  AppLocale.updatePreparingInstall: 'Préparation de l’installation...',
+  AppLocale.updateDialogError: 'Erreur de Mise à Jour',
+  AppLocale.updateErrorAndroid:
+      'Échec de l’installation. Vérifiez les autorisations d’apps inconnues.',
+  AppLocale.updateErrorDesktop:
+      'Échec de la mise à jour. Réessayez plus tard ou visitez neostation.dev',
+  AppLocale.updateReleaseNotesTitle: "What's new",
+  AppLocale.updateNoReleaseNotes: 'No release notes were published for this update.',
+  AppLocale.updateKnownIssueWarning:
+      'Release notes mention a known issue — read below before updating.',
+  AppLocale.builtinPlayerUpdateAvailable: 'Built-in Player Update',
+  AppLocale.builtinPlayerEngineLabel: 'LibretroDroid engine',
+  AppLocale.builtinPlayerCoresLabel: 'Libretro cores',
+  AppLocale.builtinPlayerVersionBump: '{label}: {from} → {to}',
+
+  AppLocale.systemsUpdateAvailable: 'Mise à Jour des Systèmes Disponible',
+  AppLocale.systemsUpdateCurrentVersion: 'Version actuelle : {version}',
+  AppLocale.systemsUpdateNewVersion: 'Nouvelle version : {version}',
+  AppLocale.systemsUpdateDownloading: 'Téléchargement des configs systèmes...',
+  AppLocale.systemsUpdateCancelling: 'Annulation...',
+  AppLocale.systemsUpdateSyncing: 'Synchronisation de la base de données...',
+  AppLocale.systemsUpdateComplete: 'Systèmes mis à jour avec succès !',
+  AppLocale.systemsUpdateError:
+      'Échec de la mise à jour des systèmes. Réessayez plus tard.',
+
+  AppLocale.checkingCredentials: 'Vérification des identifiants...',
+  AppLocale.scrapeNoCredentials:
+      'Identifiants ScreenScraper non trouvés. Connectez-vous.',
+  AppLocale.scrapeSystemNotMapped: 'Système non mappé sur ScreenScraper.',
+  AppLocale.scrapeGameNotFound: 'Jeu non trouvé sur ScreenScraper.',
+  AppLocale.scrapeFailedSaveMetadata:
+      'Échec de l’enregistrement des métadonnées du jeu.',
+  AppLocale.scrapeMediaDownloadsFailed:
+      'Métadonnées enregistrées, mais échec du téléchargement de certains médias.',
+  AppLocale.scrapeUnexpectedError:
+      'Une erreur inattendue est survenue pendant le scraping.',
+  AppLocale.scrapeSuccessful: 'Scraping réalisé avec succès !',
+  AppLocale.scrapeErrorGame: 'Erreur lors de la recherche des données du jeu.',
+
+  AppLocale.userDataLocation: 'Emplacement des données',
+  AppLocale.userDataLocationSubtitle:
+      'Choisissez où sont stockés les médias, les packs System Art et données de l\'application',
+  AppLocale.userDataLocationDefault: 'Emplacement par défaut',
+  AppLocale.selectUserDataFolder: 'Sélectionner le dossier de données',
+  AppLocale.folderNotEmptyTitle: 'Dossier non vide',
+  AppLocale.folderNotEmptyBody:
+      'Ce dossier contient déjà {count} élément(s). OmiSU y stockera ses propres données, aux côtés du contenu existant.',
+  AppLocale.folderNotEmptyUseAnyway: 'Utiliser quand même',
+  AppLocale.userDataFolderNotWritable:
+      "Impossible d'écrire dans ce dossier. Choisissez-en un autre ou gardez l'emplacement par défaut.",
+  AppLocale.userDataFolderGrantAllFiles:
+      "Pour utiliser ce dossier, autorisez l'accès à tous les fichiers pour OmiSU dans Paramètres Android → Applications → Accès spéciaux des applications → Accès à tous les fichiers, puis choisissez-le à nouveau.",
+  AppLocale.moveUserDataTitle: 'Déplacer les données ?',
+  AppLocale.moveUserDataBody:
+      'OmiSU déplacera ses propres données (base de données, médias récupérés et paramètres) du dossier actuel vers le nouveau. Les fichiers non créés par OmiSU restent intacts.',
+  AppLocale.moveUserDataDestNotEmpty:
+      'Le nouveau dossier contient déjà {count} élément(s). Les données de OmiSU seront ajoutées à côté.',
+  AppLocale.moveUserDataConfirm: 'Déplacer',
+  AppLocale.migratingUserData: 'Déplacement des données',
+  AppLocale.migratingUserDataComplete: 'Migration terminée',
+  AppLocale.migratingUserDataError: 'Échec de la migration',
+  AppLocale.migratingFiles: 'Copie de {current} sur {total} fichiers...',
+  AppLocale.restartRequired: 'Redémarrage requis',
+  AppLocale.restartRequiredBody:
+      'OmiSU va se fermer. Veuillez le rouvrir pour utiliser le nouvel emplacement.',
+  AppLocale.userDataLocationUpdated: 'Emplacement des données mis à jour',
+  AppLocale.resetToDefault: 'Rétablir par défaut',
+  AppLocale.romDirectories: 'Répertoires ROM',
+  AppLocale.tools: 'Outils',
+  AppLocale.toolsSubtitle: 'Outils pour vous aider à organiser vos ROM',
+  AppLocale.services: 'Services',
+  AppLocale.servicesSubtitle:
+      'Connectez des bibliothèques en ligne — les jeux se lancent depuis votre liste avec des cœurs intégrés',
+  AppLocale.servicesEmbeddedPlayNote:
+      'OmiSU lance les jeux nativement. Aucun émulateur supplémentaire n\'est requis pour les systèmes pris en charge.',
+  AppLocale.library: 'Library',
+  AppLocale.librarySubtitle:
+      'ROM folders, scan behaviour, and imports',
+  AppLocale.appearanceSubtitle:
+      'Layout, themes, system art, and navigation tabs',
+  AppLocale.input: 'Input',
+  AppLocale.inputSubtitle: 'Gamepad and controller preferences',
+  AppLocale.playback: 'Playback',
+  AppLocale.playbackSubtitle:
+      'How games launch and which emulators are used',
+  AppLocale.streaming: 'Streaming',
+  AppLocale.streamingSubtitle:
+      'RTMP live broadcast while playing with the built-in player',
+  AppLocale.streamingAndroidOnly: 'Streaming is available on Android only.',
+  AppLocale.streamingRtmpSection: 'RTMP ingest',
+  AppLocale.streamingServerUrl: 'Server URL',
+  AppLocale.streamingStreamKey: 'Stream key',
+  AppLocale.streamingPresetTwitch: 'Use Twitch ingest URL',
+  AppLocale.streamingPresetYoutube: 'Use YouTube ingest URL',
+  AppLocale.streamingPresetKick: 'Use Kick ingest URL',
+  AppLocale.streamingAudioSection: 'Audio',
+  AppLocale.streamingGameAudio: 'Game audio',
+  AppLocale.streamingGameAudioSubtitle: 'Capture in-app sound from the built-in player',
+  AppLocale.streamingIncludeMic: 'Include microphone',
+  AppLocale.streamingIncludeMicSubtitle: 'Your voice while playing (mixed with game audio when both are on)',
+  AppLocale.streamingQuality: 'Video quality',
+  AppLocale.streamingValidateUrl: 'Validate server URL',
+  AppLocale.streamingUrlOk: 'URL format looks valid',
+  AppLocale.streamingFaceCamSection: 'Face cam',
+  AppLocale.streamingFaceCam: 'Show front camera',
+  AppLocale.streamingFaceCamSubtitle:
+      'Optional overlay (picture-in-picture coming soon)',
+  AppLocale.streamingFaceCamCorner: 'Face cam corner',
+  AppLocale.streamingFaceCamSize: 'Face cam size',
+  AppLocale.streamingFaceCamV11Note:
+      'Face cam overlay on the stream is not enabled yet; gameplay capture still works.',
+  AppLocale.streamingStreamOnLaunch: 'Stream when I play this game',
+  AppLocale.streamingStreamOnLaunchSubtitle:
+      'Start RTMP when launching with the built-in player',
+  AppLocale.streamingSetupRequired:
+      'Set up streaming in Settings → Streaming',
+  AppLocale.streamingOpenSettings: 'Open Streaming settings',
+  AppLocale.streamingLive: 'LIVE',
+  AppLocale.streamingStart: 'Start stream',
+  AppLocale.streamingStop: 'Stop stream',
+  AppLocale.autoScanOnChange: 'Auto-scan on folder change',
+  AppLocale.autoScanOnChangeSubtitle:
+      'Rescan affected systems when ROM files are added or removed (desktop)',
+  AppLocale.autoScanOnResume: 'Auto-scan on resume',
+  AppLocale.autoScanOnResumeSubtitle:
+      'Silently rescan all systems when returning to the app',
+  AppLocale.autoScrapeNewGames: 'Auto-scrape new games',
+  AppLocale.autoScrapeNewGamesSubtitle:
+      'Download metadata for newly discovered ROMs via ScreenScraper',
+  AppLocale.autoScrapeWifiOnly: 'Auto-scrape on Wi‑Fi only',
+  AppLocale.autoScrapeWifiOnlySubtitle:
+      'On Android, run background scraping only when connected to Wi‑Fi',
+  AppLocale.appearanceOpenThemes: 'Themes',
+  AppLocale.appearanceOpenSystemArt: 'System Art',
+  AppLocale.appearanceHiddenSystems: 'Hidden Systems',
+  AppLocale.inputSwapAbxy: 'Swap A/B and X/Y',
+  AppLocale.inputSwapAbxySubtitle: 'Coming in a future update',
+  AppLocale.inputShoulderStyle: 'Tab cycle hints',
+  AppLocale.inputShoulderStyleSubtitle:
+      'Shoulder glyphs shown in the header for L1/R1 tab cycling',
+  AppLocale.inputShoulderStyleBumpers: 'LB / RB',
+  AppLocale.inputShoulderStyleTriggers: 'LT / RT',
+  AppLocale.playbackEmbeddedNote:
+      'OmiSU launches games natively. No extra emulator download is required for supported systems.',
+  AppLocale.builtinPlayerLabel: 'Built-in player',
+  AppLocale.builtinPlayerReady: 'Ready — plays in-app',
+  AppLocale.linuxPreviewEmulators:
+      'Linux preview (RetroArch for testing)',
+  AppLocale.playbackPerSystemEmulators:
+      'Per-system emulator paths and launch options are configured in each system\'s settings dialog.',
+  AppLocale.homeLayout: 'Disposition d\'accueil',
+  AppLocale.homeLayoutSubtitle:
+      'La grille affiche la bibliothèque ; le carrousel est une vue vitrine',
+  AppLocale.addRomFolder: 'Ajouter un dossier ROM',
+  AppLocale.removeRomFolder: 'Supprimer',
+  // RomM (remote library browse + download)
+  AppLocale.romm: 'RomM',
+  AppLocale.rommLibrary: 'Bibliothèque RomM',
+  AppLocale.rommLogin: 'Connexion RomM',
+  AppLocale.rommWhatIs: 'Qu’est-ce que RomM ?',
+  AppLocale.rommDescription:
+      'RomM est un gestionnaire de ROMs auto-hébergé. Connectez-vous à votre serveur pour parcourir votre bibliothèque, télécharger des jeux directement sur cet appareil et synchroniser vos sauvegardes.',
+  AppLocale.rommInfoBrowse:
+      'Parcourez et téléchargez toute votre bibliothèque de jeux',
+  AppLocale.rommInfoSaveSync:
+      'Synchronisez vos sauvegardes entre vos appareils',
+  AppLocale.rommInfoSelfHosted:
+      'Auto-hébergé : votre collection, votre serveur',
+  AppLocale.rommLearnMoreAt: 'En savoir plus sur ',
+  AppLocale.rommServerUrl: 'URL du serveur',
+  AppLocale.rommServerUrlHint: 'https://romm.example.com',
+  AppLocale.rommTestConnection: 'Tester la connexion',
+  AppLocale.rommDisconnect: 'Déconnecter',
+  AppLocale.rommUseForSaveSync: 'Utiliser RomM pour la synchro des sauvegardes',
+  AppLocale.rommSaveSyncLabel: 'Sync RomM',
+  AppLocale.rommSaveSyncActive:
+      'RomM est votre fournisseur de synchro des sauvegardes',
+  AppLocale.saveSyncHandledBy:
+      'La synchronisation des sauvegardes est gérée par {provider}',
+  AppLocale.saveSyncSingleProvider:
+      'Un seul fournisseur synchronise les sauvegardes à la fois',
+  AppLocale.saveSyncNoneActive: 'Aucune synchronisation des sauvegardes active',
+  AppLocale.rommBrowseLibrary: 'Parcourir la bibliothèque',
+  AppLocale.rommStatusConnected: 'Connecté',
+  AppLocale.rommStatusDisconnected: 'Non connecté',
+  AppLocale.rommConnecting: 'Connexion...',
+  AppLocale.rommTesting: 'Test en cours...',
+  AppLocale.rommConnectionSuccess: 'Connexion réussie',
+  AppLocale.rommConnectionFailed: 'Échec de la connexion',
+  AppLocale.rommConnectedAs: 'Connecté en tant que {user}',
+  AppLocale.rommCredentialsRequired:
+      'Saisissez l’URL du serveur, l’utilisateur et le mot de passe',
+  AppLocale.rommAuthPassword: 'Mot de passe',
+  AppLocale.rommAuthApiKey: 'Clé d’API',
+  AppLocale.rommApiKey: 'Clé d’API',
+  AppLocale.rommApiKeyHint: 'rmm_...',
+  AppLocale.rommApiKeyRequired: 'Saisissez l’URL du serveur et la clé d’API',
+  AppLocale.rommPlatforms: 'Plateformes',
+  AppLocale.rommNoPlatforms: 'Aucune plateforme trouvée',
+  AppLocale.rommCollections: 'Collections',
+  AppLocale.rommNoCollections: 'Aucune collection trouvée',
+  AppLocale.rommNoRoms: 'Aucune ROM trouvée',
+  AppLocale.rommSearch: 'Rechercher',
+  AppLocale.rommSearching: 'Recherche dans RomM...',
+  AppLocale.rommSearchHint: 'Rechercher dans cette plateforme',
+  AppLocale.rommSearchCollectionHint: 'Rechercher dans cette collection',
+  AppLocale.rommSearchResultCount: '{count} résultats',
+  AppLocale.rommSearchResultCountOne: '1 résultat',
+  AppLocale.rommSearchResultCountMore: '{count}+ résultats',
+  AppLocale.rommSearchNoResults: 'Aucun résultat pour {term}',
+  AppLocale.rommSearchClear: 'Effacer la recherche',
+  AppLocale.rommDownloading: 'Téléchargement...',
+  AppLocale.rommDownloaded: 'Téléchargé',
+  AppLocale.rommDownloadComplete: 'Téléchargement terminé',
+  AppLocale.rommDownloadFailed: 'Échec du téléchargement',
+  AppLocale.rommDownloadCancelled: 'Téléchargement annulé',
+  AppLocale.rommLoadMore: 'Charger plus',
+  AppLocale.rommNoSystemMatch:
+      'Aucun système local ne correspond à cette plateforme',
+  AppLocale.rommPlatformUnsupported: 'Non pris en charge',
+  AppLocale.rommNoWritableFolder:
+      'Impossible d’écrire dans votre dossier de ROMs. Accordez "l’Accès à Tous les Fichiers" à OmiSU et réessayez.',
+  AppLocale.rommNotConnected:
+      'Connectez-vous d’abord à un serveur RomM dans les Paramètres',
+  // Bulk "sync a whole platform/collection".
+  AppLocale.rommSyncAll: 'Tout synchroniser',
+  AppLocale.rommSyncCancel: 'Annuler la synchronisation',
+  AppLocale.rommSyncConfirmTitle: 'Synchroniser {name} ?',
+  AppLocale.rommSyncConfirmPlan:
+      'Télécharge {count} jeux ({size}). Cela peut être long.',
+  AppLocale.rommSyncConfirmSkipped: '{count} déjà sur cet appareil.',
+  AppLocale.rommSyncConfirmFree: '{free} disponibles.',
+  AppLocale.rommSyncConfirmNoSpace:
+      'Espace insuffisant : {size} nécessaires, seulement {free} disponibles.',
+  AppLocale.rommSyncConfirmVolumeFree:
+      '{volume} : {size} nécessaires, {free} disponibles.',
+  AppLocale.rommSyncConfirmVolumeNoSpace:
+      '{volume} : {size} nécessaires, seulement {free} disponibles.',
+  AppLocale.rommSyncConfirmVolumeUnknown:
+      '{volume} : {size} nécessaires, espace disponible inconnu.',
+  AppLocale.rommSyncPreparing: 'Préparation…',
+  AppLocale.rommSyncCancelling: 'Annulation…',
+  AppLocale.rommSyncComplete: '{count} jeux synchronisés',
+  AppLocale.rommSyncCancelled: 'Synchronisation annulée',
+  AppLocale.rommSyncNothingToDo: 'Tout est déjà téléchargé',
+  AppLocale.rommSyncFailedCount: '{count} en échec',
+  AppLocale.searchTitle: 'Rechercher',
+  AppLocale.searchNameHint: 'Rechercher...',
+  AppLocale.searchNoResults: 'Aucun jeu trouvé',
+  AppLocale.searchResultsCount: '{count} résultats',
+  AppLocale.searchClearFilters: 'Effacer les filtres',
+  AppLocale.searchFilters: 'Filtres',
+  AppLocale.searchViewResults: 'Voir les résultats',
+  AppLocale.searchOpen: 'Rechercher',
+  AppLocale.searchGoToGame: 'Aller au jeu',
+  AppLocale.filterPlatform: 'Plateforme',
+  AppLocale.filterDeveloper: 'Développeur',
+  AppLocale.filterGenre: 'Genre',
+  AppLocale.filterRating: 'Note',
+  AppLocale.filterYear: 'Année',
+  AppLocale.filterAchievements: 'Succès',
+  AppLocale.raCoverageMatched: 'Oui',
+  AppLocale.raCoverageNoSet: 'Non',
+  AppLocale.raCoverageUnknown: 'Inconnu',
+  AppLocale.filterAny: 'Tous',
+  AppLocale.filterSource: 'Source',
+  AppLocale.sourceLocal: 'Sur cet appareil',
+  AppLocale.searchRatingLocalOnly:
+      'Le filtre de note ne s’applique qu’aux jeux locaux',
+  AppLocale.searchAchievementsLocalOnly:
+      'Le filtre de succès ne s’applique qu’aux jeux locaux',
+  AppLocale.searchNoRommEquivalent: 'RomM n’a rien classé sous « {value} »',
+  AppLocale.resetPlayTimeConfirm: 'Réinitialiser le temps de jeu',
+  AppLocale.resetPlayTimeConfirmBody:
+      'Cela réinitialisera définitivement à zéro le temps de jeu enregistré pour ce jeu. Cette action est irréversible.',
+  AppLocale.removeRomFolderConfirmBody:
+      'Cela supprimera ce dossier de ROM des sources de votre bibliothèque. Vos fichiers sur le disque ne sont pas supprimés.',
+  AppLocale.disconnectRaConfirm: 'Déconnecter RetroAchievements',
+  AppLocale.disconnectRaConfirmBody:
+      'Cela vous déconnectera et supprimera vos identifiants RetroAchievements enregistrés de cet appareil.',
+  AppLocale.neoSyncLogoutConfirmBody:
+      'Cela vous déconnectera de votre compte NeoSync sur cet appareil.',
+
+  AppLocale.deleteGame: 'Supprimer le jeu',
+  AppLocale.deleteGameConfirm: 'Supprimer définitivement',
+  AppLocale.deleteGameConfirmBody:
+      'Le fichier ROM, les données et médias scrapés seront définitivement supprimés. Cette action est irréversible.',
+  AppLocale.deleteGameSubtitle:
+      'Supprime définitivement le fichier ROM du disque',
+
+  AppLocale.raCompletionsLabel: 'Complétions',
+  AppLocale.raMasteriesLabel: 'Maîtrises',
+  AppLocale.raPointsAbbrev: 'pts',
+  AppLocale.raRecentUnlocks: 'Déblocages Récents',
+  AppLocale.raRecentCompletions: 'Complétions Récentes',
+  AppLocale.raRecentMasteries: 'Maîtrises Récentes',
+  AppLocale.raNoCompletionsYet: 'Aucune complétion pour le moment',
+  AppLocale.raNoMasteriesYet: 'Aucune maîtrise pour le moment',
+  AppLocale.raTrackedGames: 'jeux suivis',
+  AppLocale.raCompletionLabel: 'Complétion',
+  AppLocale.raMasteryLabel: 'Maîtrise',
+  AppLocale.raCouldNotResolveLocalSystem:
+      'Impossible de déterminer le système local pour ce jeu',
+  AppLocale.raMissable: 'MANQUABLE',
+  AppLocale.raFilterLocked: 'Verrouillés',
+  AppLocale.raFilterMissables: 'Manquables',
+  AppLocale.raNoAchievementsForFilter:
+      'Aucun succès ne correspond à ce filtre.',
+  AppLocale.raComments: 'COMMENTAIRES',
+  AppLocale.raCommentsCouldNotLoad: 'Impossible de charger les commentaires.',
+  AppLocale.raNoCommentsYet: 'Aucun commentaire pour le moment.',
+  AppLocale.raOlderCommentsAvailable:
+      'D\'anciens commentaires sont disponibles.',
+  AppLocale.raLoadMore: 'CHARGER PLUS',
+  AppLocale.raRateLimited:
+      'RetroAchievements est occupé pour le moment. Veuillez patienter un instant et réessayer.',
+  AppLocale.raApiKey: 'Clé API',
+  AppLocale.raEnterApiKey: 'Entrez votre clé API',
+  AppLocale.raGetApiKey: 'Obtenir la clé API',
+  AppLocale.raApiKeyHelp:
+      'Ouvrez votre panneau de contrôle RetroAchievements pour copier votre clé API Web personnelle.',
+  AppLocale.raNoRecentUnlocks:
+      'Aucun déblocage récent au cours des 30 derniers jours',
+  AppLocale.raRecentlyPlayedTitle: 'Joués Récemment',
+  AppLocale.raNoRecentlyPlayed: 'Aucun jeu joué récemment',
+  AppLocale.raAotwNoActive: 'Aucun succès de la semaine en cours',
+  AppLocale.raAotwEarnedHardcore: 'Obtenu cette semaine · Hardcore',
+  AppLocale.raAotwEarnedCasual: 'Obtenu cette semaine · Casual',
+  AppLocale.raAotwEarnedPreviously: 'Obtenu avant cette semaine',
+  AppLocale.raAotwNotEarned: 'Non obtenu cette semaine',
+  AppLocale.raAotwStatusUnavailable: 'Statut personnel indisponible',
+  AppLocale.raAotwNotInLibrary: 'Absent de votre bibliothèque',
+  AppLocale.raAotwWeekStarted: 'Semaine commencée le {date}',
+  AppLocale.raAotwTrueRatio: 'True Ratio',
+  AppLocale.raAotwParticipation:
+      '{unlocks} joueurs sur {players} · {percent} %',
+  AppLocale.raAotwOpenLocalGame: 'Ouvrir le jeu local',
+  AppLocale.raAotwDownloadFromRomm: 'Télécharger depuis RomM',
+  AppLocale.raGamesPlayed: '{count} jeux joués',
+  AppLocale.raGamesBeaten: '{count} jeux terminés',
+  AppLocale.raAchievementProgress: '{earned}/{total} succès',
+  AppLocale.raRecent30Days: '30 jours',
+
+  // Custom save folders (NeoSync v2)
+  AppLocale.customSaveFoldersTitle: 'Dossiers de sauvegarde standalone',
+  AppLocale.customSaveFolderPickSystem: 'Choisir un système',
+  AppLocale.customSaveFolderPickEmulator: 'Choisir un émulateur',
+  AppLocale.customSaveFolderSelect: 'Sélectionner un dossier',
+  AppLocale.customSaveFolderConfigure: 'Configurer',
+  AppLocale.customSaveFolderConfiguredList: 'Dossiers configurés',
+  AppLocale.customSaveFolderSync: 'Synchroniser maintenant',
+  AppLocale.customSaveFolderInvalid: 'Le dossier sélectionné n\'existe pas',
+  AppLocale.removeCustomFolder: 'Supprimer le Dossier',
+  AppLocale.removeCustomFolderConfirm:
+      'Supprimer ce dossier de sauvegarde standalone ? Ses fichiers locaux ne seront pas supprimés, seulement déliés de la synchronisation.',
+  AppLocale.uploadingCustomFolder:
+      'Téléversement des sauvegardes de {folder}...',
+  AppLocale.customFolderUploadComplete:
+      'Dossier standalone synchronisé : {uploaded} téléversés, {skipped} déjà à jour',
+  AppLocale.customFolderUploadFailed:
+      'Échec de la synchronisation du dossier personnalisé',
+  AppLocale.customSaveFoldersMigrate:
+      'Migrer les sauvegardes cloud vers NeoSync v2',
+
+  // ES-DE import
+  AppLocale.esdeImport: 'ES-DE Import',
+  AppLocale.esdeImportSubtitle: 'Import metadata and artwork from ES-DE',
+  AppLocale.esdeSelectFolder: 'Select ES-DE Folder',
+  AppLocale.esdeSelectFolderSubtitle:
+      'Choose the ES-DE folder containing gamelists and downloaded_media',
+  AppLocale.esdeRunImport: 'Import from ES-DE',
+  AppLocale.esdeRunImportSubtitle:
+      'Fill in missing metadata and use ES-DE artwork as fallback',
+  AppLocale.esdeImporting: 'Importing from ES-DE',
+  AppLocale.esdeImportComplete: 'ES-DE import complete',
+  AppLocale.esdeImportNoFolder: 'Select your ES-DE folder first',
+  AppLocale.esdeReset: 'Reset ES-DE Import',
+  AppLocale.esdeResetSubtitle:
+      'Remove imported metadata and media links so the import can be re-run',
+  AppLocale.esdeResetComplete: 'ES-DE import reset',
+  AppLocale.esdeResetConfirmBody:
+      'This removes all imported ES-DE metadata and media links and clears the selected folder. Your games and ROM files are not affected.',
+  AppLocale.esdeImportNotEsdeFolder:
+      'This folder is not an ES-DE installation (no gamelists found)',
+  AppLocale.esdeImportNothingFound:
+      'No matching systems or games were found to import',
+  AppLocale.esdeSummarySystemsMatched: 'Systèmes associés',
+  AppLocale.esdeSummaryUnmatched: 'non associés',
+  AppLocale.esdeSummarySkipped: 'ignorés (illisibles)',
+  AppLocale.esdeSummaryGamesImported: 'Jeux importés',
+  AppLocale.esdeSummaryNoRomMatch: 'aucune ROM correspondante',
+  AppLocale.esdeSummaryStatsUpdated: 'Favoris / statistiques mis à jour',
+  AppLocale.esdeSummaryGames: 'jeux',
+  AppLocale.esdeSummarySystems: 'systèmes',
+  AppLocale.wizardScanComplete: 'Analyse terminée',
+  AppLocale.wizardTapNextToContinue: 'Appuyez sur Suivant pour continuer',
+  AppLocale.wizardEsdeStepTitle: 'Importer depuis ES-DE',
+  AppLocale.wizardEsdeStepDesc:
+      'Vous utilisez déjà ES-DE ? Importez les métadonnées et les visuels de vos '
+      'jeux. Sélectionnez le dossier principal ES-DE contenant vos dossiers '
+      '"gamelists" et "downloaded_media". Facultatif ; vous pourrez le faire '
+      'plus tard depuis les Paramètres.',
+  AppLocale.wizardArtPackTitle: 'Obtenez le pack visuel OmiSU',
+  AppLocale.wizardArtPackDesc:
+      'Nous vous recommandons vivement de télécharger le pack visuel des systèmes '
+      'OmiSU pour de superbes arrière-plans de console dans toute votre '
+      'bibliothèque. Il peut être modifié plus tard dans les Paramètres.',
+  AppLocale.wizardDownloadArtPack: 'Télécharger le pack visuel',
+  AppLocale.wizardArtPackInstalled:
+      'Pack visuel installé ! Vous pourrez explorer d\'autres thèmes plus tard '
+      'dans les Paramètres.',
+  AppLocale.wizardArtPackUnavailable:
+      'Le pack visuel est actuellement inaccessible. Vous pourrez l\'installer '
+      'plus tard depuis les Paramètres une fois en ligne.',
+
+  // Hide / unhide games
+  AppLocale.hideGame: 'Masquer le jeu',
+  AppLocale.hideGameSubtitle:
+      'Le retire de vos listes de jeux. Rien n\'est supprimé.',
+  AppLocale.hide: 'Masquer',
+  AppLocale.unhide: 'Afficher',
+  AppLocale.unhideAll: 'Tout afficher',
+  AppLocale.gameHidden: '{name} masqué',
+  AppLocale.gameUnhidden: '{name} restauré',
+  AppLocale.allGamesUnhidden: 'Tous les jeux masqués ont été restaurés',
+  AppLocale.hiddenGames: 'Masqués',
+  AppLocale.noHiddenGames: 'Aucun jeu masqué',
+  AppLocale.noHiddenGamesSubtitle:
+      'Masquez un jeu depuis ses paramètres pour le retrouver ici.',
+};

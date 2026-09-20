@@ -1,0 +1,498 @@
+import 'package:flutter/material.dart';
+import 'package:omisu/l10n/app_locale.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:provider/provider.dart';
+import 'package:omisu/responsive.dart';
+import '../../../providers/sqlite_config_provider.dart';
+import '../../../themes/omisu_accent.dart';
+import '../../../widgets/omisu/omisu_glass_panel.dart';
+import '../../../widgets/omisu/omisu_gradient_border.dart';
+
+/// A premium introductory widget presented when no ROM library is configured.
+///
+/// Facilitates the initial filesystem handshake, allowing users to select
+/// their root ROM directory and initiate the first automated system scan.
+class InitialSetupWidget extends StatefulWidget {
+  const InitialSetupWidget({super.key});
+
+  static _InitialSetupWidgetState? _currentInstance;
+
+  /// Runs the folder picker for whichever setup card is on screen, if any.
+  ///
+  /// This card replaces the systems grid on first run, and unlike the grid it
+  /// pushes no navigation layer — so AppScreen, which hands the Systems tab to
+  /// that layer, has nothing to hand A to and drops it. Selecting a ROM folder
+  /// was therefore reachable by touch only, which on a controller-driven
+  /// handheld means the first run cannot be completed at all.
+  ///
+  /// A layer of its own would have to re-serve every other binding the tab
+  /// relies on (bumpers, settings, back); registering the one action it owns
+  /// is the smaller contract. Mirrors `NewSettingsScreen.selectCurrent`.
+  static void selectCurrent() => _currentInstance?._selectFolder();
+
+  @override
+  State<InitialSetupWidget> createState() => _InitialSetupWidgetState();
+}
+
+class _InitialSetupWidgetState extends State<InitialSetupWidget> {
+  @override
+  void initState() {
+    super.initState();
+    InitialSetupWidget._currentInstance = this;
+  }
+
+  @override
+  void dispose() {
+    if (identical(InitialSetupWidget._currentInstance, this)) {
+      InitialSetupWidget._currentInstance = null;
+    }
+    super.dispose();
+  }
+
+  /// Opens the ROM folder picker. Inert while a scan is running, matching the
+  /// button, which shows a progress state instead of an action just then.
+  void _selectFolder() {
+    final configProvider = context.read<SqliteConfigProvider>();
+    if (configProvider.isLoading || configProvider.isScanning) return;
+    configProvider.selectRomFolder(context: context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<SqliteConfigProvider>(
+      builder: (context, configProvider, child) {
+        // SCENARIO A: Compact Handheld Layouts (XS/Small).
+        // Prioritizes a single-column ROM selection interface.
+        if (Responsive.isHandheldXS(context) ||
+            Responsive.isHandheldSmall(context)) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            child: Center(
+              child: _buildRomSelectionSection(context, configProvider),
+            ),
+          );
+        }
+
+        // SCENARIO B: Desktop / Large Handheld Layouts (Medium+).
+        // Displays a split-view with action (ROM selection) and education (Help card).
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Left Column: Primary Action (Library Setup).
+                  Expanded(
+                    flex: 1,
+                    child: _buildRomSelectionSection(context, configProvider),
+                  ),
+                  const SizedBox(width: 16),
+                  // Right Column: System Documentation / Guidance.
+                  Expanded(flex: 1, child: _buildHelpCard(context)),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Builds the core setup card containing branding and the directory picker trigger.
+  Widget _buildRomSelectionSection(
+    BuildContext context,
+    SqliteConfigProvider configProvider,
+  ) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: OmisuGlassPanel(
+        cornerRadius: 28,
+        gradientBorder: true,
+        padding: const EdgeInsets.all(32.0),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Premium branding iconography with glow effects.
+                Container(
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary.withValues(alpha: 0.22),
+                        OmisuAccent.focusGradient.last.withValues(alpha: 0.12),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: OmisuAccent.focusGradient[0].withValues(alpha: 0.35),
+                      width: 2,
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: Image.asset(
+                      'assets/images/icons/folder-add-bulk.png',
+                      color: theme.colorScheme.secondary,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                ShaderMask(
+                  shaderCallback: (bounds) =>
+                      OmisuAccent.focusRingGradient.createShader(bounds),
+                  child: Text(
+                    AppLocale.setupLibrary.getString(context),
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 28,
+                      letterSpacing: -0.5,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                AppLocale.chooseRomFolderOrganize.getString(context),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                  fontSize: 15,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 32),
+
+              // Dynamic button state based on scan or initialization progress.
+              if (configProvider.isLoading || configProvider.isScanning)
+                _buildLoadingButton(context)
+              else
+                _buildSelectButton(context, configProvider),
+
+              const SizedBox(height: 24),
+
+              // Feedback layer for errors or successful initial resolution.
+              if (configProvider.error != null)
+                _buildErrorMessage(context, configProvider.error!)
+              else if (configProvider.hasRomFolder &&
+                  !configProvider.isScanning)
+                _buildSuccessMessage(context, configProvider),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Specialized button state for active filesystem scanning.
+  Widget _buildLoadingButton(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      height: 64,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: theme.colorScheme.primary.withValues(alpha: 0.3),
+      ),
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              AppLocale.scanningButton.getString(context),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Primary interaction button for directory selection.
+  Widget _buildSelectButton(
+    BuildContext context,
+    SqliteConfigProvider configProvider,
+  ) {
+    final theme = Theme.of(context);
+    final hasFolder = configProvider.hasRomFolder;
+
+    // Focus ring, in the app's usual 2px primary. It is always drawn rather
+    // than tracking a selection because this button is the only thing on the
+    // first-run card a controller can act on — it says "A does this here",
+    // which nothing on this screen said before. Kept outside the fill with a
+    // gap of surface, since the button is already filled with that primary.
+    return OmisuGradientBorder(
+      cornerRadius: 22,
+      borderWidth: 2,
+      child: Container(
+        width: double.infinity,
+        height: 64,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              theme.colorScheme.primary,
+              OmisuAccent.focusGradient[2],
+              OmisuAccent.focusGradient.last.withValues(alpha: 0.92),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.35),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _selectFolder,
+            borderRadius: BorderRadius.circular(20),
+            child: Center(
+              child: Text(
+                hasFolder
+                    ? AppLocale.changeFolder.getString(context)
+                    : AppLocale.selectRomFolderButton.getString(context),
+                style: TextStyle(
+                  fontFamily: OmisuAccent.fontFamily,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                  color: theme.colorScheme.onPrimary,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Renders a localized error feedback message.
+  Widget _buildErrorMessage(BuildContext context, String error) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Image.asset(
+              'assets/images/icons/warning-bulk.png',
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              error,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Success message indicating a valid library handshake.
+  Widget _buildSuccessMessage(
+    BuildContext context,
+    SqliteConfigProvider configProvider,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Image.asset(
+                  'assets/images/icons/check-bulk.png',
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  AppLocale.configurationComplete.getString(context),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocale.foundSystemsInFolder
+                .getString(context)
+                .replaceFirst(
+                  '{count}',
+                  configProvider.detectedRealSystems.length.toString(),
+                ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.8),
+            ),
+          ),
+          if (configProvider.config.lastScan != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              AppLocale.lastScanLabel
+                  .getString(context)
+                  .replaceFirst(
+                    '{date}',
+                    _formatDateTime(configProvider.config.lastScan!),
+                  ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Educational card explaining the automated scanning workflow.
+  Widget _buildHelpCard(BuildContext context) {
+    return OmisuGlassPanel(
+      cornerRadius: 20,
+      padding: const EdgeInsets.all(20),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Image.asset(
+                    'assets/images/icons/lightbulb-bulk.png',
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  AppLocale.howItWorks.getString(context),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+              const SizedBox(height: 16),
+              _buildHelpItem(
+                context,
+                AppLocale.step1SelectFolder.getString(context),
+                AppLocale.step1Desc.getString(context),
+              ),
+              _buildHelpItem(
+                context,
+                AppLocale.step2AutoDetection.getString(context),
+                AppLocale.step2Desc.getString(context),
+              ),
+              _buildHelpItem(
+                context,
+                AppLocale.step3CountGames.getString(context),
+                AppLocale.step3Desc.getString(context),
+              ),
+              _buildHelpItem(
+                context,
+                AppLocale.step4ReadyToPlay.getString(context),
+                AppLocale.step4Desc.getString(context),
+              ),
+            ],
+          ),
+        ),
+    );
+  }
+
+  /// Utilitarian item for help card step lists.
+  Widget _buildHelpItem(
+    BuildContext context,
+    String title,
+    String description,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            description,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Utilitarian date formatter for localized setup timestamps.
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+}

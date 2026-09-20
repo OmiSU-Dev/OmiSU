@@ -1,0 +1,95 @@
+{
+  "system": {
+    "id": "ps3",
+    "multidisc": false,
+    "name": "Sony PlayStation 3",
+    "short_name": "PS3",
+    "details": {
+      "manufacturer": "Sony",
+      "release_date": "2006-11-11",
+      "description": "Sony's HD console with Blu-ray, Cell processor and online PlayStation Network.",
+      "type": "console"
+    },
+    "ids": {
+      "screenscraper": 59,
+      "retroachievements": null
+    },
+    "folders": [
+      "ps3",
+      "PlayStation 3",
+      "Sony PlayStation 3"
+    ],
+    "colors": [
+      "#000000",
+      "#9e9e9e"
+    ],
+    "extensions": [
+      "iso"
+    ]
+  },
+  "emulators": [
+    {
+      "name": "Standalone aPS3e",
+      "default_standalone": true,
+      "unique_id": "ps3.aenu.aps3e",
+      "description": "Supported extensions: iso.",
+      "is_retroachievements_compatible": false,
+      "platforms": {
+        "android": {
+          "launch_arguments": "-n aenu.aps3e/aenu.aps3e.EmulatorActivity -a aenu.intent.action.APS3E -e iso_uri \"{file.uri}\""
+        }
+      }
+    },
+    {
+      "name": "Standalone ARMSX3",
+      "unique_id": "ps3.com.armsx3",
+      "description": "Supported extensions: iso.",
+      "is_retroachievements_compatible": false,
+      "platforms": {
+        "android": {
+          "launch_arguments": "-n com.armsx3/com.armsx2.Main -a android.intent.action.VIEW -e path \"{file.path}\""
+        }
+      }
+    },
+    {
+      "name": "Standalone EMUCOREC",
+      "unique_id": "ps3.com.sbro.emucorec",
+      "description": "Supported extensions: iso.",
+      "is_retroachievements_compatible": false,
+      "platforms": {
+        "android": {
+          "launch_arguments": "-n com.sbro.emucorec/.core.ps3.Emulator -e gamePath \"{file.path}\""
+        }
+      }
+    },
+    {
+      "name": "Standalone RPCS3",
+      "unique_id": "ps3.rpcs3",
+      "description": "Supported extensions: iso.",
+      "is_retroachievements_compatible": false,
+      "platforms": {
+        "windows": {
+          "executable": "rpcs3.exe",
+          "args": "--no-gui \"{file.path}\""
+        },
+        "linux": {
+          "executable": "rpcs3",
+          "flatpak": "net.rpcs3.RPCS3",
+          "emudeck_launcher": "rpcs3.sh",
+          "args": "--no-gui \"{file.path}\""
+        },
+        "macos": {
+          "executable": "rpcs3",
+          "args": "--no-gui \"{file.path}\""
+        }
+      }
+    }
+  ],
+  "neosync": {
+    "sync": false,
+    "android_sync_folder": [],
+    "windows_sync_folder": [],
+    "linux_sync_folder": [],
+    "macos_sync_folder": []
+  }
+}

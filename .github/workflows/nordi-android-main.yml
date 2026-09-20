@@ -1,0 +1,93 @@
+name: Nordi Android (main)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: nordi-android-main
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Build and publish Nordi GameSir APK
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read pubspec version
+        id: version
+        run: |
+          FULL=$(grep '^version:' pubspec.yaml | head -1 | awk '{print $2}' | tr -d '\r')
+          SEMVER="${FULL%%+*}"
+          BUILD="${FULL#*+}"
+          if [ "$BUILD" = "$FULL" ]; then BUILD=""; fi
+          echo "full=$FULL" >> "$GITHUB_OUTPUT"
+          echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "tag=v${SEMVER}-build${BUILD}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify build number increased
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash build-utils/verify-release-build-bump.sh
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: .fvmrc
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Setup Android Keystore
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is required for main-branch Nordi releases."
+            exit 1
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+          echo "Keystore decoded to android/app/release.jks"
+
+      - name: Build GameSir APKs
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEYSTORE_PATH: release.jks
+        run: bash build-utils/build-gamesir-android.sh
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Nordi ${{ steps.version.outputs.full }}
+          body: |
+            Automated release from `${{ github.sha }}` on `main`.
+
+            Bump `version` in `pubspec.yaml` before each push you want devices to pick up.
+          files: release/nordi-gamesir-*.apk
+          draft: false
+          make_latest: true
+          overwrite_files: true

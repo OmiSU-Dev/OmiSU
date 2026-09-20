@@ -1,0 +1,19 @@
+{
+  "themes": [
+    {
+      "name": "NeoStation",
+      "author": "Misoba",
+      "folder": "NeoStation",
+      "preview": "preview/neostation.webp",
+      "compatible": ["neostation", "omisu"]
+    },
+    {
+      "name": "iiSU Classic",
+      "author": "iiSU Network",
+      "folder": "iiSU",
+      "preview": "preview/iisu.webp",
+      "compatible": ["iisu", "omisu"],
+      "note": "Published on neostation-assets when available"
+    }
+  ]
+}

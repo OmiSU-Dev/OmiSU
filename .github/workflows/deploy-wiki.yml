@@ -1,0 +1,88 @@
+name: Deploy Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # The whole point of building from a workflow. The legacy branch-based
+      # Pages build watched the *branch*, not `source.path`, so every push to
+      # main republished the wiki: on 2026-08-27 four Dart-only commits each
+      # triggered a full rebuild, and the fourth (run 33100404469) hung in
+      # `updating_pages` for ten minutes before GitHub aborted it. A legacy
+      # build cannot be path-filtered, because the workflow is synthesized by
+      # GitHub rather than checked in.
+      - 'docs/**'
+      - '.github/workflows/deploy-wiki.yml'
+  # Build (never deploy) the same commit a PR would merge, so a broken
+  # _config.yml or an unresolvable remote_theme fails review instead of main.
+  # There is no local escape hatch for this: building the wiki needs Ruby and
+  # the `github-pages` gem, which nothing in this repo otherwise requires.
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-wiki.yml'
+  # Republish without a docs change: needed for the first run after Pages is
+  # switched to `build_type: workflow`, and to retry a GitHub-side timeout.
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Only the deploy job gets `pages: write` / `id-token: write`; the build job
+# reads Pages settings and nothing more. Fork PRs get a read-only token
+# whatever this says, but the split keeps the publishing credential out of the
+# job that executes the site's own content.
+permissions:
+  contents: read
+
+# Real deploys share one queue and are never cancelled: killing a publish
+# mid-flight leaves the live site on the previous build with nothing queued to
+# correct it. PR validation builds get a throwaway per-ref queue instead, so
+# they neither block nor cancel a deploy, and a new push supersedes the old.
+concurrency:
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build Jekyll site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      # GitHub's own image for the legacy build environment: it bundles the
+      # `github-pages` gem, so `remote_theme: just-the-docs/just-the-docs` in
+      # docs/_config.yml keeps resolving exactly as it did before, without this
+      # repo having to carry a Gemfile and lockfile just to pin the theme.
+      # It is a Docker action, so the Node 20 runner deprecation does not apply.
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

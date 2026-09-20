@@ -1,0 +1,91 @@
+{
+  "system": {
+    "id": "xbox",
+    "multidisc": true,
+    "name": "Xbox",
+    "short_name": "Xbox",
+    "details": {
+      "manufacturer": "Microsoft",
+      "release_date": "2001-11-15",
+      "description": "Microsoft's first gaming console with Xbox Live support and DVD playback.",
+      "type": "console"
+    },
+    "ids": {
+      "screenscraper": 32,
+      "retroachievements": null
+    },
+    "folders": [
+      "xbox",
+      "Xbox"
+    ],
+    "colors": [
+      "#107C10",
+      "#9BF00B"
+    ],
+    "extensions": [
+      "xbe",
+      "xiso",
+      "iso"
+    ]
+  },
+  "emulators": [
+    {
+      "name": "Standalone X1 Box",
+      "unique_id": "xbox.com.izzy2lost.x1box",
+      "default_standalone": true,
+      "is_retroachievements_compatible": false,
+      "description": "Supported extensions: xiso, iso.",
+      "platforms": {
+        "android": {
+          "launch_arguments": "-n com.izzy2lost.x1box/.LauncherActivity -d \"{file.uri}\""
+        }
+      }
+    },
+    {
+      "name": "Standalone Xenra",
+      "unique_id": "xbox.ali.xanite.green",
+      "is_retroachievements_compatible": false,
+      "description": "Supported extensions: xiso, iso.",
+      "platforms": {
+        "android": {
+          "launch_arguments": "-n Ali.Xanite.green/Ali.Xanite.LauncherActivity -d \"{file.uri}\""
+        }
+      }
+    },
+    {
+      "name": "Standalone hakuX",
+      "unique_id": "xbox.com.rfandango.haku_x",
+      "is_retroachievements_compatible": false,
+      "description": "Supported extensions: xiso, iso.",
+      "platforms": {
+        "android": {
+          "launch_arguments": "-n com.rfandango.haku_x/.LauncherActivity -d \"{file.uri}\""
+        }
+      }
+    },
+    {
+      "name": "Standalone xemu",
+      "unique_id": "xbox.app.xemu-project.xemu",
+      "is_retroachievements_compatible": false,
+      "description": "Supported extensions: xiso, iso.",
+      "platforms": {
+        "windows": {
+          "executable": "xemu.exe",
+          "args": "-full-screen -dvd_path \"{file.path}\""
+        },
+        "linux": {
+          "executable": "xemu",
+          "emudeck_launcher": "xemu-emu.sh",
+          "args": "-full-screen -dvd_path \"{file.path}\""
+        }
+      }
+    }
+  ],
+  "neosync": {
+    "sync": false,
+    "android_sync_folder": [],
+    "windows_sync_folder": [],
+    "linux_sync_folder": [],
+    "macos_sync_folder": []
+  }
+}
