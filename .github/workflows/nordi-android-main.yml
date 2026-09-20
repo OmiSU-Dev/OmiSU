@@ -70,8 +70,17 @@ jobs:
             echo "::error::ANDROID_KEYSTORE_BASE64 is required for main-branch Nordi releases."
             exit 1
           fi
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
           echo "Keystore decoded to android/app/release.jks"
+
+      - name: Verify keystore secrets
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          keytool -list -keystore android/app/release.jks \
+            -alias "$KEY_ALIAS" -storepass "$KEYSTORE_PASSWORD" >/dev/null
 
       - name: Build GameSir APKs
         env:

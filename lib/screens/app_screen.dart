@@ -9,7 +9,10 @@ import 'package:omisu/config/nordi_config.dart';
 import 'package:omisu/config/nordi_update_policy.dart';
 import 'package:omisu/providers/neo_assets_provider.dart';
 import 'package:omisu/services/nordi/nordi_bootstrap_service.dart';
+import 'package:omisu/services/app_update_availability_service.dart';
 import 'package:omisu/services/unified_update_coordinator.dart';
+import 'package:omisu/widgets/app_update_status_toast.dart';
+import 'package:omisu/widgets/omisu/omisu_shell_layout.dart';
 import 'package:omisu/services/logger_service.dart';
 import 'package:omisu/services/game/game_session_manager.dart';
 import 'package:omisu/services/menu_ambient_service.dart';
@@ -262,6 +265,10 @@ class AppScreenState extends State<AppScreen> with WidgetsBindingObserver {
       );
     }
     await _runStartupRaMatch(configProvider, holdsSplash: true);
+
+    if (mounted && NordiUpdatePolicy.appGithubOtaEnabled) {
+      unawaited(AppUpdateAvailabilityService.instance.refresh(force: true));
+    }
   }
 
   /// Runs the RetroAchievements match pass over ROMs the startup scan added.
@@ -407,6 +414,9 @@ class AppScreenState extends State<AppScreen> with WidgetsBindingObserver {
         listen: false,
       ).resetSecondaryInGameState();
       unawaited(_maybeRetryBuiltinPlayerUpdates());
+      if (NordiUpdatePolicy.appGithubOtaEnabled) {
+        unawaited(AppUpdateAvailabilityService.instance.refresh());
+      }
     }
   }
 
@@ -737,6 +747,13 @@ class AppScreenState extends State<AppScreen> with WidgetsBindingObserver {
                         )
                       : const SizedBox.shrink(),
                 ),
+
+                if (showChrome && NordiUpdatePolicy.appGithubOtaEnabled)
+                  Positioned(
+                    top: kOmisuTopBarHeight.r + 6.r,
+                    right: 36.r,
+                    child: const AppUpdateStatusToast(),
+                  ),
 
                 // Global footer — Y · nav dock · A.
                 Positioned(

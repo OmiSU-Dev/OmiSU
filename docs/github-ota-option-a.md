@@ -76,6 +76,7 @@ On the N30:
 | Symptom | Fix |
 | --- | --- |
 | CI fails **Setup Android Keystore** | Add `ANDROID_KEYSTORE_BASE64` on **Production** |
+| CI fails **packageGamesirRelease** / `Keystore was tampered with, or password was incorrect` | Base64 is often fine; **password secrets** are wrong. Create `android/key.properties`, run `bash build-utils/verify-android-release-signing.sh`, then `bash build-utils/push-github-android-password-secrets.sh` (no manual paste). |
 | CI green, still no Releases | Check **Publish GitHub Release** step log; `contents: write` permission |
 | App says up to date | No release yet, or phone build ≥ release build |
 | Download OK, install fails | CI keystore ≠ keystore used for the APK on the phone |

@@ -37,12 +37,12 @@ if ! command -v flutter &> /dev/null; then
 fi
 
 if [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEYSTORE_PATH" ]; then
-  cat > android/key.properties << EOF
-storePassword=$KEYSTORE_PASSWORD
-keyPassword=$KEY_PASSWORD
-keyAlias=$KEY_ALIAS
-storeFile=$KEYSTORE_PATH
-EOF
+  {
+    printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+    printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+    printf 'keyAlias=%s\n' "$KEY_ALIAS"
+    printf 'storeFile=%s\n' "$KEYSTORE_PATH"
+  } > android/key.properties
 fi
 
 flutter build apk --release --split-per-abi --no-tree-shake-icons \
