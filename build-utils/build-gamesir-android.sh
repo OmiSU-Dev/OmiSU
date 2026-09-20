@@ -25,8 +25,13 @@ fi
 echo "Building Nordi (GameSir / Nord N30) APK..."
 echo "  ROM root: $NORDI_ROM_ROOT"
 
+CHEAT_ASSET="$PROJECT_ROOT/assets/data/libretro_cheats.tar.gz"
 if [ -x "$PROJECT_ROOT/scripts/sync_libretro_cheats_asset.sh" ]; then
-  "$PROJECT_ROOT/scripts/sync_libretro_cheats_asset.sh"
+  if [ -f "$CHEAT_ASSET" ] && [ ! -d "$PROJECT_ROOT/../libretro-database-master/cht" ]; then
+    echo "Using committed $CHEAT_ASSET (no libretro-database checkout on CI)."
+  else
+    "$PROJECT_ROOT/scripts/sync_libretro_cheats_asset.sh"
+  fi
 fi
 
 FVM_FLUTTER="$PROJECT_ROOT/.fvm/flutter_sdk/bin/flutter"

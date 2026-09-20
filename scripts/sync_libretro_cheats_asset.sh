@@ -7,13 +7,23 @@
 # Requires: libretro-database-master/cht next to Nordi (OmiSU/libretro-database-master).
 
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-SRC="$ROOT/libretro-database-master/cht"
-OUT="$ROOT/Nordi/assets/data/libretro_cheats.tar.gz"
+NORDI="$(cd "$(dirname "$0")/.." && pwd)"
+MONO="$(cd "$NORDI/.." && pwd)"
+SRC=""
+if [[ -d "$MONO/libretro-database-master/cht" ]]; then
+  SRC="$MONO/libretro-database-master/cht"
+elif [[ -d "$NORDI/../libretro-database-master/cht" ]]; then
+  SRC="$(cd "$NORDI/.." && pwd)/libretro-database-master/cht"
+fi
+OUT="$NORDI/assets/data/libretro_cheats.tar.gz"
 
-if [[ ! -d "$SRC" ]]; then
-  echo "Missing: $SRC" >&2
-  echo "Clone https://github.com/libretro/libretro-database into $ROOT/libretro-database-master" >&2
+if [[ -z "$SRC" || ! -d "$SRC" ]]; then
+  if [[ -f "$OUT" ]]; then
+    echo "No libretro-database checkout; keeping existing $OUT"
+    exit 0
+  fi
+  echo "Missing libretro-database cht/ and no $OUT" >&2
+  echo "Clone https://github.com/libretro/libretro-database into libretro-database-master next to Nordi, or commit $OUT" >&2
   exit 1
 fi
 
