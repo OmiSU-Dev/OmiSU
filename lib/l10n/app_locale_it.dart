@@ -186,7 +186,7 @@ const Map<String, dynamic> appLocaleIt = {
       'Cerca aggiornamenti per sistemi ed emulatori all’avvio',
   AppLocale.checkForUpdatesNow: 'Check for updates now',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid engine and libretro cores (Nordi app updates via PC, not NeoStation GitHub)',
+      'LibretroDroid engine, libretro cores, and the Nordi app on GitHub (OmiSU-Dev/OmiSU). App updates are not checked on launch.',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
       'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi',

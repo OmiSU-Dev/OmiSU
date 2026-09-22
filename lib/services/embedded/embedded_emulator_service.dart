@@ -75,6 +75,18 @@ class EmbeddedEmulatorService {
     await _channel.invokeMethod<void>('setFastForward', {'enabled': enabled});
   }
 
+  /// Freezes the running core while the in-game menu is open, then resumes it.
+  static Future<void> setEmulationPaused(bool paused) async {
+    if (!Platform.isAndroid) return;
+    await _channel.invokeMethod<void>('setEmulationPaused', {'paused': paused});
+  }
+
+  /// Ask native GLRetroView to relayout/repaint (hybrid PlatformView compositing).
+  static Future<void> nudgePresentation() async {
+    if (!Platform.isAndroid) return;
+    await _channel.invokeMethod<void>('nudgePresentation');
+  }
+
   /// When false, physical gamepad events reach Flutter instead of libretro.
   static Future<void> setRouteGamepadToCore(bool enabled) async {
     if (!Platform.isAndroid) return;

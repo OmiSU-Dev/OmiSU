@@ -190,8 +190,33 @@ class ConfigService {
   /// Platform-specific strategies:
   /// - Android: Application-specific external storage (`/Android/data/.../files/user-data`).
   /// - macOS: Standard application support directory (`~/Library/Application Support/...`).
-  /// - Linux: AppImage-aware persistence or `~/.neostation`.
+  /// - Linux: AppImage-aware persistence or `~/.omisu` (legacy `~/.neostation`).
   /// - Windows: Portable directory relative to the binary.
+  static String _linuxAppImageConfigHome() {
+    final home = Platform.environment['HOME'];
+    if (home == null || home.isEmpty) {
+      return Directory.current.path;
+    }
+    final omisuDir = path.join(home, '.omisu');
+    final legacyDir = path.join(home, '.neostation');
+    final omisuExists = Directory(omisuDir).existsSync();
+    final legacyExists = Directory(legacyDir).existsSync();
+    // An empty ~/.omisu must not hide an existing ~/.neostation library.
+    if (omisuExists && (!legacyExists || _directoryHasEntries(omisuDir))) {
+      return omisuDir;
+    }
+    if (legacyExists) return legacyDir;
+    return omisuDir;
+  }
+
+  static bool _directoryHasEntries(String dirPath) {
+    try {
+      return Directory(dirPath).listSync(followLinks: false).isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<String> _computeDefaultUserDataPath() async {
     if (Platform.isAndroid) {
       final externalDir = await getExternalStorageDirectory();
@@ -219,7 +244,7 @@ class ConfigService {
             executable.endsWith('.AppImage')) {
           final home = Platform.environment['HOME'];
           if (home != null) {
-            basePath = path.join(home, '.neostation');
+            basePath = _linuxAppImageConfigHome();
           } else {
             basePath = Directory.current.path;
           }
@@ -312,7 +337,7 @@ class ConfigService {
             executable.endsWith('.AppImage')) {
           final home = Platform.environment['HOME'];
           if (home != null) {
-            basePath = path.join(home, '.neostation');
+            basePath = _linuxAppImageConfigHome();
           } else {
             basePath = Directory.current.path;
           }

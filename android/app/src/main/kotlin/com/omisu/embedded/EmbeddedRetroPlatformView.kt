@@ -13,6 +13,7 @@ class EmbeddedRetroPlatformView(
     creationParams: Map<String, Any>?,
 ) : PlatformView {
     private val retroView: GLRetroView
+    private var focusRequested = false
 
     init {
         val systemId = creationParams?.get("systemId") as? String
@@ -20,6 +21,11 @@ class EmbeddedRetroPlatformView(
         val romPath = creationParams["romPath"] as? String
             ?: throw IllegalArgumentException("romPath is required")
         val tuning = EmbeddedEmulatorController.parseTuning(creationParams)
+
+        EmbeddedLaunchTrace.event(
+            "platform_view_init",
+            "system=$systemId tuningHd=${tuning.hdMode} shader=${tuning.shaderFilter}",
+        )
 
         val lifecycleOwner =
             activity as? LifecycleOwner
@@ -29,6 +35,7 @@ class EmbeddedRetroPlatformView(
 
         retroView =
             controller.createRetroView(activity, systemId, romPath, tuning).also { view ->
+                EmbeddedPresentation.configureSurface(activity, view)
                 // Invoke onCreate directly instead of addObserver(). We tear down via
                 // LibretroDroid.destroy() on the GL thread; addObserver would also call
                 // destroy on the main thread during removeObserver and break PPSSPP.
@@ -38,6 +45,10 @@ class EmbeddedRetroPlatformView(
                     TAG,
                     "Started GLRetroView session (lifecycle=${lifecycleOwner.lifecycle.currentState})",
                 )
+                EmbeddedLaunchTrace.event(
+                    "gl_view_started",
+                    "lifecycle=${lifecycleOwner.lifecycle.currentState}",
+                )
             }
     }
 
@@ -46,7 +57,10 @@ class EmbeddedRetroPlatformView(
             // Do not call GLSurfaceView.onResume() here — GLRetroView registers its own
             // RenderLifecycleObserver after the game loads; an early resume races the
             // core and can SIGSEGV inside retro_run() on the first frame.
-            view.post { view.requestFocus() }
+            if (!focusRequested) {
+                focusRequested = true
+                view.post { view.requestFocus() }
+            }
         }
 
     override fun dispose() {
@@ -57,6 +71,7 @@ class EmbeddedRetroPlatformView(
             controller.dispose(flushAutosave = false)
         }
         Log.i(TAG, "PlatformView disposed")
+        EmbeddedLaunchTrace.event("platform_view_dispose")
     }
 
     companion object {

@@ -21,6 +21,7 @@ class EmbeddedSystemAliases {
     '7800': 'a78',
     'a2600': 'a26',
     'a7800': 'a78',
+    'ds': 'nds',
   };
 
   static String canonicalFor(String folderName) =>

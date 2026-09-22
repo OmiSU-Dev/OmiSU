@@ -46,6 +46,7 @@ object EmbeddedCoreGate {
             }
             if (sessionActive) {
                 Log.w(TAG, "awaitCoreIdle timed out after ${timeoutMs}ms; forcing idle")
+                EmbeddedLaunchTrace.event("core_gate_idle_timeout", "ms=$timeoutMs")
                 sessionActive = false
             }
         }
@@ -76,6 +77,7 @@ object EmbeddedCoreGate {
     ) {
         synchronized(sessionLock) {
             Log.i(TAG, "Tearing down core=$coreName")
+            EmbeddedLaunchTrace.event("core_teardown_start", "core=$coreName")
             beforeDestroy()
 
             abortPendingFrames(view)
@@ -102,6 +104,7 @@ object EmbeddedCoreGate {
             sessionActive = false
             (sessionLock as Object).notifyAll()
             Log.i(TAG, "Teardown complete for core=$coreName")
+            EmbeddedLaunchTrace.event("core_teardown_done", "core=$coreName")
         }
     }
 

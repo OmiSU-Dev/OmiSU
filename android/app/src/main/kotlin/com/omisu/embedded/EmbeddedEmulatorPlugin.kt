@@ -91,6 +91,15 @@ class EmbeddedEmulatorPlugin :
                     controller.setFastForward(enabled)
                     result.success(true)
                 }
+                "setEmulationPaused" -> {
+                    val paused = call.argument<Boolean>("paused") ?: false
+                    controller.setEmulationPaused(paused)
+                    result.success(true)
+                }
+                "nudgePresentation" -> {
+                    controller.nudgePresentation()
+                    result.success(true)
+                }
                 "setRouteGamepadToCore" -> {
                     val enabled = call.argument<Boolean>("enabled") ?: true
                     controller.setRouteGamepadToCore(enabled)

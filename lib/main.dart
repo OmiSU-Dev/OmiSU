@@ -44,6 +44,7 @@ import 'package:omisu/services/nordi/nordi_bootstrap_service.dart';
 import 'package:omisu/services/nordi/nordi_safe_mode_service.dart';
 import 'package:omisu/config/nordi_config.dart';
 import 'package:omisu/services/embedded/libretro_cheat_bootstrap.dart';
+import 'package:omisu/services/embedded/play_settings_service.dart';
 import 'package:omisu/services/logger_service.dart';
 import 'package:omisu/services/streaming/stream_settings_service.dart';
 import 'package:omisu/services/streaming/streaming_service.dart';
@@ -220,6 +221,10 @@ void main() async {
   // never visible in app.log.
   await _configureImageCache();
   await DeviceProfileService.instance.initialize();
+  if (Platform.isAndroid) {
+    await PlaySettingsService.load();
+    await PlaySettingsService.applyLowTierDefaultsIfNeeded();
+  }
 
   // Resolve the user-data location before anything reads it, so the cold-boot
   // wait happens once (behind the loading screen) rather than once per caller.

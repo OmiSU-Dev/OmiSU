@@ -158,7 +158,7 @@ const Map<String, dynamic> appLocaleJa = {
   AppLocale.autoUpdateSystemsSubtitle: '起動時にシステムとエミュレータの設定更新を確認',
   AppLocale.checkForUpdatesNow: '今すぐ更新を確認',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid エンジンと libretro コア（Nordi アプリは PC からインストール）',
+      'LibretroDroid エンジン、libretro コア、GitHub の Nordi アプリ（OmiSU-Dev/OmiSU）を確認します。アプリの更新は起動時には確認しません。',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
       'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi',

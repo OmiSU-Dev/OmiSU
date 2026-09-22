@@ -1,6 +1,8 @@
 package com.omisu.embedded
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -46,11 +48,19 @@ class EmbeddedEmulatorController {
     private var coreName: String? = null
     private var romBase: String? = null
     private var appContext: android.content.Context? = null
+    private var hostActivity: Activity? = null
     private var autosaveOnExit: Boolean = true
     private var audioEnabled: Boolean = true
     private var frameSpeed: Int = 1
+
+    /** True while the in-game menu is holding emulation on the current frame. */
+    private var menuPaused = false
     private var rumbleLooper: EmbeddedRumbleLooper? = null
     private var frameMetricsJob: Job? = null
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var presentationNudgeGeneration = 0
+    private var lastPresentationNudgeAt = 0L
     private var fpsCounterEnabled: Boolean = false
     private var autosaveRestoreJob: Job? = null
     private var postFirstFrameJob: Job? = null
@@ -151,9 +161,11 @@ class EmbeddedEmulatorController {
         displayTuning = effectiveTuning
         pendingCheats = emptyList()
         appContext = activity.applicationContext
+        hostActivity = activity
         autosaveOnExit = effectiveTuning.autosaveOnExit
         audioEnabled = true
         frameSpeed = 1
+        menuPaused = false
 
         Log.i(
             TAG,
@@ -162,6 +174,12 @@ class EmbeddedEmulatorController {
                 "path=${resolvedRom.gameFilePath} hdMode=${effectiveTuning.hdMode} " +
                 "hdQuality=${effectiveTuning.hdModeQuality} " +
                 "shader=${effectiveTuning.shaderFilter} " +
+                "skipDup=${effectiveTuning.skipDuplicateFrames}",
+        )
+        EmbeddedLaunchTrace.event(
+            "native_launch",
+            "system=$systemId core=${mapping.coreName} hd=${effectiveTuning.hdMode} " +
+                "hdQ=${effectiveTuning.hdModeQuality} shader=${effectiveTuning.shaderFilter} " +
                 "skipDup=${effectiveTuning.skipDuplicateFrames}",
         )
 
@@ -216,6 +234,7 @@ class EmbeddedEmulatorController {
         GlobalScope.launch {
             view.getGLRetroErrors().collect { code ->
                 Log.e(TAG, "GLRetro error code=$code for rom=$romBase")
+                EmbeddedLaunchTrace.event("gl_error", "code=$code rom=$romBase")
                 CoreResolver.statusListener?.invoke("error:$code")
             }
         }
@@ -362,6 +381,16 @@ class EmbeddedEmulatorController {
                         it is GLRetroView.GLRetroEvents.FrameRendered
                     }
                 }
+                val activity = hostActivity
+                view.post {
+                    CoreResolver.statusListener?.invoke("presenting")
+                    nudgePresentation(view, force = true)
+                    if (activity != null) {
+                        EmbeddedPresentation.syncHybridCompositor(activity, view)
+                    }
+                }
+                Log.i(TAG, "First frame rendered for rom=$romBase")
+                EmbeddedLaunchTrace.event("first_frame", "rom=$romBase")
                 return
             } catch (e: Exception) {
                 Log.w(TAG, "Frame wait attempt ${attempt + 1} failed: $e")
@@ -566,6 +595,92 @@ class EmbeddedEmulatorController {
         retroView?.frameSpeed = frameSpeed
     }
 
+    /**
+     * Freezes the core on the current frame while the in-game menu is open.
+     * The surface keeps that frame on screen. The view's own pause stays with
+     * the activity lifecycle so the picture does not go black.
+     */
+    /**
+     * Re-sync hybrid-composition layout after the GL surface starts presenting.
+     * Does not recreate the PlatformView (unlike Flutter setState refresh loops).
+     */
+    fun nudgePresentation() {
+        val view = retroView ?: return
+        nudgePresentation(view, force = false)
+    }
+
+    private fun nudgePresentation(view: GLRetroView, force: Boolean) {
+        val now = System.currentTimeMillis()
+        if (!force && now - lastPresentationNudgeAt < PRESENTATION_NUDGE_COOLDOWN_MS) {
+            return
+        }
+        lastPresentationNudgeAt = now
+        presentationNudgeGeneration++
+        val generation = presentationNudgeGeneration
+        EmbeddedLaunchTrace.event("presentation_nudge", "gen=$generation")
+        view.post {
+            if (retroView !== view || viewDetached) return@post
+            view.requestLayout()
+            view.invalidate()
+            view.requestRender()
+        }
+        for (delayMs in PRESENTATION_NUDGE_DELAYS_MS) {
+            mainHandler.postDelayed(
+                {
+                    if (generation != presentationNudgeGeneration) return@postDelayed
+                    if (retroView !== view || viewDetached) return@postDelayed
+                    view.requestRender()
+                    view.invalidate()
+                },
+                delayMs,
+            )
+        }
+    }
+
+    fun setEmulationPaused(paused: Boolean) {
+        val view = retroView ?: return
+        EmbeddedLaunchTrace.event(
+            if (paused) "emulation_paused" else "emulation_resumed",
+            "menuPaused=$menuPaused rom=$romBase",
+        )
+        if (paused) {
+            // Re-apply even if already paused. Returning from the home screen
+            // resumes the core from the activity lifecycle while the menu is
+            // still open.
+            menuPaused = true
+            setEmulationReady(view, false)
+            view.queueEvent {
+                runCatching { LibretroDroid.pause() }
+                    .onFailure { Log.w(TAG, "LibretroDroid.pause failed: $it") }
+            }
+            return
+        }
+        if (!menuPaused) return
+        menuPaused = false
+        val restoreAudio = audioEnabled
+        val restoreSpeed = frameSpeed
+        view.queueEvent {
+            runCatching {
+                LibretroDroid.resume()
+                // resume() restarts the audio device. Put mute and fast-forward
+                // back the way the player left them.
+                LibretroDroid.setAudioEnabled(restoreAudio)
+                LibretroDroid.setFrameSpeed(restoreSpeed)
+            }.onFailure { Log.w(TAG, "LibretroDroid.resume failed: $it") }
+            setEmulationReady(view, true)
+        }
+    }
+
+    private fun setEmulationReady(view: GLRetroView, ready: Boolean) {
+        runCatching {
+            val field = GLRetroView::class.java.getDeclaredField("isEmulationReady")
+            field.isAccessible = true
+            field.setBoolean(view, ready)
+        }.onFailure {
+            Log.w(TAG, "Could not set emulation ready=$ready: $it")
+        }
+    }
+
     fun isFastForward(): Boolean = frameSpeed > 1
 
     fun applyDisplaySettings(
@@ -667,6 +782,7 @@ class EmbeddedEmulatorController {
             clearNonViewSessionState()
             return
         }
+        EmbeddedLaunchTrace.event("detach_view", "core=$coreName rom=$romBase flush=$flushAutosave")
         stopFrameMetrics()
         adaptiveGovernor = null
         autosaveRestoreJob?.cancel()
@@ -715,8 +831,10 @@ class EmbeddedEmulatorController {
     private fun clearNonViewSessionState() {
         coreName = null
         romBase = null
+        menuPaused = false
         activeSystemId = null
         appContext = null
+        hostActivity = null
         preparedRom = null
         preparedRomSourcePath = null
     }
@@ -727,6 +845,8 @@ class EmbeddedEmulatorController {
         private const val FRAME_WAIT_ATTEMPTS = 10
         private const val FRAME_WAIT_TIMEOUT_MS = 3_000L
         private const val FRAME_WAIT_RETRY_MS = 100L
+        private val PRESENTATION_NUDGE_DELAYS_MS = longArrayOf(50L, 150L, 400L)
+        private const val PRESENTATION_NUDGE_COOLDOWN_MS = 750L
         private const val STATE_RESTORE_ATTEMPTS = 10
         private const val STATE_RESTORE_RETRY_MS = 200L
 

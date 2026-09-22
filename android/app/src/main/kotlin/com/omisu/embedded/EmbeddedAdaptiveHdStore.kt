@@ -4,7 +4,8 @@ import android.content.Context
 
 /** Remembers the highest HD tier that ran smoothly per system on this device. */
 object EmbeddedAdaptiveHdStore {
-    private const val PREFS = "omisu_adaptive_hd"
+    /** Bumped when start-quality logic changes so stale tiers are not reused. */
+    private const val PREFS = "omisu_adaptive_hd_v2"
 
     fun get(context: Context, systemFolder: String): EmbeddedHdModeQuality? {
         val key = prefKey(systemFolder)
@@ -22,13 +23,19 @@ object EmbeddedAdaptiveHdStore {
             .apply()
     }
 
-    /** Start at the lower of user ceiling and remembered stable tier. */
+    /**
+     * Start at the lower of user ceiling and remembered stable tier.
+     *
+     * With no history, start at [EmbeddedHdModeQuality.LOW] so CUT2/CUT3 is not
+     * applied on the first frames. Some Adreno GPUs still hit target FPS while
+     * a broken medium HD shader leaves a black picture.
+     */
     fun resolveStartQuality(
         context: Context,
         systemFolder: String,
         userCeiling: EmbeddedHdModeQuality,
     ): EmbeddedHdModeQuality {
-        val remembered = get(context, systemFolder) ?: return userCeiling
+        val remembered = get(context, systemFolder) ?: return EmbeddedHdModeQuality.LOW
         return minOf(remembered, userCeiling)
     }
 

@@ -29,6 +29,15 @@ void main() {
       expect(config.systemId, 'fc');
     });
 
+    test('ds alias maps to melonds and keeps the ds system id', () {
+      expect(EmbeddedCoreRegistry.supports('ds'), isTrue);
+      expect(EmbeddedCoreRegistry.supports('nds'), isTrue);
+      final config = EmbeddedCoreRegistry.configFor('ds')!;
+      expect(config.coreName, 'melonds');
+      expect(config.coreFileName, 'libmelonds_libretro_android.so');
+      expect(config.systemId, 'ds');
+    });
+
     test('2600 folder maps to stella core', () {
       expect(EmbeddedCoreRegistry.supports('2600'), isTrue);
       expect(EmbeddedCoreRegistry.configFor('2600')!.coreName, 'stella');

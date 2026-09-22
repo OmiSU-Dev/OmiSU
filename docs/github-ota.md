@@ -31,7 +31,7 @@ Workflow: [`.github/workflows/nordi-android-main.yml`](../.github/workflows/nord
 4. Wait for **Nordi Android (main)** → confirm a **published** release with:
    - `nordi-gamesir-arm64-v8a-<version>.apk`
    - `nordi-gamesir-armeabi-v7a-<version>.apk`
-5. On the N30 (Wi‑Fi): cold start with **Check for updates on launch** enabled (default), or Settings → **Check for updates now**.
+5. On the N30 (Wi‑Fi): Settings → **Check for updates now**. Bootstrap leaves app auto-update off, and curated Settings has no launch toggle for the app. **Auto-update built-in player** only refreshes LibretroDroid and cores.
 
 Verify API from a PC:
 

@@ -17,7 +17,6 @@ class NeoDocumentsProvider : DocumentsProvider() {
     companion object {
         // Constants
         private const val DEFAULT_ROOT_ID = "root"
-        private const val ROOT_NAME = "NeoStation"
 
         // Columns
         private val DEFAULT_ROOT_PROJECTION: Array<String> = arrayOf(
@@ -66,13 +65,18 @@ class NeoDocumentsProvider : DocumentsProvider() {
         return true
     }
 
+    private fun appRootTitle(): String {
+        val ctx = context ?: return "OmiSU"
+        return ctx.getString(R.string.app_storage_brand)
+    }
+
     override fun queryRoots(projection: Array<out String>?): Cursor {
         val result = MatrixCursor(projection ?: DEFAULT_ROOT_PROJECTION)
         val row = result.newRow()
 
         row.add(Root.COLUMN_ROOT_ID, DEFAULT_ROOT_ID)
         row.add(Root.COLUMN_ICON, R.mipmap.launcher_icon)
-        row.add(Root.COLUMN_TITLE, ROOT_NAME)
+        row.add(Root.COLUMN_TITLE, appRootTitle())
         // row.add(Root.COLUMN_SUMMARY, "App Data") // Removed to avoid confusion
         row.add(Root.COLUMN_DOCUMENT_ID, getDocIdForFile(baseDir))
         row.add(Root.COLUMN_MIME_TYPES, "*/*")

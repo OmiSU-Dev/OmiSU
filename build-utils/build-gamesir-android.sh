@@ -14,8 +14,13 @@ cd "$PROJECT_ROOT"
 
 EXTRA_DEFINES=(
   "--dart-define=NORDI_ROM_ROOT=${NORDI_ROM_ROOT}"
-  "--dart-define=OMISU_DEVICE_PROFILE=nord_n30"
 )
+
+# Optional QA override only — retail APKs should auto-detect hardware at runtime.
+if [ -n "${OMISU_DEVICE_PROFILE:-}" ]; then
+  EXTRA_DEFINES+=("--dart-define=OMISU_DEVICE_PROFILE=${OMISU_DEVICE_PROFILE}")
+  echo "  Device profile override: $OMISU_DEVICE_PROFILE"
+fi
 
 ENV_FILE="${ENV_FILE:-.env}"
 if [ -f "$ENV_FILE" ]; then

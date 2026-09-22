@@ -38,8 +38,22 @@ object EmbeddedSystemTuningRegistry {
 
     private val byCanonical =
         mapOf(
-            "nes" to EmbeddedSystemTuning(),
-            "snes" to EmbeddedSystemTuning(),
+            "nes" to
+                EmbeddedSystemTuning(
+                    skipDuplicateFrames = false,
+                ),
+            "snes" to
+                EmbeddedSystemTuning(
+                    skipDuplicateFrames = false,
+                ),
+            "gb" to
+                EmbeddedSystemTuning(
+                    skipDuplicateFrames = false,
+                ),
+            "gbc" to
+                EmbeddedSystemTuning(
+                    skipDuplicateFrames = false,
+                ),
             "n64" to
                 EmbeddedSystemTuning(
                     skipDuplicateFrames = false,

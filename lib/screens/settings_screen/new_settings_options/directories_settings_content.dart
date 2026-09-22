@@ -17,6 +17,7 @@ import 'package:omisu/services/permission_service.dart';
 import 'package:omisu/services/sfx_service.dart';
 import 'package:omisu/services/user_data_location_service.dart';
 import 'package:omisu/widgets/custom_notification.dart';
+import 'package:omisu/utils/app_path_display.dart';
 import 'package:omisu/widgets/move_user_data_dialog.dart';
 import 'package:omisu/widgets/permission_check_wrapper.dart';
 import 'package:omisu/widgets/restart_required_dialog.dart';
@@ -130,7 +131,7 @@ class DirectoriesSettingsContentState
     });
     for (final path in _currentRomFolders) {
       _directoryItems.add({
-        'title': path,
+        'title': AppPathDisplay.forUser(path),
         'subtitle': AppLocale.pressToRemoveFolder,
         'action': 'remove_rom',
         'path': path,
@@ -1125,7 +1126,7 @@ class DirectoriesSettingsContentState
                         SizedBox(width: 6.r),
                         Expanded(
                           child: Text(
-                            _currentUserDataPath!,
+                            AppPathDisplay.forUser(_currentUserDataPath!),
                             style: TextStyle(
                               fontSize: 9.r,
                               color: theme.colorScheme.onSurface.withValues(
@@ -1187,7 +1188,7 @@ class DirectoriesSettingsContentState
           SizedBox(width: 6.r),
           Expanded(
             child: Text(
-              path,
+              AppPathDisplay.forUser(path),
               style: TextStyle(
                 fontSize: 9.r,
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.55),

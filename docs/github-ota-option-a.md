@@ -75,7 +75,7 @@ You should see a tag and `nordi-gamesir-arm64-v8a-….apk` on [Releases](https:/
 On the N30:
 
 - Installed build **lower** than the release (About shows `+build`).
-- **Settings → Check for updates now**, or enable **Check for updates on launch** (off by default on curated Nordi bootstrap).
+- **Settings → Check for updates now**. Curated Settings has no app launch-check toggle; bootstrap leaves that pref off. **Auto-update built-in player** only refreshes cores.
 
 ## What users see
 

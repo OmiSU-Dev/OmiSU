@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:omisu/l10n/app_locale.dart';
+import 'package:omisu/utils/app_path_display.dart';
 import 'package:omisu/utils/gamepad_nav.dart';
 import 'package:omisu/services/game_service.dart';
 import 'core_footer.dart';
@@ -83,7 +84,7 @@ class _MoveUserDataDialogState extends State<MoveUserDataDialog> {
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
-        path,
+        AppPathDisplay.forUser(path),
         style: TextStyle(
           fontSize: 11.r,
           color: theme.colorScheme.onSurface,

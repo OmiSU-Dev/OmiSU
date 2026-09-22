@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:omisu/services/launch/device_profile.dart';
 import 'package:omisu/config/nordi_config.dart';
+import 'package:omisu/services/launch/device_profile.dart';
 import 'package:omisu/services/nordi/nordi_settings.dart';
 import 'package:omisu/services/logger_service.dart';
 
@@ -17,8 +17,25 @@ class DeviceProfileService {
   DeviceProfile? _profile;
   DeviceProfile? _simulatedProfile;
 
+  /// Why [profile] is not from [ _profile ] alone (logging / QA).
+  DeviceProfileSource get profileSource {
+    if (_simulatedProfile != null) {
+      return _dartDefineProfile != null
+          ? DeviceProfileSource.dartDefine
+          : DeviceProfileSource.debugSimulate;
+    }
+    return DeviceProfileSource.detected;
+  }
+
+  DeviceProfile? _dartDefineProfile;
+
   DeviceProfile get profile =>
       _simulatedProfile ?? _profile ?? DeviceProfileService.fallback;
+
+  bool get isSimulated => _simulatedProfile != null;
+
+  /// Detected hardware profile (ignores debug / dart-define overrides).
+  DeviceProfile get detectedProfile => _profile ?? DeviceProfileService.fallback;
 
   /// Override detection (debug / `flutter run --dart-define=OMISU_DEVICE_PROFILE=nord_n30`).
   void simulateProfile(DeviceProfile? profile) {
@@ -60,7 +77,8 @@ class DeviceProfileService {
 
     const simulatedId = String.fromEnvironment('OMISU_DEVICE_PROFILE');
     if (simulatedId.isNotEmpty) {
-      _simulatedProfile = profileFromId(simulatedId);
+      _dartDefineProfile = profileFromId(simulatedId);
+      _simulatedProfile = _dartDefineProfile;
       _log.i('[LaunchTune] Device profile (dart-define): $_simulatedProfile');
     }
 
@@ -103,13 +121,32 @@ class DeviceProfileService {
   Future<DeviceProfile> _detectAndroid() async {
     if (NordiSettings.handheldRetailUi) {
       final info = await DeviceInfoPlugin().androidInfo;
+      final model = info.model.trim();
+      final manufacturer = info.manufacturer.trim();
+      final ramGb =
+          info.physicalRamSize > 0 ? info.physicalRamSize ~/ 1024 : null;
+      final modelLower = model.toLowerCase();
+      final isNordN30 =
+          modelLower.contains('nord n30') || modelLower.contains('cph258');
+      if (isNordN30) {
+        return DeviceProfile(
+          id: NordiConfig.deviceTarget,
+          model: model,
+          manufacturer: manufacturer,
+          ramGb: ramGb ?? 8,
+          tier: DevicePerformanceTier.mid,
+          isKnownTarget: true,
+        );
+      }
+      // Curated APK on other hardware: tier from real RAM (same ids as generic Android).
+      final tier = _tierFromRam(ramGb);
       return DeviceProfile(
-        id: NordiConfig.deviceTarget,
-        model: info.model.trim(),
-        manufacturer: info.manufacturer.trim(),
-        ramGb: info.physicalRamSize > 0 ? info.physicalRamSize ~/ 1024 : 8,
-        tier: DevicePerformanceTier.mid,
-        isKnownTarget: true,
+        id: 'android_${_tierSlug(tier)}',
+        model: model,
+        manufacturer: manufacturer,
+        ramGb: ramGb,
+        tier: tier,
+        isKnownTarget: false,
       );
     }
 

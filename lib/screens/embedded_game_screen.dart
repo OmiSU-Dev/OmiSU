@@ -50,8 +50,15 @@ class EmbeddedGameScreen extends StatefulWidget {
   State<EmbeddedGameScreen> createState() => _EmbeddedGameScreenState();
 }
 
-class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
+class _EmbeddedGameScreenState extends State<EmbeddedGameScreen>
+    with WidgetsBindingObserver {
   static final _log = LoggerService.instance;
+
+  void _launchTrace(String phase, [String detail = '']) {
+    _log.i(
+      detail.isEmpty ? '[LaunchTrace] $phase' : '[LaunchTrace] $phase | $detail',
+    );
+  }
   bool _menuVisible = false;
   bool _loading = true;
   EmbeddedLaunchStatus _loadingStatus = EmbeddedLaunchStatus.initial;
@@ -79,6 +86,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   StreamSubscription<StreamingLifecycleState>? _streamStateSub;
   late final GamepadNavigation _inGameGamepadNav;
   List<({String code, bool enabled})> _pendingLaunchCheats = const [];
+  late final Key _embeddedPlatformViewKey;
 
   String get _embeddedSystemFolder =>
       widget.game.systemFolderName ?? widget.system.folderName;
@@ -118,9 +126,13 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   @override
   void initState() {
     super.initState();
-    final device = DeviceProfileService.instance.profile;
+    WidgetsBinding.instance.addObserver(this);
+    _embeddedPlatformViewKey = ValueKey<String>(
+      'embedded-pv-${widget.game.romPath ?? widget.game.romname}',
+    );
+    final detected = DeviceProfileService.instance.detectedProfile;
     _tuning = LaunchTuningResolver.resolve(
-      device: device,
+      device: detected,
       systemFolder: widget.system.folderName,
     );
     _log.i(
@@ -190,12 +202,25 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
         perGameCoreVariables: perGameVars,
       );
       final play = PlaySettingsService.current;
-      final params = _tuning.toEmbeddedParamsWithPlay(play.toEmbeddedParams());
+      final detected = DeviceProfileService.instance.detectedProfile;
+      final params = _tuning.toEmbeddedParamsWithPlay(
+        play.toEmbeddedParams(device: detected),
+      );
+      final effectivePerf = play.effectivePerformanceMode(detected);
       _log.i(
         '[LaunchTune] embedded/$_embeddedSystemFolder/${widget.game.romname}: '
-        'hdMode=${play.hdMode} hdQuality=${play.hdModeQuality} '
-        'shader=${play.shaderFilter} perGameVars=${perGameVars.length} '
-        'cheats=${launchCheats.length}',
+        'perf=$effectivePerf (pref=${play.performanceMode}) hdMode=${play.effectiveHdModeFor(detected)} '
+        'hdQuality=${play.hdModeQuality} shader=${play.shaderFilter} '
+        'perGameVars=${perGameVars.length} cheats=${launchCheats.length}',
+      );
+      final source = DeviceProfileService.instance.profileSource;
+      _launchTrace(
+        'flutter_tuning',
+        'detected=${detected.id} model=${detected.model} '
+        'ram=${detected.ramGb} tier=${detected.tier.name} source=${source.name} '
+        'perfPref=${play.performanceMode} perfLaunch=$effectivePerf '
+        'hd=${play.effectiveHdModeFor(detected)} hdQ=${play.hdModeQuality} '
+        'shader=${params['shaderFilter']}',
       );
       if (play.immersiveMode) {
         unawaited(
@@ -208,7 +233,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
         _pendingLaunchCheats = launchCheats;
         _touchControlsEnabled = play.touchControlsEnabled;
         _showFpsCounter = play.showFpsCounter;
-        _hdMode = play.hdMode;
+        _hdMode = play.effectiveHdModeFor(detected);
         _hdModeQuality = play.hdModeQuality;
         _shaderFilter = play.shaderFilter;
       });
@@ -273,6 +298,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
       );
       if (!mounted) return;
       setState(() => _coreReady = true);
+      _launchTrace('core_ready', 'system=${widget.system.folderName}');
       _syncTopChromeOverlay();
       _activateInGameGamepadIfNeeded();
     } on PlatformException catch (e) {
@@ -314,22 +340,36 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
     final message = event['message']?.toString();
     if (message == null || message.isEmpty || !mounted) return;
     if (message == 'ready') {
+      _launchTrace('native_status', 'ready');
       setState(() => _loading = false);
       _syncTopChromeOverlay();
       _activateInGameGamepadIfNeeded();
       unawaited(_syncFpsCounter());
       unawaited(EmbeddedEmulatorService.setAudioEnabled(!_muted));
+      if (_menuVisible) {
+        unawaited(EmbeddedEmulatorService.setEmulationPaused(true));
+      }
       unawaited(_maybeAutoStartStream());
+      return;
+    }
+    if (message == 'presenting') {
+      _launchTrace('native_status', 'presenting');
+      if (mounted && _loading) {
+        setState(() => _loading = false);
+      }
+      unawaited(EmbeddedEmulatorService.nudgePresentation());
       return;
     }
     if (message.startsWith('fps:')) {
       if (!_showFpsCounter || !mounted) return;
-      setState(() => _currentFps = message.substring('fps:'.length));
+      _currentFps = message.substring('fps:'.length);
+      _topChromeEntry?.markNeedsBuild();
       return;
     }
     if (message.startsWith('error:')) {
       final code = message.substring('error:'.length);
       _log.e('Embedded GLRetro error code=$code');
+      _launchTrace('native_status', 'error=$code');
       if (!mounted) return;
       setState(() {
         _loading = false;
@@ -393,7 +433,14 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !_menuVisible) return;
+    unawaited(EmbeddedEmulatorService.setEmulationPaused(true));
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _statusSub?.cancel();
     _streamStateSub?.cancel();
     if (Platform.isAndroid && !_exitTeardownStarted) {
@@ -421,6 +468,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   void _closePauseMenu() {
     if (!_menuVisible) return;
     setState(() => _menuVisible = false);
+    unawaited(EmbeddedEmulatorService.setEmulationPaused(false));
     unawaited(EmbeddedEmulatorService.setRouteGamepadToCore(true));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _activateInGameGamepadIfNeeded();
@@ -477,6 +525,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
     if (_menuVisible) return;
     _inGameGamepadNav.deactivate();
     if (Platform.isAndroid) {
+      await EmbeddedEmulatorService.setEmulationPaused(true);
       await EmbeddedEmulatorService.setRouteGamepadToCore(false);
     }
     setState(() => _menuVisible = true);
@@ -577,9 +626,8 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
   }
 
   Future<void> _sendStartFromPauseMenu() async {
-    await EmbeddedEmulatorService.tapStartButton();
-    if (!mounted) return;
     _closePauseMenu();
+    await EmbeddedEmulatorService.tapStartButton();
   }
 
   Future<void> _openGameOptions() async {
@@ -663,7 +711,9 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
         fit: StackFit.expand,
         children: [
           if (Platform.isAndroid && _coreReady && _embeddedParams != null)
-            _buildEmbeddedRetroView(romPath)
+            Positioned.fill(
+              child: _buildEmbeddedRetroView(romPath),
+            )
           else if (!Platform.isAndroid)
             _buildLaunchStatusCard(EmbeddedLaunchStatus.desktopUnsupported)
           else
@@ -792,6 +842,7 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
           'tuning': _embeddedParams!,
         };
         return PlatformViewLink(
+          key: _embeddedPlatformViewKey,
           viewType: 'embedded-retro-view',
           surfaceFactory: (context, controller) {
             return AndroidViewSurface(
@@ -814,6 +865,10 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen> {
               _log.i(
                 'Embedded retro view created (hybrid) for '
                 '${widget.system.folderName}',
+              );
+              _launchTrace(
+                'platform_view_created',
+                'system=${widget.system.folderName} hybrid=true',
               );
               _syncTopChromeOverlay();
               if (mounted && _loading) {

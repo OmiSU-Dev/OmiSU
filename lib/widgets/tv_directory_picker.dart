@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:omisu/l10n/app_locale.dart';
+import 'package:omisu/utils/app_path_display.dart';
 import '../utils/gamepad_nav.dart';
 import '../services/game_service.dart';
 import '../services/logger_service.dart';
@@ -529,10 +530,11 @@ class _TvDirectoryPickerState extends State<TvDirectoryPicker> {
   }
 
   String _displayPath(String path) {
+    var shown = path;
     if (path.startsWith('/storage/emulated/0')) {
-      return 'Internal${path.substring('/storage/emulated/0'.length)}';
+      shown = 'Internal${path.substring('/storage/emulated/0'.length)}';
     }
-    return path;
+    return AppPathDisplay.forUser(shown);
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {

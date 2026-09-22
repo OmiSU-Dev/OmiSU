@@ -10,7 +10,7 @@ This is a **separate product line** from [`../neostation-frontend-main`](../neos
 | Setup | Full wizard & library tooling | No wizard; fixed ROM path; trimmed Settings |
 | Sync / import | NeoSync, ES-DE, etc. | NeoSync + ES-DE UI removed; **Services** (scraper, RomM, RA) kept |
 | Gaming | Frontend + embedded LibretroDroid | **Same stack** — only default playback/tuning seeded at bootstrap |
-| Updates | In-app OmiSU / systems OTA | **Wi‑Fi deploy** from this repo; optional player cores OTA only |
+| Updates | In-app OmiSU / systems OTA | Wi‑Fi deploy for first install; **Check for updates now** pulls the Nordi GitHub APK; optional built-in player cores OTA. NeoStation app and systems JSON stay off. |
 
 Nord-only behavior lives under [`lib/config/nordi_config.dart`](lib/config/nordi_config.dart) (`curatedBuild` is always `true` in this folder).
 
@@ -26,7 +26,7 @@ Nord-only behavior lives under [`lib/config/nordi_config.dart`](lib/config/nordi
 - Setup wizard skipped; bootstrap seeds handheld defaults.
 - Top nav: NeoSync, Scraper, RomM, Achievements tabs hidden (Scraper/RomM still reachable from **Services**).
 - ES-DE import block removed from Library settings.
-- General: **Safe mode** for sideload/dev; optional **built-in player** OTA only (no NeoStation app/systems pull).
+- General: **Safe mode** for sideload/dev. **Check for updates now** covers the Nordi GitHub APK and the built-in player. Player cores can also update on launch. NeoStation app and systems JSON stay off. App updates are not checked on launch.
 - Settings menu: **Tools** hidden; **Exit** hidden in retail (Safe mode restores Exit + launcher picker).
 - **Restart / Reboot** power menu on retail priv-app builds.
 
@@ -39,7 +39,7 @@ flutter pub get
 # or: ./build-utils/build-android.sh  (same gamesir flavor)
 ```
 
-Uses Gradle flavor **`gamesir`**, `PRELOADED_OEM=true`, and dart-defines `NORDI_ROM_ROOT` / `OMISU_DEVICE_PROFILE=nord_n30`.
+Uses Gradle flavor **`gamesir`**, `PRELOADED_OEM=true`, and dart-define `NORDI_ROM_ROOT`. Device auto-tune reads hardware at runtime; optional build-time override: `OMISU_DEVICE_PROFILE=nord_n30 ./build-utils/build-gamesir-android.sh`.
 
 Install as system/priv-app on the Nord N30 image for reboot/shutdown and persistent launcher behavior.
 

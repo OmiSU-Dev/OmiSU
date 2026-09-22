@@ -41,7 +41,8 @@ const Map<String, dynamic> appLocaleEn = {
   AppLocale.bootDetailServices: 'Starting sync, scraper, and audio...',
   AppLocale.bootPromptReady: '> ready_',
   AppLocale.bootDetailReady: 'Launching interface...',
-  AppLocale.wizardArtPackPick: 'Choose a System Art pack (NeoStation, iiSU, and more when published)',
+  AppLocale.wizardArtPackPick:
+      'Choose a System Art pack (OmiSU, iiSU, and more when published)',
 
   AppLocale.play: 'Play',
   AppLocale.playButton: 'PLAY',
@@ -204,10 +205,10 @@ const Map<String, dynamic> appLocaleEn = {
       'On startup, refresh LibretroDroid, Lemuroid cores, and emulator system configs over Wi‑Fi',
   AppLocale.checkForUpdatesNow: 'Check for updates now',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid engine and libretro cores only — ship Nordi app changes with deploy-nordi-wifi.sh on your PC',
+      'LibretroDroid engine, libretro cores, and the Nordi app on GitHub (OmiSU-Dev/OmiSU). App updates are not checked on launch.',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
-      'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi. App library updates ship with deploy-nordi-wifi.sh, not this toggle.',
+      'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi. The Nordi app is checked on GitHub from Check for updates now, not this toggle.',
   AppLocale.updatesUpToDate: 'Everything is up to date',
   AppLocale.updatesCheckFailed:
       'Update check failed. Check your Wi‑Fi connection and try again.',

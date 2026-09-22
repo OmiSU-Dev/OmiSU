@@ -23,6 +23,7 @@ object CoreMappingRegistry {
             "7800" to "a78",
             "a2600" to "a26",
             "a7800" to "a78",
+            "ds" to "nds",
         )
 
     private val canonicalMappings =

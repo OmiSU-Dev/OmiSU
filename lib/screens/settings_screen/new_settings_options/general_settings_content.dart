@@ -238,8 +238,7 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
       count++; // Nordi safe mode
     }
     if (Platform.isAndroid && NordiConfig.curatedBuild) {
-      count++; // Auto-update App
-      count++; // Auto-update Systems
+      count++; // Auto-update built-in player
       count++; // Manual update check
     }
     count++; // SFX Sounds

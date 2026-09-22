@@ -74,7 +74,7 @@ void main() {
         // wraps, and the wrapped block still has to fit under the logo.
         await pumpAt(tester, entry.value, [
           const Text(
-            'Preparing NeoStation. Waiting for storage and services...',
+            'Preparing OmiSU. Waiting for storage and services...',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 17),
           ),

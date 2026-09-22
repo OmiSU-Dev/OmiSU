@@ -8,6 +8,12 @@ class NordiConfig {
   static const String partner = 'gamesir';
 
   /// Fixed library root on the preload image (`OMISU_OEM_ROM_ROOT` alias).
+  /// Launcher name shown in folder pickers, DocumentsProvider, and path labels.
+  static const String productDisplayName = 'OmiSU';
+
+  /// Folder on shared storage (e.g. `/storage/emulated/0/OmiSU/rom_import`).
+  static const String publicStorageFolderName = 'OmiSU';
+
   static const String defaultRomRoot = String.fromEnvironment(
     'NORDI_ROM_ROOT',
     defaultValue: String.fromEnvironment(

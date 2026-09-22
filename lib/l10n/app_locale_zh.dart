@@ -154,7 +154,7 @@ const Map<String, dynamic> appLocaleZh = {
   AppLocale.autoUpdateSystemsSubtitle: '启动时检查系统和模拟器配置更新',
   AppLocale.checkForUpdatesNow: '立即检查更新',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid 引擎与 libretro 核心（Nordi 应用请通过电脑安装，非 NeoStation GitHub）',
+      '检查 LibretroDroid 引擎、libretro 核心，以及 GitHub 上的 Nordi 应用（OmiSU-Dev/OmiSU）。启动时不会检查应用更新。',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
       'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi',

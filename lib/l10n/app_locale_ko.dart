@@ -157,7 +157,7 @@ const Map<String, dynamic> appLocaleKo = {
   AppLocale.autoUpdateSystemsSubtitle: '시작할 때 시스템과 에뮬레이터 설정 업데이트를 확인합니다',
   AppLocale.checkForUpdatesNow: '지금 업데이트 확인',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid 엔진 및 libretro 코어 (Nordi 앱은 PC로 설치, NeoStation GitHub 아님)',
+      'LibretroDroid 엔진, libretro 코어, GitHub의 Nordi 앱(OmiSU-Dev/OmiSU)을 확인합니다. 앱 업데이트는 시작 시 확인하지 않습니다.',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
       'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi',

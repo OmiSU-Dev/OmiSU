@@ -52,7 +52,7 @@ class PlaybackSettingsContentState extends State<PlaybackSettingsContent> {
     ('Simulate: Android mid', DeviceProfileService.androidMid),
   ];
 
-  static const _androidPlayRowCount = 10;
+  static const _androidPlayRowCount = 11;
 
   int getItemCount() {
     var count = Platform.isAndroid ? _androidPlayRowCount : 0;
@@ -75,25 +75,31 @@ class PlaybackSettingsContentState extends State<PlaybackSettingsContent> {
       case 0:
         _patchPlay((p) => p.copyWith(autosaveOnExit: !p.autosaveOnExit));
       case 1:
-        _patchPlay((p) => p.copyWith(hdMode: !p.hdMode));
+        _patchPlay((p) => p.copyWith(performanceMode: !p.performanceMode));
       case 2:
-        if (_play.hdMode) _cycleHdQuality();
+        if (!_play.performanceMode) {
+          _patchPlay((p) => p.copyWith(hdMode: !p.hdMode));
+        }
       case 3:
-        if (_play.hdMode) {
+        if (_play.effectiveHdMode) _cycleHdQuality();
+      case 4:
+        if (_play.effectiveHdMode) {
           _patchPlay((p) => p.copyWith(adaptiveHdMode: !p.adaptiveHdMode));
         }
-      case 4:
-        _patchPlay((p) => p.copyWith(immersiveMode: !p.immersiveMode));
       case 5:
-        _patchPlay((p) => p.copyWith(rumbleEnabled: !p.rumbleEnabled));
+        if (!_play.performanceMode) {
+          _patchPlay((p) => p.copyWith(immersiveMode: !p.immersiveMode));
+        }
       case 6:
-        _patchPlay((p) => p.copyWith(lowLatencyAudio: !p.lowLatencyAudio));
+        _patchPlay((p) => p.copyWith(rumbleEnabled: !p.rumbleEnabled));
       case 7:
-        unawaited(_setTouchControls(!_play.touchControlsEnabled));
+        _patchPlay((p) => p.copyWith(lowLatencyAudio: !p.lowLatencyAudio));
       case 8:
-        _patchPlay((p) => p.copyWith(showFpsCounter: !p.showFpsCounter));
+        unawaited(_setTouchControls(!_play.touchControlsEnabled));
       case 9:
-        if (!_play.hdMode) _cycleShader();
+        _patchPlay((p) => p.copyWith(showFpsCounter: !p.showFpsCounter));
+      case 10:
+        if (!_play.effectiveHdMode && !_play.performanceMode) _cycleShader();
       default:
         if (kDebugMode && index == getItemCount() - 1) {
           setState(() {
@@ -221,7 +227,9 @@ class PlaybackSettingsContentState extends State<PlaybackSettingsContent> {
                   OmisuRetroPanel(
                     padding: EdgeInsets.symmetric(horizontal: 10.r, vertical: 8.r),
                     child: Text(
-                      'Cores: $_coresVersion\nEngine: LibretroDroid $_engineVersion',
+                      'Cores: $_coresVersion\nEngine: LibretroDroid $_engineVersion\n'
+                      'Auto-tune: ${DeviceProfileService.instance.detectedProfile.playbackAutoTuneLabel}'
+                      '${DeviceProfileService.instance.isSimulated ? "\n(QA override: ${DeviceProfileService.instance.profile.id})" : ""}',
                       style: omisuRetroLabelStyle(
                         context,
                         size: 9,
@@ -239,52 +247,70 @@ class PlaybackSettingsContentState extends State<PlaybackSettingsContent> {
                   ),
                   _toggleRow(
                     index: 1,
+                    title: 'Performance mode',
+                    subtitle: _play.performanceMode
+                        ? 'On — HD and heavy filters off at launch for a stable picture'
+                        : 'Off — use HD and picture filters below',
+                    value: _play.performanceMode,
+                    onChanged: (v) =>
+                        _patchPlay((p) => p.copyWith(performanceMode: v)),
+                  ),
+                  _toggleRow(
+                    index: 2,
                     title: 'HD mode',
-                    subtitle: 'Sharpen pixel art (also in-game ☰ menu)',
-                    value: _play.hdMode,
+                    subtitle: _play.performanceMode
+                        ? 'Disabled while Performance mode is on'
+                        : 'Sharpen pixel art (also in-game ☰ menu)',
+                    value: _play.effectiveHdMode,
+                    enabled: !_play.performanceMode,
                     onChanged: (v) => _patchPlay((p) => p.copyWith(hdMode: v)),
                   ),
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.r),
                     child: SettingRow(
-                      key: _itemKeys[2],
+                      key: _itemKeys[3],
                       title: 'HD quality',
-                      subtitle: _play.hdMode
+                      subtitle: _play.effectiveHdMode
                           ? 'Upscaler: ${_play.hdModeQualityLabel}'
-                          : 'Enable HD mode to adjust',
+                          : _play.performanceMode
+                              ? 'Performance mode — HD off'
+                              : 'Enable HD mode to adjust',
                       focused: widget.isContentFocused &&
-                          widget.selectedContentIndex == 2,
+                          widget.selectedContentIndex == 3,
                       trailing: Icon(
                         Symbols.high_quality_rounded,
-                        color: _play.hdMode
+                        color: _play.effectiveHdMode
                             ? theme.colorScheme.primary
                             : theme.colorScheme.onSurface.withValues(alpha: 0.35),
                         size: 20.r,
                       ),
-                      onTap: _play.hdMode ? _cycleHdQuality : null,
+                      onTap: _play.effectiveHdMode ? _cycleHdQuality : null,
                     ),
                   ),
                   _toggleRow(
-                    index: 3,
+                    index: 4,
                     title: 'Adaptive HD',
-                    subtitle: _play.hdMode
+                    subtitle: _play.effectiveHdMode
                         ? 'Lower upscaler quality if FPS drops'
                         : 'Enable HD mode to use',
-                    value: _play.adaptiveHdMode,
-                    enabled: _play.hdMode,
+                    value: _play.effectiveAdaptiveHdMode,
+                    enabled: _play.effectiveHdMode,
                     onChanged: (v) =>
                         _patchPlay((p) => p.copyWith(adaptiveHdMode: v)),
                   ),
                   _toggleRow(
-                    index: 4,
+                    index: 5,
                     title: 'Immersive display',
-                    subtitle: 'Blend game edges into the screen bezel',
-                    value: _play.immersiveMode,
+                    subtitle: _play.performanceMode
+                        ? 'Disabled while Performance mode is on'
+                        : 'Blend game edges into the screen bezel',
+                    value: _play.effectiveImmersiveMode,
+                    enabled: !_play.performanceMode,
                     onChanged: (v) =>
                         _patchPlay((p) => p.copyWith(immersiveMode: v)),
                   ),
                   _toggleRow(
-                    index: 5,
+                    index: 6,
                     title: 'Rumble',
                     subtitle: 'Forward controller rumble to device vibration',
                     value: _play.rumbleEnabled,
@@ -292,7 +318,7 @@ class PlaybackSettingsContentState extends State<PlaybackSettingsContent> {
                         _patchPlay((p) => p.copyWith(rumbleEnabled: v)),
                   ),
                   _toggleRow(
-                    index: 6,
+                    index: 7,
                     title: 'Low-latency audio',
                     subtitle: 'Reduce audio delay on supported devices',
                     value: _play.lowLatencyAudio,
@@ -300,14 +326,14 @@ class PlaybackSettingsContentState extends State<PlaybackSettingsContent> {
                         _patchPlay((p) => p.copyWith(lowLatencyAudio: v)),
                   ),
                   _toggleRow(
-                    index: 7,
+                    index: 8,
                     title: 'Touch controls',
                     subtitle: 'Show on-screen D-pad and buttons during play',
                     value: _play.touchControlsEnabled,
                     onChanged: (v) => unawaited(_setTouchControls(v)),
                   ),
                   _toggleRow(
-                    index: 8,
+                    index: 9,
                     title: 'FPS counter',
                     subtitle: 'Show live frame rate in the top-left while playing',
                     value: _play.showFpsCounter,
@@ -317,19 +343,23 @@ class PlaybackSettingsContentState extends State<PlaybackSettingsContent> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.r),
                     child: SettingRow(
-                      key: _itemKeys[9],
+                      key: _itemKeys[10],
                       title: 'Picture filter',
-                      subtitle: 'Shader: ${_play.shaderFilter}',
+                      subtitle: _play.performanceMode
+                          ? 'Performance mode uses a light sharp filter'
+                          : 'Shader: ${_play.shaderFilter}',
                       focused: widget.isContentFocused &&
-                          widget.selectedContentIndex == 9,
+                          widget.selectedContentIndex == 10,
                       trailing: Icon(
                         Symbols.tune_rounded,
-                        color: _play.hdMode
+                        color: _play.effectiveHdMode
                             ? theme.colorScheme.onSurface.withValues(alpha: 0.35)
                             : theme.colorScheme.primary,
                         size: 20.r,
                       ),
-                      onTap: _play.hdMode ? null : _cycleShader,
+                      onTap: (_play.effectiveHdMode || _play.performanceMode)
+                          ? null
+                          : _cycleShader,
                     ),
                   ),
                   SizedBox(height: 8.r),

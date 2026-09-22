@@ -404,7 +404,11 @@ object EmulatorLauncher {
             // Android 10+ blocks cross-app access to Android/data/<pkg>/cache/, but public
             // directories under the root of external storage are accessible to any app with
             // READ_EXTERNAL_STORAGE / MANAGE_EXTERNAL_STORAGE.
-            val publicDir = File(Environment.getExternalStorageDirectory(), "NeoStation/rom_import")
+            val brandFolder = context.getString(R.string.app_storage_brand)
+            val publicDir = File(
+                Environment.getExternalStorageDirectory(),
+                "$brandFolder/$ROM_IMPORT_DIR",
+            )
             val importDir = if (publicDir.mkdirs() || publicDir.exists()) publicDir
                             else File(context.externalCacheDir ?: context.cacheDir, ROM_IMPORT_DIR).also { it.mkdirs() }
             if (!importDir.exists()) {
