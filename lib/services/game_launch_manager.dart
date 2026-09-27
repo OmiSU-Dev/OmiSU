@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:omisu/services/logger_service.dart';
+import 'package:omisu/services/android_service.dart';
 import 'package:omisu/services/streaming/streaming_service.dart';
 import 'game_service.dart';
 import 'menu_ambient_service.dart';
@@ -286,7 +287,12 @@ class GameLaunchManager extends ChangeNotifier with WidgetsBindingObserver {
           '[GameLaunchManager] Android: resumed during launching phase — flagging for close.',
         );
       } else if (_phase == GameLaunchPhase.playing) {
-        Future.delayed(const Duration(milliseconds: 800), () {
+        Future.delayed(const Duration(milliseconds: 800), () async {
+          if (_phase != GameLaunchPhase.playing || _isClosing) return;
+          if (Platform.isAndroid &&
+              await AndroidService.isExternalPlayMenuVisible()) {
+            return;
+          }
           if (_phase == GameLaunchPhase.playing && !_isClosing) {
             _canDismiss = true;
             notifyListeners();

@@ -24,6 +24,7 @@ class _NordiSleepScreenState extends State<NordiSleepScreen>
   late final GamepadNavigation _gamepadNav;
   GamepadNavigation? _sleepWakeNav;
   bool _sleeping = false;
+  bool _showDimFallbackHint = false;
 
   @override
   void initState() {
@@ -87,10 +88,23 @@ class _NordiSleepScreenState extends State<NordiSleepScreen>
 
   Future<void> _enterSleep() async {
     if (_sleeping) return;
-    setState(() => _sleeping = true);
+    setState(() {
+      _sleeping = true;
+      _showDimFallbackHint = false;
+    });
     _gamepadNav.deactivate();
     _pushSleepWakeNav();
-    await NordiSleepService.enterSleep();
+    final result = await NordiSleepService.enterSleep();
+    if (!mounted) return;
+    if (result == null) {
+      setState(() => _sleeping = false);
+      _popSleepWakeNav();
+      _gamepadNav.activate();
+      return;
+    }
+    if (result.depth == NordiSleepDepth.dimFallback) {
+      setState(() => _showDimFallbackHint = true);
+    }
   }
 
   void _pushSleepWakeNav() {
@@ -136,13 +150,29 @@ class _NordiSleepScreenState extends State<NordiSleepScreen>
           child: Center(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.r),
-              child: Text(
-                AppLocale.nordiSleepWake.getString(context),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
-                  fontSize: 10.r,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppLocale.nordiSleepWake.getString(context),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.35),
+                      fontSize: 10.r,
+                    ),
+                  ),
+                  if (_showDimFallbackHint) ...[
+                    SizedBox(height: 12.r),
+                    Text(
+                      AppLocale.nordiSleepDimFallback.getString(context),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error.withValues(alpha: 0.75),
+                        fontSize: 9.r,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
@@ -176,6 +206,33 @@ class _NordiSleepScreenState extends State<NordiSleepScreen>
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
                 fontSize: 11.r,
+              ),
+            ),
+            SizedBox(height: 8.r),
+            Text(
+              AppLocale.nordiSleepUsbNote.getString(context),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                fontSize: 9.r,
+              ),
+            ),
+            SizedBox(height: 8.r),
+            Text(
+              AppLocale.nordiSleepControllerIdleNote.getString(context),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                fontSize: 9.r,
+              ),
+            ),
+            SizedBox(height: 8.r),
+            Text(
+              AppLocale.nordiSleepWakeController.getString(context),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                fontSize: 9.r,
               ),
             ),
             SizedBox(height: 16.r),

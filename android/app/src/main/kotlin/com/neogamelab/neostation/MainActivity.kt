@@ -15,6 +15,7 @@ import android.net.Uri
 import android.widget.Toast
 import android.content.pm.PackageManager
 import android.provider.Settings
+import android.app.role.RoleManager
 import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import io.flutter.embedding.engine.FlutterEngine
@@ -22,6 +23,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.EventChannel
 import org.flame_engine.gamepads_android.GamepadsCompatibleActivity
 import android.os.Looper
+import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import java.lang.Runnable
@@ -37,6 +39,9 @@ import com.hcoderlee.subscreen.sub_screen.FlutterPresentation
 import com.hcoderlee.subscreen.sub_screen.SharedStateManager
 import com.omisu.embedded.EmbeddedEmulatorPlugin
 import com.omisu.streaming.StreamingPlugin
+import com.omisu.externalplay.ExternalPlayStreamCaptureActivity
+import com.omisu.streaming.StreamingController
+import com.omisu.streaming.FaceCamCapture
 import com.omisu.embedded.KeyEventForwardingActivity
 
 class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, KeyEventForwardingActivity {
@@ -70,6 +75,8 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
     private var launcherEventSink: EventChannel.EventSink? = null
     /** True while Nordi sleep tab has turned the display off; Start/Menu wake. */
     private var nordiDeviceSleepActive = false
+    /** Last sleep used dim-only fallback (display may stay partially on). */
+    private var nordiSleepDimFallback = false
     private var secondaryDisplayChannel: MethodChannel? = null // Canal para pantalla secundaria
     private var gameLaunchTimestamp: Long = 0 // Timestamp del lanzamiento del juego
     private var displayListener: android.hardware.display.DisplayManager.DisplayListener? = null
@@ -85,6 +92,7 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
     // handler instance: removeCallbacks only matches the handler that posted.
     private val dockLaunchHandler = Handler(Looper.getMainLooper())
     private var dockLaunchWatchdog: Runnable? = null
+    private lateinit var controllerIdleSleepManager: ControllerIdleSleepManager
 
     // Usar directorio por defecto para cores; no verificar existencia por permisos
     private fun getDefaultLibretroDirectory(retroArchPackage: String): String {
@@ -170,7 +178,46 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
             )
         }
 
+        controllerIdleSleepManager = ControllerIdleSleepManager(
+            context = this,
+            onHostSleepChanged = { active, usbCut ->
+                runOnUiThread {
+                    launcherEventSink?.success(
+                        mapOf(
+                            "event" to "controllerHostSleep",
+                            "active" to active,
+                            "usbCut" to usbCut,
+                        ),
+                    )
+                }
+            },
+            wakeDisplay = { wakeFromControllerHostSleepDisplay() },
+        )
         registerScreenStateReceiver()
+    }
+
+    private fun wakeFromControllerHostSleepDisplay() {
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                val wakeUp = PowerManager::class.java.getMethod(
+                    "wakeUp",
+                    Long::class.javaPrimitiveType,
+                )
+                wakeUp.invoke(pm, SystemClock.uptimeMillis())
+            }
+            val userActivity = PowerManager::class.java.getMethod(
+                "userActivity",
+                Long::class.javaPrimitiveType,
+                Boolean::class.javaPrimitiveType,
+            )
+            userActivity.invoke(pm, SystemClock.uptimeMillis(), true)
+        } catch (e: Exception) {
+            Log.w("MainActivity", "wakeFromControllerHostSleepDisplay: ${e.message}")
+        }
+        if (nordiDeviceSleepActive) {
+            wakeFromNordiSleep()
+        }
     }
 
     /// Listens for the device screen turning on/off and mirrors it into the
@@ -187,11 +234,20 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
                         pushDeviceScreenOn(false)
                         notifySecondaryScreenState(false)
                         notifyFlutterScreenState(false)
+                        if (::controllerIdleSleepManager.isInitialized) {
+                            controllerIdleSleepManager.onDisplayOff()
+                        }
                     }
                     android.content.Intent.ACTION_SCREEN_ON -> {
                         pushDeviceScreenOn(true)
                         notifySecondaryScreenState(true)
                         notifyFlutterScreenState(true)
+                        if (::controllerIdleSleepManager.isInitialized) {
+                            controllerIdleSleepManager.onDisplayOn()
+                        }
+                        if (nordiDeviceSleepActive) {
+                            wakeFromNordiSleep()
+                        }
                     }
                 }
             }
@@ -340,13 +396,41 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
                     val includeSystemApps = call.argument<Boolean>("includeSystemApps") ?: false
                     getInstalledApps(includeSystemApps, result)
                 }
+                "prepareExternalPlayStreaming" -> {
+                    val packageName = call.argument<String>("packageName") ?: ""
+                    com.omisu.externalplay.ExternalPlaySessionHelper.prepareStreamingCapture(
+                        packageName,
+                    )
+                    result.success(true)
+                }
                 "launchPackage" -> {
                     val packageName = call.argument<String>("packageName")
+                    val gameSession = call.argument<Boolean>("gameSession") ?: false
+                    val gameTitle = call.argument<String>("gameTitle") ?: ""
+                    val startStreamAfterLaunch =
+                        call.argument<Boolean>("startStreamAfterLaunch") ?: false
                     if (packageName != null) {
-                        launchPackage(packageName, result)
+                        launchPackage(
+                            packageName,
+                            gameSession,
+                            gameTitle,
+                            startStreamAfterLaunch,
+                            result,
+                        )
                     } else {
                         result.error("INVALID_ARGUMENTS", "Package name is required", null)
                     }
+                }
+                "endExternalPlaySession" -> {
+                    ExternalPlayStreamCaptureActivity.cancelPendingLaunch()
+                    StreamingController.stopStream { _ ->
+                        FaceCamCapture.stop()
+                        com.omisu.externalplay.ExternalPlaySessionHelper.end()
+                        result.success(true)
+                    }
+                }
+                "isExternalPlayMenuVisible" -> {
+                    result.success(com.omisu.externalplay.ExternalPlaySessionHelper.isMenuVisible)
                 }
                 "getAppIcon" -> {
                     val packageName = call.argument<String>("packageName")
@@ -619,6 +703,9 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
                 "isDefaultLauncher" -> {
                     result.success(isDefaultLauncher())
                 }
+                "requestDefaultHome" -> {
+                    requestDefaultHome(result)
+                }
                 "openDefaultAppsSettings" -> {
                     openDefaultAppsSettings()
                     result.success(true)
@@ -639,11 +726,49 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
                 "shutdownDevice" -> {
                     shutdownDevice(result)
                 }
+                "restartLauncher" -> {
+                    restartLauncher(result)
+                }
                 "enterDeviceSleep" -> {
                     enterDeviceSleep(result)
                 }
                 "restoreFromDeviceSleep" -> {
                     restoreFromDeviceSleep(result)
+                }
+                "setControllerIdleSleepMinutes" -> {
+                    val minutes = call.argument<Int>("minutes") ?: 0
+                    if (::controllerIdleSleepManager.isInitialized) {
+                        controllerIdleSleepManager.idleMinutes = minutes
+                    }
+                    result.success(true)
+                }
+                "getControllerIdleSleepMinutes" -> {
+                    val minutes = if (::controllerIdleSleepManager.isInitialized) {
+                        controllerIdleSleepManager.idleMinutes
+                    } else {
+                        ControllerIdleSleepManager.DEFAULT_IDLE_MINUTES
+                    }
+                    result.success(minutes)
+                }
+                "getControllerHostSleepState" -> {
+                    val active = ::controllerIdleSleepManager.isInitialized &&
+                        controllerIdleSleepManager.isHostSleepActive()
+                    result.success(mapOf("active" to active))
+                }
+                "setControllerSuspendOnNordiSleep" -> {
+                    val enabled = call.argument<Boolean>("enabled") == true
+                    if (::controllerIdleSleepManager.isInitialized) {
+                        controllerIdleSleepManager.suspendOnNordiSleepEnter = enabled
+                    }
+                    result.success(true)
+                }
+                "getControllerSuspendOnNordiSleep" -> {
+                    val enabled = if (::controllerIdleSleepManager.isInitialized) {
+                        controllerIdleSleepManager.suspendOnNordiSleepEnter
+                    } else {
+                        false
+                    }
+                    result.success(enabled)
                 }
                 else -> result.notImplemented()
             }
@@ -874,30 +999,44 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
 
     private fun openLauncherSettings(result: MethodChannel.Result) {
         try {
-            // Opción 1: Intentar abrir la configuración de apps predeterminadas
-            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                // Android 7+ (API 24+): Abrir configuración de apps predeterminadas
-                Intent(android.provider.Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
-            } else {
-                // Android 6 y anteriores: Abrir configuración de aplicaciones
-                Intent(android.provider.Settings.ACTION_SETTINGS)
-            }
-            
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
+            openDefaultAppsSettings()
             result.success(true)
         } catch (e: Exception) {
             println("Error opening launcher settings: ${e.message}")
-            
-            // Fallback: Intentar abrir configuración general
-            try {
-                val fallbackIntent = Intent(android.provider.Settings.ACTION_SETTINGS)
-                fallbackIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(fallbackIntent)
-                result.success(true)
-            } catch (fallbackException: Exception) {
-                result.error("OPEN_FAILED", fallbackException.message, null)
+            result.error("OPEN_FAILED", e.message, null)
+        }
+    }
+
+    private fun requestDefaultHome(result: MethodChannel.Result) {
+        if (isDefaultLauncher()) {
+            result.success(true)
+            return
+        }
+        val opened = openHomeRoleOrSettingsUi()
+        result.success(opened && isDefaultLauncher())
+    }
+
+    /** Opens the system Home role UI or Home app settings (never silent on retail). */
+    private fun openHomeRoleOrSettingsUi(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = getSystemService(RoleManager::class.java)
+            if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                try {
+                    val roleIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                    roleIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(roleIntent)
+                    return true
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "openHomeRoleOrSettingsUi role: ${e.message}")
+                }
             }
+        }
+        return try {
+            openDefaultAppsSettings()
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "openHomeRoleOrSettingsUi settings: ${e.message}")
+            false
         }
     }
 
@@ -948,47 +1087,127 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
         }
     }
 
+    private fun restartLauncher(result: MethodChannel.Result) {
+        try {
+            val intent = packageManager.getLaunchIntentForPackage(packageName)
+            if (intent == null) {
+                result.error("RESTART_FAILED", "No launch intent for package", null)
+                return
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            startActivity(intent)
+            finishAffinity()
+            result.success(true)
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "restartLauncher: ${e.message}")
+            result.error("RESTART_FAILED", e.message, null)
+        }
+    }
+
     private fun enterDeviceSleep(result: MethodChannel.Result) {
         runOnUiThread {
             try {
                 window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                val params = window.attributes
-                params.screenBrightness = 0.01f
-                window.attributes = params
+                nordiSleepDimFallback = false
+                nordiDeviceSleepActive = true
 
                 val pm = getSystemService(android.content.Context.POWER_SERVICE)
                     as android.os.PowerManager
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    try {
-                        val goToSleep = android.os.PowerManager::class.java.getMethod(
-                            "goToSleep",
-                            Long::class.javaPrimitiveType,
-                        )
-                        goToSleep.invoke(pm, android.os.SystemClock.uptimeMillis())
-                        nordiDeviceSleepActive = true
-                        result.success(true)
-                        return@runOnUiThread
-                    } catch (reflection: Exception) {
-                        android.util.Log.w(
-                            "MainActivity",
-                            "goToSleep unavailable: ${reflection.message}",
-                        )
-                    }
+                val uptime = android.os.SystemClock.uptimeMillis()
+
+                if (tryGoToSleep(pm, uptime)) {
+                    scheduleControllerIdleAfterSleep()
+                    result.success(nordiSleepResult(displayOff = true, method = "goToSleep"))
+                    return@runOnUiThread
                 }
-                nordiDeviceSleepActive = true
-                result.success(true)
+
+                if (ScreenshotAccessibilityService.lockScreen()) {
+                    scheduleControllerIdleAfterSleep()
+                    result.success(nordiSleepResult(displayOff = true, method = "lockScreen"))
+                    return@runOnUiThread
+                }
+
+                applyNordiSleepDimFallback()
+                scheduleControllerIdleAfterSleep()
+                result.success(
+                    nordiSleepResult(displayOff = false, method = "dimFallback"),
+                )
             } catch (e: Exception) {
+                nordiDeviceSleepActive = false
+                nordiSleepDimFallback = false
                 android.util.Log.e("MainActivity", "enterDeviceSleep: ${e.message}")
                 result.error("SLEEP_FAILED", e.message, null)
             }
         }
     }
 
+    private fun scheduleControllerIdleAfterSleep() {
+        if (::controllerIdleSleepManager.isInitialized) {
+            if (controllerIdleSleepManager.suspendOnNordiSleepEnter) {
+                controllerIdleSleepManager.enterHostSleepImmediately()
+            }
+            controllerIdleSleepManager.onDisplayOff()
+        }
+    }
+
+    private fun exitControllerHostSleepIfActive() {
+        if (::controllerIdleSleepManager.isInitialized &&
+            controllerIdleSleepManager.isHostSleepActive()
+        ) {
+            controllerIdleSleepManager.exitHostSleep(wakeDisplayToo = false)
+        }
+    }
+
+    private fun nordiSleepResult(displayOff: Boolean, method: String): Map<String, Any> =
+        mapOf(
+            "displayOff" to displayOff,
+            "method" to method,
+        )
+
+    /** System display off (priv-app / platform builds). */
+    private fun tryGoToSleep(pm: android.os.PowerManager, uptime: Long): Boolean {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
+            return false
+        }
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                val goToSleep = android.os.PowerManager::class.java.getMethod(
+                    "goToSleep",
+                    Long::class.javaPrimitiveType,
+                    Int::class.javaPrimitiveType,
+                    Int::class.javaPrimitiveType,
+                )
+                // GO_TO_SLEEP_REASON_APPLICATION
+                goToSleep.invoke(pm, uptime, 1000, 0)
+            } else {
+                val goToSleep = android.os.PowerManager::class.java.getMethod(
+                    "goToSleep",
+                    Long::class.javaPrimitiveType,
+                )
+                goToSleep.invoke(pm, uptime)
+            }
+            true
+        } catch (e: Exception) {
+            android.util.Log.w("MainActivity", "goToSleep unavailable: ${e.message}")
+            false
+        }
+    }
+
+    /** Last resort when goToSleep and lockScreen are unavailable (retail sideload). */
+    private fun applyNordiSleepDimFallback() {
+        nordiSleepDimFallback = true
+        val params = window.attributes
+        params.screenBrightness = 0.0f
+        window.attributes = params
+    }
+
     private fun restoreFromDeviceSleep(result: MethodChannel.Result) {
         runOnUiThread {
             try {
                 restoreNordiDisplayFromSleep()
+                exitControllerHostSleepIfActive()
                 nordiDeviceSleepActive = false
+                nordiSleepDimFallback = false
                 result.success(true)
             } catch (e: Exception) {
                 result.error("WAKE_FAILED", e.message, null)
@@ -1026,12 +1245,15 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
     private fun isNordiSleepWakeKey(keyCode: Int): Boolean =
         keyCode == KeyEvent.KEYCODE_BUTTON_START ||
             keyCode == KeyEvent.KEYCODE_MENU ||
-            keyCode == KeyEvent.KEYCODE_BUTTON_MODE
+            keyCode == KeyEvent.KEYCODE_BUTTON_MODE ||
+            keyCode == KeyEvent.KEYCODE_GUIDE
 
     private fun wakeFromNordiSleep() {
         if (!nordiDeviceSleepActive) return
         restoreNordiDisplayFromSleep()
+        exitControllerHostSleepIfActive()
         nordiDeviceSleepActive = false
+        nordiSleepDimFallback = false
         launcherEventSink?.success("wakeFromSleep")
     }
 
@@ -1163,6 +1385,11 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
 
     // Gamepad event forwarding / blocking
     override fun dispatchGenericMotionEvent(motionEvent: MotionEvent): Boolean {
+        if (::controllerIdleSleepManager.isInitialized &&
+            controllerIdleSleepManager.isHostSleepActive()
+        ) {
+            return true
+        }
         if (gamepadBlocked) return true
         embeddedMotionListener?.invoke(motionEvent)?.takeIf { it }?.let { return true }
         val handled = motionListener?.invoke(motionEvent) ?: false
@@ -1173,6 +1400,18 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
         // BLOQUEAR COMPLETAMENTE el botón BACK (tanto del sistema como del gamepad)
         if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK) {
             return true // Consumir completamente, no pasar a ningún lado
+        }
+
+        if (::controllerIdleSleepManager.isInitialized &&
+            controllerIdleSleepManager.isHostSleepActive()
+        ) {
+            if (keyEvent.action == KeyEvent.ACTION_DOWN &&
+                controllerIdleSleepManager.isControllerWakeKey(keyEvent.keyCode)
+            ) {
+                controllerIdleSleepManager.exitHostSleep(wakeDisplayToo = true)
+                return true
+            }
+            return true
         }
 
         if (nordiDeviceSleepActive) {
@@ -1196,9 +1435,18 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
     // Launcher methods
     private fun isDefaultLauncher(): Boolean {
         try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val roleManager = getSystemService(RoleManager::class.java)
+                if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                    return roleManager.isRoleHeld(RoleManager.ROLE_HOME)
+                }
+            }
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_HOME)
-            val resolveInfo = packageManager.resolveActivity(intent, 0)
+            val resolveInfo = packageManager.resolveActivity(
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY,
+            )
             val currentHomePackage = resolveInfo?.activityInfo?.packageName
             return currentHomePackage == packageName
         } catch (e: Exception) {
@@ -1209,15 +1457,21 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
 
     private fun openDefaultAppsSettings() {
         try {
-            val intent = Intent(android.provider.Settings.ACTION_HOME_SETTINGS)
+            val intent = Intent(Settings.ACTION_HOME_SETTINGS)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         } catch (e: Exception) {
-            // If HOME_SETTINGS is not available, try SETTINGS
             try {
-                val intent = Intent(android.provider.Settings.ACTION_SETTINGS)
+                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                } else {
+                    Intent(Settings.ACTION_SETTINGS)
+                }
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(intent)
             } catch (e2: Exception) {
                 println("Error opening settings: ${e2.message}")
+                throw e2
             }
         }
     }
@@ -1315,16 +1569,40 @@ class MainActivity: MultiDisplayFlutterActivity(), GamepadsCompatibleActivity, K
 
 
 
-    private fun launchPackage(packageName: String, result: MethodChannel.Result) {
+    private fun launchPackage(
+        packageName: String,
+        gameSession: Boolean,
+        gameTitle: String,
+        startStreamAfterLaunch: Boolean,
+        result: MethodChannel.Result,
+    ) {
         try {
             val intent = packageManager.getLaunchIntentForPackage(packageName)
             if (intent != null) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                // Block gamepad for a short duration to prevent accidental inputs on return.
-                // Not a game session: the caller owns that state, so leave isGameActive alone.
-                setGamepadBlockInternal(true, 2000, markGameActive = false)
+                if (gameSession) {
+                    setGamepadBlockInternal(true, 0, markGameActive = true)
+                    com.omisu.externalplay.ExternalPlaySessionHelper.begin(this, gameTitle, packageName)
+                } else {
+                    setGamepadBlockInternal(true, 2000, markGameActive = false)
+                }
 
                 startActivity(intent)
+                if (gameSession && startStreamAfterLaunch) {
+                    com.omisu.streaming.OmisuStreamTrace.event(
+                        "launch_package_stream",
+                        "pkg=$packageName title=$gameTitle",
+                    )
+                    com.omisu.externalplay.ExternalPlayStreamCaptureActivity.scheduleAfterGameLaunch(
+                        this,
+                        gameTitle,
+                    )
+                } else if (gameSession) {
+                    com.omisu.streaming.OmisuStreamTrace.event(
+                        "launch_package",
+                        "pkg=$packageName title=$gameTitle streamAfterLaunch=false",
+                    )
+                }
                 result.success(true)
             } else {
                 result.error("LAUNCH_FAILED", "Could not find launch intent for package", null)

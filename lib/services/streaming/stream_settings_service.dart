@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'stream_quality_resolver.dart';
+
 /// Global RTMP streaming preferences (Android).
 class StreamSettings {
   const StreamSettings({
     this.rtmpServerUrl = '',
     this.streamKey = '',
-    this.qualityPreset = '720p',
+    this.qualityPreset = 'auto',
     this.gameAudioEnabled = true,
     this.includeMicrophone = false,
     this.faceCamEnabled = false,
@@ -32,30 +34,24 @@ class StreamSettings {
     final base = rtmpServerUrl.trim();
     final key = streamKey.trim();
     if (base.isEmpty || key.isEmpty) return '';
-    if (base.endsWith('/')) {
-      return '$base$key';
+    final normalized = base.endsWith('/') ? base : '$base/';
+    try {
+      return Uri.parse(normalized).resolve(key).toString();
+    } catch (_) {
+      return '$normalized$key';
     }
-    return '$base/$key';
   }
 
-  int get width => switch (qualityPreset) {
-        '1080p' => 1920,
-        '540p' => 960,
-        _ => 1280,
-      };
+  String get effectiveQualityPreset =>
+      StreamQualityResolver.effectivePreset(qualityPreset);
 
-  int get height => switch (qualityPreset) {
-        '1080p' => 1080,
-        '540p' => 540,
-        _ => 720,
-      };
+  int get width => StreamQualityResolver.widthFor(qualityPreset);
 
-  /// Conservative targets for phone uplink + RTMP (encoder may cap further).
-  int get bitrateKbps => switch (qualityPreset) {
-        '1080p' => 4500,
-        '540p' => 1800,
-        _ => 2500,
-      };
+  int get height => StreamQualityResolver.heightFor(qualityPreset);
+
+  int get bitrateKbps => StreamQualityResolver.bitrateKbpsFor(qualityPreset);
+
+  int get fps => StreamQualityResolver.fpsFor(qualityPreset);
 
   /// Wire value for Android [StreamAudioMode].
   String get audioMode {
@@ -91,7 +87,7 @@ class StreamSettings {
   /// Documented Kick custom RTMP endpoint; confirm in Creator Dashboard if ingest fails.
   static const kickServer =
       'rtmps://fa723fc1b171.global-contribute.live-video.net/app/';
-  static const qualityPresets = ['540p', '720p', '1080p'];
+  static const qualityPresets = ['auto', '540p', '720p', '1080p'];
   static const faceCamCorners = ['bottomRight', 'bottomLeft', 'topRight', 'topLeft'];
   static const faceCamSizes = ['small', 'medium', 'large'];
 }
@@ -159,7 +155,7 @@ class StreamSettingsService {
     if (stored != null && StreamSettings.qualityPresets.contains(stored)) {
       return stored;
     }
-    return '720p';
+    return 'auto';
   }
 
   /// Validates RTMP URL shape without connecting.

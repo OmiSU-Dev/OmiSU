@@ -131,6 +131,9 @@ const Map<String, dynamic> appLocaleJa = {
   AppLocale.androidSystemUpdates: 'Android システム更新',
   AppLocale.androidSystemUpdatesSubtitle:
       'Android のシステム更新のみ。安定性とバグ修正のため。',
+  AppLocale.androidAccessibilitySettings: 'Android accessibility',
+  AppLocale.androidAccessibilitySettingsSubtitle:
+      'Open system accessibility settings for OmiSU Screenshot — Screen Return, in-game screenshots, and display sleep from the grip.',
   AppLocale.scanOnStartup: '起動時にフォルダをスキャン',
   AppLocale.nowPlayingDimAfter: 'Now Playingを暗くするまでの時間',
   AppLocale.nowPlayingDimAfterSubtitle: 'セカンダリ画面でパネルが暗くなるまでの操作なしの時間',
@@ -158,7 +161,7 @@ const Map<String, dynamic> appLocaleJa = {
   AppLocale.autoUpdateSystemsSubtitle: '起動時にシステムとエミュレータの設定更新を確認',
   AppLocale.checkForUpdatesNow: '今すぐ更新を確認',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid エンジン、libretro コア、GitHub の Nordi アプリ（OmiSU-Dev/OmiSU）を確認します。アプリの更新は起動時には確認しません。',
+      'LibretroDroid エンジン、libretro コア、GitHub の OmiSU アプリ（OmiSU-Dev/OmiSU）を確認します。アプリの更新は起動時には確認しません。',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
       'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi',
@@ -969,6 +972,8 @@ const Map<String, dynamic> appLocaleJa = {
   AppLocale.streaming: 'Streaming',
   AppLocale.streamingSubtitle:
       'Twitch, YouTube, or Kick — pick a platform, paste your stream key, go live from embedded play',
+  AppLocale.streamingAndroidGamesAlphaNote:
+      'Alpha (experimental): Live streaming for Play Store and other Android games is still early. Built-in emulator streaming is more reliable. Android will ask what to share on screen; previews and stability can vary by device.',
   AppLocale.streamingAndroidOnly: 'Streaming is available on Android only.',
   AppLocale.streamingRtmpSection: 'RTMP ingest',
   AppLocale.streamingServerUrl: 'Server URL',
@@ -999,6 +1004,11 @@ const Map<String, dynamic> appLocaleJa = {
   AppLocale.streamingIncludeMic: 'Include microphone',
   AppLocale.streamingIncludeMicSubtitle: 'Your voice while playing (mixed with game audio when both are on)',
   AppLocale.streamingQuality: 'Video quality',
+  AppLocale.streamingQualityAuto: 'Auto',
+  AppLocale.streamingQualityAutoVariableHint:
+      'Adjusts resolution and target bitrate for your device. While live, video bitrate varies automatically to balance quality and connection stability.',
+  AppLocale.streamingExternalCaptureHint:
+      'After the game opens, choose the game or full screen when Android asks what to share.',
   AppLocale.streamingValidateUrl: 'Validate server URL',
   AppLocale.streamingUrlOk: 'URL format looks valid',
   AppLocale.streamingFaceCamSection: 'Face cam',

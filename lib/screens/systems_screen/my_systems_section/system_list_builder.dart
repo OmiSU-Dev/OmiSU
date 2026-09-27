@@ -24,12 +24,13 @@ List<SystemInfo> buildSystemsList({
   required SqliteDatabaseProvider dbProvider,
   required FileProvider fileProvider,
   CollectionsProvider? collectionsProvider,
+  List<SystemInfo> appShortcuts = const [],
 }) {
   final collections =
       collectionsProvider ??
       Provider.of<CollectionsProvider>(context, listen: false);
   final collectionGames = collections.totalGameCount;
-  const recentCount = 1;
+  const recentCount = 4;
   final hideRecent = configProvider.config.hideRecentCard;
   final recentDbGames = hideRecent
       ? dbProvider.getRecentlyPlayedGames(0)
@@ -66,6 +67,13 @@ List<SystemInfo> buildSystemsList({
                 .getString(context)
                 .replaceFirst('{count}', system.romCount.toString()),
           );
+        } else if (system.folderName == 'steam') {
+          return info.copyWith(
+            numOfRoms: system.romCount,
+            totalStorage: AppLocale.gamesCount
+                .getString(context)
+                .replaceFirst('{count}', system.romCount.toString()),
+          );
         } else if (system.folderName == SystemFolderNames.favorites) {
           return info.copyWith(
             numOfRoms: totalFavorites,
@@ -87,5 +95,5 @@ List<SystemInfo> buildSystemsList({
         return info;
       });
 
-  return [...recentGames, ...detectedSystems];
+  return [...recentGames, ...appShortcuts, ...detectedSystems];
 }

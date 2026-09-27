@@ -48,6 +48,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.SHUTDOWN" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -115,6 +116,22 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.omisu.externalplay.ExternalPlayStreamMenuActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:screenOrientation="sensorLandscape"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.omisu.externalplay.streammenu" />
+
+        <activity
+            android:name="com.omisu.externalplay.ExternalPlayStreamCaptureActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:screenOrientation="sensorLandscape"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.omisu.externalplay.streamcapture" />
         
         <!-- FileProvider para compartir archivos con otros apps (emuladores standalone) -->
         <provider
@@ -149,6 +166,11 @@
             android:name="com.omisu.streaming.OmisuStreamingService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" />
+
+        <service
+            android:name="com.omisu.externalplay.ExternalPlaySessionService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <service
             android:name=".ScreenshotAccessibilityService"

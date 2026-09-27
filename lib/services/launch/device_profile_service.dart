@@ -118,13 +118,21 @@ class DeviceProfileService {
     tier: DevicePerformanceTier.mid,
   );
 
+  /// Converts [AndroidDeviceInfo.physicalRamSize] (megabytes) to rounded GB.
+  ///
+  /// 4 GB phones often report ~3600 MB; truncating with `~/ 1024` yields 3 GB
+  /// and mis-classifies them as low tier.
+  static int? ramGbFromPhysicalMegabytes(int physicalRamMb) {
+    if (physicalRamMb <= 0) return null;
+    return (physicalRamMb / 1024.0).round().clamp(1, 256);
+  }
+
   Future<DeviceProfile> _detectAndroid() async {
     if (NordiSettings.handheldRetailUi) {
       final info = await DeviceInfoPlugin().androidInfo;
       final model = info.model.trim();
       final manufacturer = info.manufacturer.trim();
-      final ramGb =
-          info.physicalRamSize > 0 ? info.physicalRamSize ~/ 1024 : null;
+      final ramGb = ramGbFromPhysicalMegabytes(info.physicalRamSize);
       final modelLower = model.toLowerCase();
       final isNordN30 =
           modelLower.contains('nord n30') || modelLower.contains('cph258');
@@ -153,7 +161,7 @@ class DeviceProfileService {
     final info = await DeviceInfoPlugin().androidInfo;
     final model = info.model.trim();
     final manufacturer = info.manufacturer.trim();
-    final ramGb = info.physicalRamSize > 0 ? info.physicalRamSize ~/ 1024 : null;
+    final ramGb = ramGbFromPhysicalMegabytes(info.physicalRamSize);
     final modelLower = model.toLowerCase();
     final brandLower = '${info.brand} ${info.device}'.toLowerCase();
 
@@ -199,7 +207,9 @@ class DeviceProfileService {
         }
       } else if (Platform.isWindows) {
         final info = await DeviceInfoPlugin().windowsInfo;
-        ramGb = info.systemMemoryInMegabytes ~/ 1024;
+        ramGb = info.systemMemoryInMegabytes > 0
+            ? ramGbFromPhysicalMegabytes(info.systemMemoryInMegabytes)
+            : null;
       } else if (Platform.isMacOS) {
         final info = await DeviceInfoPlugin().macOsInfo;
         ramGb = info.memorySize ~/ (1024 * 1024 * 1024);
@@ -218,7 +228,7 @@ class DeviceProfileService {
 
   static DevicePerformanceTier _tierFromRam(int? ramGb) {
     if (ramGb == null) return DevicePerformanceTier.mid;
-    if (ramGb <= 4) return DevicePerformanceTier.low;
+    if (ramGb <= 3) return DevicePerformanceTier.low;
     if (ramGb <= 8) return DevicePerformanceTier.mid;
     return DevicePerformanceTier.high;
   }

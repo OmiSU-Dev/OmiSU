@@ -31,6 +31,8 @@ import '../../game_screen/my_games_list.dart';
 import 'package:omisu/models/secondary_display_state.dart';
 import 'package:omisu/widgets/header_sort_dropdown.dart';
 import 'package:omisu/widgets/native_carousel.dart';
+import 'package:omisu/services/home_app_shortcuts_service.dart';
+import 'package:omisu/utils/home_app_shortcut_launch.dart';
 import 'system_list_builder.dart';
 import 'system_card.dart';
 import 'my_systems_grid.dart';
@@ -198,6 +200,8 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
   final SecondaryAchievementsController _achievementsController =
       SecondaryAchievementsController();
 
+  List<SystemInfo> _homeAppShortcuts = const [];
+
   /// Restores the systems carousel after embedded play when the user chose
   /// "Exit to home". Uses [State.context] — not the launch call's context,
   /// which is often deactivated while [_isGameLaunching] hides this widget.
@@ -238,6 +242,11 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
   @override
   void initState() {
     super.initState();
+    if (Platform.isAndroid) {
+      HomeAppShortcutsService.loadShortcutCards().then((cards) {
+        if (mounted) setState(() => _homeAppShortcuts = cards);
+      });
+    }
     _revealHomeUnderEmbeddedExit = () {
       if (!mounted || !_isGameLaunching) return;
       setState(() => _isGameLaunching = false);
@@ -391,6 +400,7 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
       configProvider: configProvider,
       dbProvider: dbProvider,
       fileProvider: fileProvider,
+      appShortcuts: _homeAppShortcuts,
     );
   }
 
@@ -538,6 +548,15 @@ class _MySystemsCarouselState extends State<MySystemsCarousel> {
           );
         }
         _gamepadNav.activate();
+      }
+      return;
+    }
+
+    if (systemInfo.isAppShortcut) {
+      try {
+        await launchHomeAppShortcut(context, systemInfo);
+      } finally {
+        if (mounted) _gamepadNav.activate();
       }
       return;
     }

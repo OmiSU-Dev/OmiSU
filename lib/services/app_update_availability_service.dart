@@ -67,7 +67,7 @@ class AppUpdateAvailabilityService {
         }
         GlobalNotificationService().show(
           id: _notificationId,
-          title: 'Nordi update',
+          title: 'OmiSU update',
           message: 'Version ${info.latestVersion} is ready to install.',
           icon: Symbols.system_update_alt,
           type: GlobalNotificationType.info,

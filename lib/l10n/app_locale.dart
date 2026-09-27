@@ -181,6 +181,10 @@ mixin AppLocale {
   static const String androidSystemUpdates = 'android_system_updates';
   static const String androidSystemUpdatesSubtitle =
       'android_system_updates_subtitle';
+  static const String androidAccessibilitySettings =
+      'android_accessibility_settings';
+  static const String androidAccessibilitySettingsSubtitle =
+      'android_accessibility_settings_subtitle';
   static const String scanOnStartup = 'scan_on_startup';
   static const String scanOnStartupSubtitle = 'scan_on_startup_subtitle';
   static const String nowPlayingDimAfter = 'now_playing_dim_after';
@@ -272,6 +276,36 @@ mixin AppLocale {
   static const String nordiSleepHint = 'nordi_sleep_hint';
   static const String nordiSleepWake = 'nordi_sleep_wake';
   static const String nordiSleepConfirm = 'nordi_sleep_confirm';
+  static const String nordiSleepUsbNote = 'nordi_sleep_usb_note';
+  static const String nordiSleepWakeController =
+      'nordi_sleep_wake_controller';
+  static const String nordiSleepDimFallback = 'nordi_sleep_dim_fallback';
+  static const String nordiControllerIdleTitle = 'nordi_controller_idle_title';
+  static const String nordiControllerIdleSubtitle =
+      'nordi_controller_idle_subtitle';
+  static const String nordiControllerIdleOff = 'nordi_controller_idle_off';
+  static const String nordiControllerIdleMinutes =
+      'nordi_controller_idle_minutes';
+  static const String nordiControllerSleepExperimentalDisclaimer =
+      'nordi_controller_sleep_experimental_disclaimer';
+  static const String nordiSleepControllerIdleNote =
+      'nordi_sleep_controller_idle_note';
+  static const String nordiControllerSuspendOnSleepTitle =
+      'nordi_controller_suspend_on_sleep_title';
+  static const String nordiControllerSuspendOnSleepSubtitle =
+      'nordi_controller_suspend_on_sleep_subtitle';
+  static const String nordiPowerMenu = 'nordi_power_menu';
+  static const String nordiPowerMenuSubtitle = 'nordi_power_menu_subtitle';
+  static const String nordiPowerRestartLauncher =
+      'nordi_power_restart_launcher';
+  static const String nordiPowerRestartDevice = 'nordi_power_restart_device';
+  static const String nordiPowerShutdownDevice = 'nordi_power_shutdown_device';
+  static const String nordiHomeLauncherTitle = 'nordi_home_launcher_title';
+  static const String nordiHomeLauncherBody = 'nordi_home_launcher_body';
+  static const String nordiHomeLauncherAction = 'nordi_home_launcher_action';
+  static const String nordiHomeLauncherWorking = 'nordi_home_launcher_working';
+  static const String nordiHomeLauncherSafeModeHint =
+      'nordi_home_launcher_safe_mode_hint';
 
   // ---------------------------------------------------------------------------
   // Directories
@@ -1205,6 +1239,8 @@ mixin AppLocale {
   static const String streaming = 'streaming';
   static const String streamingSubtitle = 'streaming_subtitle';
   static const String streamingAndroidOnly = 'streaming_android_only';
+  static const String streamingAndroidGamesAlphaNote =
+      'streaming_android_games_alpha_note';
   static const String streamingRtmpSection = 'streaming_rtmp_section';
   static const String streamingServerUrl = 'streaming_server_url';
   static const String streamingStreamKey = 'streaming_stream_key';
@@ -1234,6 +1270,11 @@ mixin AppLocale {
   static const String streamingIncludeMic = 'streaming_include_mic';
   static const String streamingIncludeMicSubtitle = 'streaming_include_mic_subtitle';
   static const String streamingQuality = 'streaming_quality';
+  static const String streamingQualityAuto = 'streaming_quality_auto';
+  static const String streamingQualityAutoVariableHint =
+      'streaming_quality_auto_variable_hint';
+  static const String streamingExternalCaptureHint =
+      'streaming_external_capture_hint';
   static const String streamingValidateUrl = 'streaming_validate_url';
   static const String streamingUrlOk = 'streaming_url_ok';
   static const String streamingFaceCamSection = 'streaming_face_cam_section';

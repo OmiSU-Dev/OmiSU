@@ -26,6 +26,11 @@ import io.github.thibaultbee.streampack.core.streamers.single.ISingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.IVideoSingleStreamer
 import io.github.thibaultbee.streampack.core.streamers.single.VideoConfig
 import io.github.thibaultbee.streampack.services.MediaProjectionService
+import com.omisu.externalplay.ExternalPlaySessionHelper
+import com.omisu.streaming.ExternalPlayStreamCapture
+import com.omisu.externalplay.ExternalPlaySessionService
+import com.omisu.streaming.OmisuStreamTrace
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -40,6 +45,7 @@ data class StreamStartConfig(
     val height: Int = 720,
     val bitrateKbps: Int = 4000,
     val fps: Int = 30,
+    val qualityPreset: String = "auto",
     val audioMode: StreamAudioMode = StreamAudioMode.GAME,
     val faceCamEnabled: Boolean = false,
     val faceCamCorner: String = "bottomRight",
@@ -92,11 +98,51 @@ object StreamingController {
         } else {
             lastError = message
         }
+        OmisuStreamTrace.event(
+            "stream_state",
+            "${newState.name.lowercase()}${message?.let { " msg=$it" } ?: ""} " +
+                "external=${ExternalPlayStreamCapture.isActive}",
+        )
         stateListener?.invoke(newState, message)
+        if (newState == StreamingState.LIVE && ExternalPlaySessionHelper.isActive) {
+            appContext?.let { ExternalPlaySessionService.refreshNotification(it) }
+        }
     }
 
     fun bindAndStart(
         context: Context,
+        resultCode: Int,
+        resultData: Intent,
+        config: StreamStartConfig,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        scope.launch {
+            try {
+                if (state != StreamingState.IDLE) {
+                    Log.w(TAG, "Stream not idle ($state); stopping before new capture")
+                    stopStreamAndAwait()
+                }
+                bindAndStartInternal(
+                    context = context,
+                    faceCamHost = context as? Activity,
+                    resultCode = resultCode,
+                    resultData = resultData,
+                    config = config,
+                    onSuccess = onSuccess,
+                    onError = onError,
+                )
+            } catch (t: Throwable) {
+                Log.e(TAG, "bindAndStart failed", t)
+                emitState(StreamingState.ERROR, t.message ?: "Stream failed")
+                onError(t.message ?: "Stream failed")
+            }
+        }
+    }
+
+    private fun bindAndStartInternal(
+        context: Context,
+        faceCamHost: Activity?,
         resultCode: Int,
         resultData: Intent,
         config: StreamStartConfig,
@@ -108,14 +154,17 @@ object StreamingController {
             return
         }
 
-        appContext = context.applicationContext
+        val appCtx = context.applicationContext
+        appContext = appCtx
         emitState(StreamingState.STARTING, null)
 
         val audioExtraKey = resolveAudioSourceKey(config.audioMode)
 
         connection =
             MediaProjectionService.bindService(
-                context = context,
+                // Application context: transient activities (external-play capture)
+                // finish after consent; activity-scoped bind leaks and kills projection.
+                context = appCtx,
                 serviceClass = OmisuStreamingService::class.java,
                 resultCode = resultCode,
                 resultData = resultData,
@@ -125,15 +174,14 @@ object StreamingController {
                         try {
                             configureAndStart(createdStreamer as ISingleStreamer, config)
                             if (config.faceCamEnabled) {
-                                val activity = context as? Activity
-                                if (activity != null) {
+                                if (faceCamHost != null) {
                                     FaceCamCapture.start(
-                                        activity,
+                                        faceCamHost,
                                         config.faceCamCorner,
                                         config.faceCamSize,
                                     )
                                 } else {
-                                    Log.w(TAG, "Face cam requested but context is not an Activity")
+                                    Log.w(TAG, "Face cam requested but no host Activity")
                                 }
                             }
                             emitState(StreamingState.LIVE, null)
@@ -163,8 +211,31 @@ object StreamingController {
         val videoStreamer = streamer as? IVideoStreamer<*>
             ?: throw IllegalStateException("Streamer does not support video")
 
-        val encodeSize = alignEncodeResolution(config.width, config.height)
-        val targetVideoBitrateBps = clampVideoBitrate(config.bitrateKbps, encodeSize)
+        val externalCapture = ExternalPlayStreamCapture.isActive
+        val encodeSize =
+            if (externalCapture && appContext != null) {
+                StreamEncodeResolution.forExternalPlay(
+                    appContext!!,
+                    config.width,
+                    config.height,
+                )
+            } else {
+                alignEncodeResolution(config.width, config.height, externalPlay = false)
+            }
+        val requestedKbps =
+            if (config.qualityPreset == "auto") {
+                StreamQualityResolver.autoVideoBitrateKbps(
+                    appContext ?: throw IllegalStateException("No app context"),
+                    encodeSize,
+                    externalCapture,
+                )
+            } else {
+                config.bitrateKbps
+            }
+        val targetVideoBitrateBps =
+            clampVideoBitrate(requestedKbps, encodeSize, externalCapture)
+        val uplinkPlan =
+            StreamUplinkAdaptation.plan(targetVideoBitrateBps, externalCapture)
 
         val fps =
             config.fps.coerceIn(24, MAX_STREAM_FPS).let { requested ->
@@ -180,7 +251,7 @@ object StreamingController {
         val videoConfig =
             VideoConfig(
                 mimeType = MediaFormat.MIMETYPE_VIDEO_AVC,
-                startBitrate = targetVideoBitrateBps,
+                startBitrate = uplinkPlan.startBps,
                 resolution = encodeSize,
                 fps = fps,
                 gopDurationInS = VIDEO_GOP_SECONDS,
@@ -214,21 +285,30 @@ object StreamingController {
             }
         }
 
-        val minVideoBitrate = (targetVideoBitrateBps * 0.45f).toInt().coerceAtLeast(600_000)
+        val regulatorConfig =
+            BitrateRegulatorConfig(
+                videoBitrateRange = Range(uplinkPlan.minBps, uplinkPlan.maxBps),
+                audioBitrateRange = Range(AUDIO_BITRATE_BPS, AUDIO_BITRATE_BPS),
+            )
         (videoStreamer as? IVideoSingleStreamer)?.bitrateRegulatorControllerFactory =
             intervalBitrateRegulatorControllerFactory(
-                bitrateRegulatorConfig =
-                    BitrateRegulatorConfig(
-                        videoBitrateRange = Range(minVideoBitrate, targetVideoBitrateBps),
-                        audioBitrateRange = Range(AUDIO_BITRATE_BPS, AUDIO_BITRATE_BPS),
-                    ),
+                bitrateRegulatorFactory = OmisuAdaptiveBitrateRegulator.Factory(),
+                bitrateRegulatorConfig = regulatorConfig,
+                pollingTime = 400.milliseconds,
             )
+
+        OmisuStreamTrace.event(
+            "uplink_adapt_plan",
+            "start=${uplinkPlan.startBps / 1000} min=${uplinkPlan.minBps / 1000} " +
+                "max=${uplinkPlan.maxBps / 1000}kbps external=$externalCapture",
+        )
 
         Log.i(
             TAG,
             "RTMP encode ${encodeSize.width}x${encodeSize.height} @ ${fps}fps, " +
-                "${targetVideoBitrateBps / 1000}kbps video (min ${minVideoBitrate / 1000}), " +
-                "gop=${VIDEO_GOP_SECONDS}s",
+                "video ${uplinkPlan.startBps / 1000}kbps start " +
+                "(${uplinkPlan.minBps / 1000}–${uplinkPlan.maxBps / 1000} adaptive), " +
+                "gop=${VIDEO_GOP_SECONDS}s, ingest=${sanitizeIngestForLog(config.rtmpUrl)}",
         )
 
         val descriptor = UriMediaDescriptor(config.rtmpUrl.toUri())
@@ -315,10 +395,18 @@ object StreamingController {
     }
 
     /** Even dimensions, capped for mobile uplink + MediaProjection encoder load. */
-    private fun alignEncodeResolution(width: Int, height: Int): Size {
+    private fun alignEncodeResolution(
+        width: Int,
+        height: Int,
+        externalPlay: Boolean = false,
+    ): Size {
         var w = width.coerceIn(854, 1920)
         var h = height.coerceIn(480, 1080)
-        if (w > 1280 && h > 720) {
+        if (externalPlay && w * h > 1280L * 720L) {
+            val scale = 1280f / w.toFloat()
+            w = 1280
+            h = (h * scale).toInt().coerceAtMost(720)
+        } else if (w > 1280 && h > 720) {
             val scale = 1280f / w.toFloat()
             w = 1280
             h = (h * scale).toInt().coerceAtMost(720)
@@ -330,15 +418,28 @@ object StreamingController {
         return Size(w, h)
     }
 
-    private fun clampVideoBitrate(bitrateKbps: Int, size: Size): Int {
+    private fun clampVideoBitrate(
+        bitrateKbps: Int,
+        size: Size,
+        externalPlay: Boolean = false,
+    ): Int {
         val pixels = size.width.toLong() * size.height
         val maxForResolution =
             when {
-                pixels > 1280L * 720L -> 4_500_000
-                pixels > 960L * 540L -> 3_000_000
-                else -> 2_200_000
+                pixels > 1280L * 720L -> if (externalPlay) 2_200_000 else 3_500_000
+                pixels > 960L * 540L -> if (externalPlay) 1_800_000 else 2_500_000
+                else -> if (externalPlay) 1_400_000 else 2_000_000
             }
-        val requested = (bitrateKbps.coerceIn(1200, 6000)) * 1000
+        val requested = (bitrateKbps.coerceIn(800, 6000)) * 1000
         return minOf(requested, maxForResolution)
+    }
+
+    private fun sanitizeIngestForLog(url: String): String {
+        return try {
+            val uri = android.net.Uri.parse(url)
+            "${uri.scheme}://${uri.host}${uri.path?.substringBeforeLast('/') ?: ""}/…"
+        } catch (_: Exception) {
+            "…"
+        }
     }
 }

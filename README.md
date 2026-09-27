@@ -19,7 +19,7 @@ Nord-only behavior lives under [`lib/config/nordi_config.dart`](lib/config/nordi
 - **Embedded play** (LibretroDroid), standalone/RetroArch launch paths, core options, touch overlays, rumble, HD/adaptive HD (with Nordi defaults seeded once).
 - **Library**: rescan, add/remove ROM folders (default **`/storage/emulated/0/ROMS`**), appearance, input, playback, streaming, secondary display, about.
 - **Settings → Services**: ScreenScraper, RomM panel, RetroAchievements startup match, scrape toggles — **NeoSync row omitted** on Nordi.
-- **Sleep tab** (nav): pauses menu audio, dims display, requests screen off (GameSir/BLE may still keep the SoC partially awake — that is normal Android behavior).
+- **Sleep tab** (nav): pauses menu audio and turns the **display off** (system sleep on priv-app builds, or **accessibility lock** on retail when **OmiSU Screenshot** is enabled in Settings → Accessibility). USB Type‑C controllers **stay powered** in sleep — use **Power Menu → Shut down** to cut pad power.
 
 ## Nordi-only trims
 
@@ -27,7 +27,7 @@ Nord-only behavior lives under [`lib/config/nordi_config.dart`](lib/config/nordi
 - Top nav: NeoSync, Scraper, RomM, Achievements tabs hidden (Scraper/RomM still reachable from **Services**).
 - ES-DE import block removed from Library settings.
 - General: **Safe mode** for sideload/dev. **Check for updates now** covers the Nordi GitHub APK and the built-in player. Player cores can also update on launch. NeoStation app and systems JSON stay off. App updates are not checked on launch.
-- Settings menu: **Tools** hidden; **Exit** hidden in retail (Safe mode restores Exit + launcher picker).
+- Settings menu: **Tools** hidden in retail; **Exit** is not a separate tab on Nordi — use **Power Menu** (**Exit application** appears there in Safe mode). **Restart OmiSU / restart / shut down** always in Power Menu.
 - **Restart / Reboot** power menu on retail priv-app builds.
 
 ## Build (Android)
@@ -42,6 +42,8 @@ flutter pub get
 Uses Gradle flavor **`gamesir`**, `PRELOADED_OEM=true`, and dart-define `NORDI_ROM_ROOT`. Device auto-tune reads hardware at runtime; optional build-time override: `OMISU_DEVICE_PROFILE=nord_n30 ./build-utils/build-gamesir-android.sh`.
 
 Install as system/priv-app on the Nord N30 image for reboot/shutdown and persistent launcher behavior.
+
+**Default HOME:** Nordi expects OmiSU to hold the Android Home role in retail mode (Safe mode off). `./scripts/deploy-android-wifi.sh --product nordi` assigns it automatically after install via `adb shell cmd role add-role-holder`. APK-only installs on a phone without a PC still require Android’s one-time Home confirmation unless the app is baked into a priv-app ROM image.
 
 ### Wi‑Fi deploy (dev)
 

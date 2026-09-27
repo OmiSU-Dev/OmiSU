@@ -19,6 +19,7 @@ import '../../../widgets/system_logo_fallback.dart';
 import '../../../themes/omisu_accent.dart';
 import '../../../widgets/omisu/omisu_gradient_border.dart';
 import '../../../utils/game_utils.dart';
+import '../../../services/android_service.dart';
 import '../../../utils/count_label.dart';
 
 /// Replaces the card the systems grid/carousel would otherwise build for one
@@ -108,6 +109,8 @@ class _SystemCardState extends State<SystemCard> {
   File? _cachedWheelFile;
   bool _cachedHasWheelFile = false;
 
+  Uint8List? _appShortcutIconBytes;
+
   /// Hierarchy for music cover resolution:
   /// Active Instance Art > Cached Resolved Art > Last Known Picture.
   Uint8List? get _musicCoverBytes =>
@@ -125,6 +128,16 @@ class _SystemCardState extends State<SystemCard> {
     _musicPlayerService.addListener(_handleMusicStateChanged);
     _handleMusicStateChanged();
     _resolveWheelFile();
+    _loadAppShortcutIcon();
+  }
+
+  Future<void> _loadAppShortcutIcon() async {
+    if (!widget.info.isAppShortcut) return;
+    final pkg = widget.info.appPackageName;
+    if (pkg == null || pkg.isEmpty) return;
+    final bytes = await AndroidService.getAppIcon(pkg);
+    if (!mounted) return;
+    setState(() => _appShortcutIconBytes = bytes);
   }
 
   void _resolveWheelFile() {
@@ -153,6 +166,10 @@ class _SystemCardState extends State<SystemCard> {
     if (oldWidget.info.customWheelImage != widget.info.customWheelImage ||
         folderChanged) {
       _resolveWheelFile();
+    }
+    if (oldWidget.info.appPackageName != widget.info.appPackageName) {
+      _appShortcutIconBytes = null;
+      _loadAppShortcutIcon();
     }
   }
 
@@ -382,6 +399,9 @@ class _SystemCardState extends State<SystemCard> {
   /// Orchestrates background rendering, selecting between static images,
   /// music cover shaders, or GIF animators.
   Widget _buildSystemBackground() {
+    if (widget.info.isAppShortcut) {
+      return _buildAppShortcutBackground();
+    }
     if (widget.info.folderName == 'music') {
       return AnimatedBuilder(
         animation: _musicPlayerService,
@@ -413,6 +433,38 @@ class _SystemCardState extends State<SystemCard> {
     }
 
     return _buildDefaultSystemBackground();
+  }
+
+  Widget _buildAppShortcutBackground() {
+    final c1 = widget.info.color1AsColor ?? const Color(0xFF1b2838);
+    final c2 = widget.info.color2AsColor ?? const Color(0xFF66c0f4);
+    return Positioned.fill(
+      child: ClipRRect(
+        borderRadius:
+            Theme.of(context).extension<CornerRadii>()?.radiusInternal ??
+            BorderRadius.circular(9.r),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [c1, c2.withValues(alpha: 0.35)],
+            ),
+          ),
+          child: _appShortcutIconBytes != null
+              ? Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(18.r),
+                    child: Image.memory(
+                      _appShortcutIconBytes!,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+      ),
+    );
   }
 
   /// Standard background resolution logic for all system cards.
@@ -549,6 +601,14 @@ class _SystemCardState extends State<SystemCard> {
     double? height,
     Color? color,
   }) {
+    if (widget.info.isAppShortcut && _appShortcutIconBytes != null) {
+      return Image.memory(
+        _appShortcutIconBytes!,
+        height: height ?? 32.r,
+        fit: BoxFit.contain,
+      );
+    }
+
     final customLogoPath = widget.info.customLogoPath;
     final hasCustomLogo = customLogoPath != null && customLogoPath.isNotEmpty;
     final resolvedHeight = height ?? 32.r;

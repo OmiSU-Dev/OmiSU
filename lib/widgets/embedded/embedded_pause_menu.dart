@@ -113,6 +113,11 @@ class _EmbeddedPauseMenuState extends State<EmbeddedPauseMenu> {
       ),
       _PauseMenuEntry(label: 'Reset', onPressed: widget.onReset),
       _PauseMenuEntry(
+        label: 'Exit to home',
+        onPressed: widget.onExitToHome,
+        filled: true,
+      ),
+      _PauseMenuEntry(
         label: widget.muted ? 'Unmute' : 'Mute',
         onPressed: widget.onToggleMute,
       ),
@@ -211,13 +216,6 @@ class _EmbeddedPauseMenuState extends State<EmbeddedPauseMenu> {
         ),
       );
     }
-    entries.add(
-      _PauseMenuEntry(
-        label: 'Exit to home',
-        onPressed: widget.onExitToHome,
-        filled: true,
-      ),
-    );
     return entries;
   }
 

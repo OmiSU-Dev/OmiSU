@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' show AppExitResponse;
 import 'package:flutter/material.dart';
@@ -137,6 +138,7 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
           listen: false,
         );
         configProvider.reapplySecondaryDisplay();
+        // Default HOME is changed from Settings or Safe mode — not on every resume.
         // Re-push accessibility (Screen Return) state to the secondary display:
         // the user may have just enabled it in system Settings (e.g. via the
         // in-game launcher's nudge), which controls the screenshot button and

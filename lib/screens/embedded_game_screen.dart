@@ -362,8 +362,9 @@ class _EmbeddedGameScreenState extends State<EmbeddedGameScreen>
     }
     if (message.startsWith('fps:')) {
       if (!_showFpsCounter || !mounted) return;
-      _currentFps = message.substring('fps:'.length);
-      _topChromeEntry?.markNeedsBuild();
+      final next = message.substring('fps:'.length);
+      if (next == _currentFps) return;
+      setState(() => _currentFps = next);
       return;
     }
     if (message.startsWith('error:')) {

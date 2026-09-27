@@ -33,8 +33,9 @@ class PlaySettings {
   final bool performanceMode;
 
   static bool deviceNeedsPerformanceSafeguard(DeviceProfile device) {
-    return device.tier == DevicePerformanceTier.low ||
-        (device.ramGb != null && device.ramGb! <= 4);
+    // Only force performance mode on very tight RAM (3 GB or less). 4 GB class
+    // phones (e.g. Moto G 2025) should stay on normal playback + HD defaults.
+    return device.ramGb != null && device.ramGb! <= 3;
   }
 
   bool effectivePerformanceMode(DeviceProfile device) {
@@ -163,19 +164,71 @@ class PlaySettingsService {
     }
   }
 
-  /// Enables [PlaySettings.performanceMode] once on low-RAM devices (≤4 GB).
+  /// Enables [PlaySettings.performanceMode] once on very low-RAM devices (≤3 GB).
   static Future<void> applyLowTierDefaultsIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
-    const migrationKey = '${_prefix}performance_auto_v3';
-    if (prefs.getBool(migrationKey) == true) return;
+    const migrationV4 = '${_prefix}performance_auto_v4';
+    if (prefs.getBool(migrationV4) == true) return;
 
     final profile = DeviceProfileService.instance.detectedProfile;
     final lowPower = PlaySettings.deviceNeedsPerformanceSafeguard(profile);
     if (lowPower) {
       _cached = _cached.copyWith(performanceMode: true);
       await prefs.setBool('${_prefix}performance', true);
+    } else {
+      // v3 treated 4 GB as low and turned performance on; restore normal playback.
+      const migrationV3 = '${_prefix}performance_auto_v3';
+      if (prefs.getBool(migrationV3) == true &&
+          prefs.getBool('${_prefix}performance') == true) {
+        _cached = _cached.copyWith(performanceMode: false);
+        await prefs.setBool('${_prefix}performance', false);
+      }
     }
-    await prefs.setBool(migrationKey, true);
+    await prefs.setBool(migrationV4, true);
+  }
+
+  /// After RAM MB→GB rounding fix: undo performance mode wrongly set for 4 GB phones.
+  static Future<void> applyMisclassifiedRamPlaybackFixIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    const migrationV5 = '${_prefix}performance_ram_round_v5';
+    if (prefs.getBool(migrationV5) == true) return;
+
+    final profile = DeviceProfileService.instance.detectedProfile;
+    if (!PlaySettings.deviceNeedsPerformanceSafeguard(profile)) {
+      if (prefs.getBool('${_prefix}performance') == true) {
+        _cached = _cached.copyWith(performanceMode: false);
+        await prefs.setBool('${_prefix}performance', false);
+      }
+      _cached = _cached.copyWith(
+        hdMode: true,
+        hdModeQuality: 'medium',
+        adaptiveHdMode: true,
+      );
+      await save(_cached);
+    }
+    await prefs.setBool(migrationV5, true);
+  }
+
+  /// Nordi retail: HD medium + adaptive on mid/high tier unless user already tuned playback.
+  static Future<void> applyCuratedPlaybackDefaultsIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    const key = '${_prefix}curated_playback_defaults_v1';
+    if (prefs.getBool(key) == true) return;
+
+    final profile = DeviceProfileService.instance.detectedProfile;
+    if (PlaySettings.deviceNeedsPerformanceSafeguard(profile)) {
+      await prefs.setBool(key, true);
+      return;
+    }
+
+    _cached = _cached.copyWith(
+      performanceMode: false,
+      hdMode: true,
+      hdModeQuality: 'medium',
+      adaptiveHdMode: true,
+    );
+    await save(_cached);
+    await prefs.setBool(key, true);
   }
 
   static Future<void> save(PlaySettings settings) async {

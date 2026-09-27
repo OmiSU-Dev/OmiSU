@@ -2,7 +2,14 @@
 <resources>
     <string name="app_storage_brand">OmiSU</string>
     <string name="screenshot_accessibility_label">OmiSU Screenshot</string>
-    <string name="screenshot_accessibility_desc">Lets OmiSU capture a system screenshot when you tap the screenshot button, and restore the Now Playing screen when you close an app launched from the dock. Only the name of the foreground app is read to detect this — no screen content is read or collected.</string>
+    <string name="screenshot_accessibility_desc">Lets OmiSU capture a system screenshot when you tap the screenshot button, restore the Now Playing screen when you close an app launched from the dock, open stream controls when you press Start/Menu during an Android game (when the game does not swallow the button), and turn the display fully off from the Sleep tab when this service is enabled. Only the name of the foreground app is read to detect dock dismissals — no screen content is read or collected.</string>
+    <string name="external_play_notification_channel">Game session</string>
+    <string name="external_play_notification_channel_desc">Active while a game launched from OmiSU is running</string>
+    <string name="external_play_notification_title">Playing: %1$s</string>
+    <string name="external_play_notification_body">Return to OmiSU to end your session. Stop stream from the notification while live.</string>
+    <string name="external_play_stop_stream_action">Stop stream</string>
+    <string name="external_play_stream_capture_message">Starting stream for your game.\n\nWhen Android asks what to share, choose Entire screen or Diablo Immortal — not OmiSU. Allow microphone if prompted.</string>
+    <string name="external_play_default_title">Game</string>
     <string name="streaming_notification_channel">Live streaming</string>
     <string name="streaming_live_title">OmiSU live stream</string>
     <string name="streaming_live_body">Broadcasting gameplay</string>

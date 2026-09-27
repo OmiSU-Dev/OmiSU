@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:omisu/constants/recent_card_sizes.dart';
+import 'package:omisu/services/sfx_service.dart';
 import 'emulator_model.dart';
 import 'ambient_backdrop_mode.dart';
 import 'gamepad_shoulder_style.dart';
@@ -280,7 +281,7 @@ class ConfigModel {
     this.hideBottomScreen = false,
     this.videoSound = false,
     this.sfxEnabled = true,
-    this.sfxVolume = 0.75,
+    this.sfxVolume = SfxService.defaultVolume,
     this.use12HourClock = false,
     this.gamepadShoulderStyle = GamepadShoulderStyle.bumpers,
     this.ambientBackdropMode = AmbientBackdropMode.subtle,
@@ -410,11 +411,13 @@ class ConfigModel {
           (json['sfx_enabled'] ?? 1).toString() == '1',
       sfxVolume:
           (double.tryParse(
-                    (json['sfxVolume'] ?? json['sfx_volume'] ?? 0.75)
+                    (json['sfxVolume'] ??
+                            json['sfx_volume'] ??
+                            SfxService.defaultVolume)
                         .toString(),
                   ) ??
-                  0.75)
-              .clamp(0.0, 0.75)
+                  SfxService.defaultVolume)
+              .clamp(0.0, SfxService.maxVolume)
               .toDouble(),
       use12HourClock:
           (json['use12HourClock'] ?? json['use_12_hour_clock'] ?? 0)

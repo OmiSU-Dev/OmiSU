@@ -1,7 +1,10 @@
 package com.omisu.launcher
 
 import android.app.Application
+import android.app.role.RoleManager
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Process
 import com.omisu.embedded.LibretroDroidEngineUpdater
 
@@ -10,7 +13,7 @@ class OmiSUApplication : Application() {
         super.onCreate()
         runCatching { LibretroDroidEngineUpdater.pruneOldEngineVersions(this, "0.13.2") }
 
-        if (isNordiSafeMode()) {
+        if (shouldSkipCrashRelaunch()) {
             return
         }
 
@@ -34,6 +37,34 @@ class OmiSUApplication : Application() {
             }
             defaultHandler?.uncaughtException(thread, throwable)
                 ?: Process.killProcess(Process.myPid())
+        }
+    }
+
+    /**
+     * Safe mode and non-HOME sideload runs skip auto-relaunch so a startup bug
+     * does not loop (especially after switching to the stock launcher).
+     */
+    private fun shouldSkipCrashRelaunch(): Boolean {
+        if (isNordiSafeMode()) return true
+        return !holdsHomeRole()
+    }
+
+    private fun holdsHomeRole(): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val roleManager = getSystemService(RoleManager::class.java)
+                if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                    return roleManager.isRoleHeld(RoleManager.ROLE_HOME)
+                }
+            }
+            val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+            val resolveInfo = packageManager.resolveActivity(
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY,
+            )
+            resolveInfo?.activityInfo?.packageName == packageName
+        } catch (_: Exception) {
+            false
         }
     }
 

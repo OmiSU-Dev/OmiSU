@@ -28,6 +28,9 @@ import '../launch/device_profile_service.dart';
 import '../launch/launch_tuning_resolver.dart';
 import '../launch/launch_tuning_store.dart';
 import '../../screens/embedded_game_screen.dart';
+import '../../screens/external_play_pre_launch_screen.dart';
+import '../streaming/stream_settings_service.dart';
+import '../streaming/streaming_service.dart';
 
 /// Represents the result of a game launch attempt.
 /// Represents the result of a game launch attempt.
@@ -67,6 +70,17 @@ class GameLaunchService {
 
   static final _log = LoggerService.instance;
 
+  /// Ends a leftover Play Store / Android app session and RTMP capture so
+  /// relaunching from Recently Played gets a fresh MediaProjection.
+  static Future<void> _ensurePriorAndroidAppSessionEnded() async {
+    if (GameSessionManager.isGameLaunched) {
+      await GameSessionManager.endGameSession();
+    } else {
+      await AndroidService.endExternalPlaySession();
+    }
+    await StreamingService.refreshStatus();
+  }
+
   /// Core logic for launching a game session across all supported platforms.
   ///
   /// Performs pre-launch validations (ROM existence, system config), resolves the
@@ -78,23 +92,68 @@ class GameLaunchService {
   ) async {
     try {
       if (Platform.isAndroid && (system.folderName == 'android')) {
+        await _ensurePriorAndroidAppSessionEnded();
+
         if (game.romPath == null) {
           return GameLaunchResult.failure(
             AppLocale.packageNameMissing.getString(context),
           );
         }
 
+        final packageName = game.romPath!;
+        final gameTitle =
+            game.name.isNotEmpty ? game.name : game.romname;
+
+        final preLaunch = await ExternalPlayPreLaunchFlow.show(
+          context,
+          gameTitle: gameTitle,
+          packageName: packageName,
+        );
+        if (!context.mounted) return GameLaunchResult.failure('', '');
+        if (preLaunch == null) {
+          return GameLaunchResult.failure('', '');
+        }
+
+        await StreamSettingsService.ensureStreamCredentials();
+
+        final streamConfigured = StreamSettingsService.current.isConfigured;
+        if (preLaunch.startStream && !streamConfigured) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocale.streamingSetupRequired.getString(context),
+                ),
+              ),
+            );
+          }
+        } else if (preLaunch.startStream) {
+          // Mark external-play encode path only; do not start RTMP here — capture
+          // must begin after the game is foreground or Kick sees the OmiSU launcher.
+          await AndroidService.prepareExternalPlayStreaming(
+            packageName: packageName,
+          );
+        }
+
         GameSessionManager.registerGameLaunch(system, game, 'android_app');
         await FavoritesService.recordGamePlayed(game);
 
-        final success = await AndroidService.launchPackage(game.romPath!);
+        final needStreamAfterLaunch =
+            preLaunch.startStream && streamConfigured;
+
+        final success = await AndroidService.launchPackage(
+          packageName,
+          gameSession: true,
+          gameTitle: gameTitle,
+          startStreamAfterLaunch: needStreamAfterLaunch,
+        );
         if (!context.mounted) return GameLaunchResult.failure('', '');
         if (success) {
           return GameLaunchResult.success();
         } else {
           return GameLaunchResult.failure(
             AppLocale.failedToLaunchAndroidApp.getString(context),
-            game.romPath,
+            packageName,
           );
         }
       }

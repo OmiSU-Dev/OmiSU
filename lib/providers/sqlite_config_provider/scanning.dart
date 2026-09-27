@@ -1321,6 +1321,7 @@ extension SqliteConfigScanning on SqliteConfigProvider {
       SystemFolderNames.collections: 3,
       'music': 4,
       'android': 5,
+      'steam': 6,
     };
 
     _detectedSystems.sort((a, b) {

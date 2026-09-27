@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:omisu/services/logger_service.dart';
+import '../screens/external_play_pre_launch_screen.dart';
 
 /// Service responsible for interacting with the Android operating system via MethodChannels.
 ///
@@ -38,15 +41,53 @@ class AndroidService {
 
   /// Attempts to launch an Android application using its unique [packageName].
   ///
-  /// Returns true if the package was successfully opened by the OS.
-  static Future<bool> launchPackage(String packageName) async {
+  /// When [gameSession] is true, marks an OmiSU play session (recent play,
+  /// return detection, controller Start → stream menu).
+  static Future<void> prepareExternalPlayStreaming({String packageName = ''}) async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _channel.invokeMethod('prepareExternalPlayStreaming', {
+        'packageName': packageName,
+      });
+    } on PlatformException catch (e) {
+      _log.w("prepareExternalPlayStreaming: '${e.message}'.");
+    }
+  }
+
+  static Future<bool> launchPackage(
+    String packageName, {
+    bool gameSession = false,
+    String gameTitle = '',
+    bool startStreamAfterLaunch = false,
+  }) async {
     try {
       final bool result = await _channel.invokeMethod('launchPackage', {
         'packageName': packageName,
+        'gameSession': gameSession,
+        'gameTitle': gameTitle,
+        'startStreamAfterLaunch': startStreamAfterLaunch,
       });
       return result;
     } on PlatformException catch (e) {
       _log.e("Failed to launch package: '${e.message}'.");
+      return false;
+    }
+  }
+
+  static Future<void> endExternalPlaySession() async {
+    try {
+      await _channel.invokeMethod('endExternalPlaySession');
+    } on PlatformException catch (e) {
+      _log.e("endExternalPlaySession: '${e.message}'.");
+    }
+  }
+
+  static Future<bool> isExternalPlayMenuVisible() async {
+    if (ExternalPlayPreLaunchFlow.isShowing) return true;
+    try {
+      final result = await _channel.invokeMethod<bool>('isExternalPlayMenuVisible');
+      return result ?? false;
+    } on PlatformException {
       return false;
     }
   }

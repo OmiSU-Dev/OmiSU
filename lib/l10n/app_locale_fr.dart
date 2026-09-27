@@ -155,6 +155,9 @@ const Map<String, dynamic> appLocaleFr = {
   AppLocale.androidSystemUpdates: 'Mises à jour du système Android',
   AppLocale.androidSystemUpdatesSubtitle:
       'Mises à jour Android uniquement. Améliore la stabilité et corrige des bugs.',
+  AppLocale.androidAccessibilitySettings: 'Android accessibility',
+  AppLocale.androidAccessibilitySettingsSubtitle:
+      'Open system accessibility settings for OmiSU Screenshot — Screen Return, in-game screenshots, and display sleep from the grip.',
   AppLocale.scanOnStartup: 'Analyser les dossiers au démarrage',
   AppLocale.nowPlayingDimAfter: 'Atténuer Now Playing après',
   AppLocale.nowPlayingDimAfterSubtitle:
@@ -191,7 +194,7 @@ const Map<String, dynamic> appLocaleFr = {
       'Vérifier les mises à jour des systèmes et émulateurs au démarrage',
   AppLocale.checkForUpdatesNow: 'Check for updates now',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid engine, libretro cores, and the Nordi app on GitHub (OmiSU-Dev/OmiSU). App updates are not checked on launch.',
+      'LibretroDroid engine, libretro cores, and the OmiSU app on GitHub (OmiSU-Dev/OmiSU). App updates are not checked on launch.',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
       'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi',
@@ -1097,6 +1100,8 @@ const Map<String, dynamic> appLocaleFr = {
   AppLocale.streaming: 'Streaming',
   AppLocale.streamingSubtitle:
       'Twitch, YouTube, or Kick — pick a platform, paste your stream key, go live from embedded play',
+  AppLocale.streamingAndroidGamesAlphaNote:
+      'Alpha (experimental): Live streaming for Play Store and other Android games is still early. Built-in emulator streaming is more reliable. Android will ask what to share on screen; previews and stability can vary by device.',
   AppLocale.streamingAndroidOnly: 'Streaming is available on Android only.',
   AppLocale.streamingRtmpSection: 'RTMP ingest',
   AppLocale.streamingServerUrl: 'Server URL',
@@ -1127,6 +1132,11 @@ const Map<String, dynamic> appLocaleFr = {
   AppLocale.streamingIncludeMic: 'Include microphone',
   AppLocale.streamingIncludeMicSubtitle: 'Your voice while playing (mixed with game audio when both are on)',
   AppLocale.streamingQuality: 'Video quality',
+  AppLocale.streamingQualityAuto: 'Auto',
+  AppLocale.streamingQualityAutoVariableHint:
+      'Adjusts resolution and target bitrate for your device. While live, video bitrate varies automatically to balance quality and connection stability.',
+  AppLocale.streamingExternalCaptureHint:
+      'After the game opens, choose the game or full screen when Android asks what to share.',
   AppLocale.streamingValidateUrl: 'Validate server URL',
   AppLocale.streamingUrlOk: 'URL format looks valid',
   AppLocale.streamingFaceCamSection: 'Face cam',

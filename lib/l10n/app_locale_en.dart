@@ -169,6 +169,9 @@ const Map<String, dynamic> appLocaleEn = {
   AppLocale.androidSystemUpdates: 'Android system updates',
   AppLocale.androidSystemUpdatesSubtitle:
       'Check for Android system updates only. Helps stability and bug fixes.',
+  AppLocale.androidAccessibilitySettings: 'Android accessibility',
+  AppLocale.androidAccessibilitySettingsSubtitle:
+      'Open system accessibility settings for OmiSU Screenshot — Screen Return, in-game screenshots, and display sleep from the grip.',
   AppLocale.scanOnStartup: 'Scan folders on Startup',
   AppLocale.nowPlayingDimAfter: 'Dim Now Playing after',
   AppLocale.nowPlayingDimAfterSubtitle:
@@ -205,10 +208,10 @@ const Map<String, dynamic> appLocaleEn = {
       'On startup, refresh LibretroDroid, Lemuroid cores, and emulator system configs over Wi‑Fi',
   AppLocale.checkForUpdatesNow: 'Check for updates now',
   AppLocale.checkForUpdatesNowSubtitle:
-      'LibretroDroid engine, libretro cores, and the Nordi app on GitHub (OmiSU-Dev/OmiSU). App updates are not checked on launch.',
+      'LibretroDroid engine, libretro cores, and the OmiSU app on GitHub (OmiSU-Dev/OmiSU). App updates are not checked on launch.',
   AppLocale.nordiAutoUpdatePlayer: 'Auto-update built-in player on launch',
   AppLocale.nordiAutoUpdatePlayerSubtitle:
-      'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi. The Nordi app is checked on GitHub from Check for updates now, not this toggle.',
+      'On startup, refresh LibretroDroid and Lemuroid cores over Wi‑Fi. The OmiSU app is checked on GitHub from Check for updates now, not this toggle.',
   AppLocale.updatesUpToDate: 'Everything is up to date',
   AppLocale.updatesCheckFailed:
       'Update check failed. Check your Wi‑Fi connection and try again.',
@@ -271,9 +274,42 @@ const Map<String, dynamic> appLocaleEn = {
       'Display the Search tab in the navigation bar',
   AppLocale.nordiSleepTab: 'Sleep',
   AppLocale.nordiSleepHint:
-      'Turns the display off and pauses menu audio to save battery.',
-  AppLocale.nordiSleepWake: 'Tap the touchscreen to turn the display back on',
+      'Turns the display off and pauses menu audio. USB controllers may stay powered.',
+  AppLocale.nordiSleepWake:
+      'Press the power button, touch the screen, or press Start / Menu on the controller',
+  AppLocale.nordiSleepWakeController:
+      'Start · Menu · PlayStation / Guide button also wake the launcher',
   AppLocale.nordiSleepConfirm: 'Press A to enter sleep',
+  AppLocale.nordiSleepUsbNote:
+      'Wired USB pads are not powered down in sleep — use Shut down in Power Menu to turn the unit fully off.',
+  AppLocale.nordiSleepDimFallback:
+      'Display could not fully turn off. Enable Settings → Accessibility → OmiSU Screenshot for true sleep, or press the power button.',
+  AppLocale.nordiControllerIdleTitle: 'Controller sleep after screen off',
+  AppLocale.nordiControllerIdleSubtitle:
+      'After this delay, OmiSU tries to suspend USB power to the grip controller and ignores pad input until you press PlayStation / Guide, Start, or Menu on the controller.',
+  AppLocale.nordiControllerSleepExperimentalDisclaimer:
+      'Experimental — may not work on all phones (USB power often stays on; pad lockout only).',
+  AppLocale.nordiControllerIdleOff: 'Off',
+  AppLocale.nordiControllerIdleMinutes: '{minutes} min',
+  AppLocale.nordiSleepControllerIdleNote:
+      'Settings → General: turn on “Suspend grip when entering Sleep” for immediate pad lockout on the Sleep tab, or set a delay under “Controller sleep after screen off”.',
+  AppLocale.nordiControllerSuspendOnSleepTitle:
+      'Suspend grip when entering Sleep',
+  AppLocale.nordiControllerSuspendOnSleepSubtitle:
+      'On the Sleep tab, OmiSU immediately tries to suspend USB to the controller and blocks pad input until you wake with PS / Start / Menu, or until you wake the phone from Sleep (touch or power). USB power may stay on on some phones.',
+  AppLocale.nordiPowerMenu: 'Power Menu',
+  AppLocale.nordiPowerMenuSubtitle:
+      'Restart OmiSU or control the device power state',
+  AppLocale.nordiPowerRestartLauncher: 'Restart OmiSU',
+  AppLocale.nordiPowerRestartDevice: 'Restart device',
+  AppLocale.nordiPowerShutdownDevice: 'Shut down device',
+  AppLocale.nordiHomeLauncherTitle: 'Set OmiSU as your home app',
+  AppLocale.nordiHomeLauncherBody:
+      'OmiSU is your handheld launcher. Set it as Home so the device boots into your library after restart. The stock Motorola home app stays installed but will not open when you press Home.',
+  AppLocale.nordiHomeLauncherAction: 'Choose OmiSU as Home',
+  AppLocale.nordiHomeLauncherWorking: 'Opening…',
+  AppLocale.nordiHomeLauncherSafeModeHint:
+      'Need the stock launcher? Enable Safe mode (dev / sideload) in Settings → General.',
 
   AppLocale.configureDirectories: 'Directories',
   AppLocale.configureRomsFolder: 'Configure ROMs folder',
@@ -1115,6 +1151,8 @@ const Map<String, dynamic> appLocaleEn = {
   AppLocale.streaming: 'Streaming',
   AppLocale.streamingSubtitle:
       'Twitch, YouTube, or Kick — pick a platform, paste your stream key, go live from embedded play',
+  AppLocale.streamingAndroidGamesAlphaNote:
+      'Alpha (experimental): Live streaming for Play Store and other Android games is still early. Built-in emulator streaming is more reliable. Android will ask what to share on screen; previews and stability can vary by device.',
   AppLocale.streamingAndroidOnly: 'Streaming is available on Android only.',
   AppLocale.streamingRtmpSection: 'RTMP ingest',
   AppLocale.streamingServerUrl: 'Server URL',
@@ -1142,11 +1180,16 @@ const Map<String, dynamic> appLocaleEn = {
   AppLocale.streamingAudioSection: 'Audio',
   AppLocale.streamingGameAudio: 'Game audio',
   AppLocale.streamingGameAudioSubtitle:
-      'Capture in-app sound from the built-in player',
+      'Capture game sound via Android playback capture (Play Store / Android apps). For built-in emulators, libretro audio is included.',
   AppLocale.streamingIncludeMic: 'Include microphone',
   AppLocale.streamingIncludeMicSubtitle:
       'Your voice while playing (mixed with game audio when both are on)',
   AppLocale.streamingQuality: 'Video quality',
+  AppLocale.streamingQualityAuto: 'Auto',
+  AppLocale.streamingQualityAutoVariableHint:
+      'Adjusts resolution and target bitrate for your device. While live, video starts lower and ramps up when the RTMP uplink is stable; it drops again on packet loss.',
+  AppLocale.streamingExternalCaptureHint:
+      'When Android asks what to share, choose entire display (not a single app) so the stream shows your game.',
   AppLocale.streamingValidateUrl: 'Validate server URL',
   AppLocale.streamingUrlOk: 'URL format looks valid',
   AppLocale.streamingFaceCamSection: 'Face cam',
@@ -1159,7 +1202,7 @@ const Map<String, dynamic> appLocaleEn = {
       'Turn on Include microphone to send your voice with game audio.',
   AppLocale.streamingStreamOnLaunch: 'Stream when I play this game',
   AppLocale.streamingStreamOnLaunchSubtitle:
-      'Start RTMP when launching with the built-in player',
+      'Start RTMP after the game opens (pick the game when sharing screen)',
   AppLocale.streamingSetupRequired:
       'Set up streaming in Settings → Streaming',
   AppLocale.streamingOpenSettings: 'Open Streaming settings',

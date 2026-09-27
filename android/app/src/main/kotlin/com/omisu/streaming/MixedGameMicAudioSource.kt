@@ -1,9 +1,7 @@
 package com.omisu.streaming
 
 import android.Manifest
-import android.media.AudioAttributes
 import android.media.AudioFormat
-import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.AudioTimestamp
 import android.media.MediaRecorder
@@ -26,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 internal class MixedGameMicAudioSource(
+    private val appContext: Context,
     private val mediaProjection: MediaProjection,
 ) : IAudioSourceInternal {
     private var gameRecord: AudioRecord? = null
@@ -72,16 +71,11 @@ internal class MixedGameMicAudioSource(
         }
 
         try {
-            val playbackConfig =
-                AudioPlaybackCaptureConfiguration.Builder(mediaProjection)
-                    .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
-                    .addMatchingUsage(AudioAttributes.USAGE_GAME)
-                    .addMatchingUsage(AudioAttributes.USAGE_UNKNOWN)
-                    .build()
+            val playbackConfig = PlaybackCaptureConfig.build(mediaProjection, appContext)
             gameRecord =
                 AudioRecord.Builder()
                     .setAudioFormat(audioFormat)
-                    .setBufferSizeInBytes(_minBufferSize * 2)
+                    .setBufferSizeInBytes(_minBufferSize * 4)
                     .setAudioPlaybackCaptureConfig(playbackConfig)
                     .build()
             if (gameRecord?.state != AudioRecord.STATE_INITIALIZED) {
@@ -179,7 +173,7 @@ class MixedGameMicAudioSourceFactory(
     private val mediaProjection: MediaProjection,
 ) : IAudioSourceInternal.Factory {
     override suspend fun create(context: Context): IAudioSourceInternal =
-        MixedGameMicAudioSource(mediaProjection)
+        MixedGameMicAudioSource(context.applicationContext, mediaProjection)
 
     override fun isSourceEquals(source: IAudioSourceInternal?): Boolean =
         source is MixedGameMicAudioSource

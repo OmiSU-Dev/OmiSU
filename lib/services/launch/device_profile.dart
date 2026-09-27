@@ -7,10 +7,10 @@ enum DeviceProfileSource {
 
 /// Hardware tier used to pick launch-time emulator tuning.
 enum DevicePerformanceTier {
-  /// ≤4 GB RAM or very slow SoC class.
+  /// ≤3 GB RAM or very slow SoC class.
   low,
 
-  /// Typical mid-range phone (e.g. Snapdragon 6-series, 6–8 GB RAM).
+  /// Typical mid-range phone (e.g. 4–8 GB RAM, Moto G class).
   mid,
 
   /// Flagship / desktop class.
@@ -41,7 +41,7 @@ class DeviceProfile {
 
   /// Human-readable line for Settings → Playback (not internal [id]).
   String get playbackAutoTuneLabel {
-    final ram = ramGb != null ? '${ramGb} GB RAM' : 'RAM unknown';
+    final ram = ramGb != null ? _ramDisplayLabel() : 'RAM unknown';
     final tierLabel = switch (tier) {
       DevicePerformanceTier.low => 'Low',
       DevicePerformanceTier.mid => 'Mid',
@@ -58,4 +58,12 @@ class DeviceProfile {
   @override
   String toString() =>
       'DeviceProfile(id=$id, model=$model, ram=${ramGb ?? "?"}GB, tier=$tier)';
+
+  String _ramDisplayLabel() {
+    final gb = ramGb!;
+    if (gb == 4 && manufacturer.toLowerCase().contains('motorola')) {
+      return '4 GB (+ RAM boost)';
+    }
+    return '$gb GB RAM';
+  }
 }

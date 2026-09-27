@@ -10,7 +10,6 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import com.omisu.launcher.R
 import io.github.thibaultbee.streampack.core.elements.sources.audio.IAudioSourceInternal
-import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MediaProjectionAudioSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.audio.audiorecord.MicrophoneSourceFactory
 import io.github.thibaultbee.streampack.core.elements.sources.video.IVideoSourceInternal
 import io.github.thibaultbee.streampack.core.elements.sources.video.mediaprojection.MediaProjectionVideoSourceFactory
@@ -36,7 +35,7 @@ class OmisuStreamingService :
         mediaProjection: MediaProjection,
         extras: Bundle,
     ): IVideoSourceInternal.Factory? {
-        return if (EmbeddedStreamCapture.isActive()) {
+        return if (EmbeddedStreamCapture.isActive() && !ExternalPlayStreamCapture.isActive) {
             EmbeddedRetroVideoSourceFactory()
         } else {
             MediaProjectionVideoSourceFactory(mediaProjection)
@@ -55,7 +54,7 @@ class OmisuStreamingService :
             }
         AUDIO_SOURCE_MEDIA_PROJECTION_KEY ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                MediaProjectionAudioSourceFactory(mediaProjection)
+                GamePlaybackAudioSourceFactory(mediaProjection)
             } else {
                 MicrophoneSourceFactory()
             }

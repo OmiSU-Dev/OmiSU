@@ -10,6 +10,7 @@ import 'package:omisu/l10n/app_locale.dart';
 import 'package:omisu/services/sfx_service.dart';
 import 'package:omisu/services/streaming/stream_platform.dart';
 import 'package:omisu/services/streaming/stream_settings_service.dart';
+import 'package:omisu/services/streaming/stream_quality_resolver.dart';
 import 'package:omisu/utils/adaptive_scroll.dart';
 import 'package:omisu/widgets/custom_toggle_switch.dart';
 import 'package:omisu/widgets/omisu/omisu_retro_chrome.dart';
@@ -226,6 +227,21 @@ class StreamingSettingsContentState extends State<StreamingSettingsContent> {
     unawaited(_save(_settings.copyWith(qualityPreset: next)));
   }
 
+  String _qualitySubtitle(BuildContext context) {
+    if (_settings.qualityPreset == 'auto') {
+      final eff = _settings.effectiveQualityPreset;
+      final range = StreamQualityResolver.variableBitrateRangeKbps('auto');
+      return '${AppLocale.streamingQualityAuto.getString(context)} '
+          '($eff · ~${range.min}–${range.max} kbps · ${_settings.fps} fps)\n'
+          '${AppLocale.streamingQualityAutoVariableHint.getString(context)}';
+    }
+    final range = StreamQualityResolver.variableBitrateRangeKbps(
+      _settings.qualityPreset,
+    );
+    return '${_settings.qualityPreset} · ~${range.min}–${range.max} kbps · '
+        '${_settings.bitrateKbps} kbps target';
+  }
+
   void _cycleFaceCamCorner() {
     final corners = StreamSettings.faceCamCorners;
     final idx = corners.indexOf(_settings.faceCamCorner);
@@ -363,6 +379,18 @@ class StreamingSettingsContentState extends State<StreamingSettingsContent> {
           title: AppLocale.streaming.getString(context),
           subtitle: AppLocale.streamingSubtitle.getString(context),
         ),
+        SizedBox(height: 8.r),
+        OmisuRetroPanel(
+          padding: EdgeInsets.all(10.r),
+          child: Text(
+            AppLocale.streamingAndroidGamesAlphaNote.getString(context),
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 10.r,
+              height: 1.35,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+            ),
+          ),
+        ),
         SizedBox(height: 12.r),
         Expanded(
           child: SingleChildScrollView(
@@ -468,7 +496,7 @@ class StreamingSettingsContentState extends State<StreamingSettingsContent> {
                 _row(
                   index: 5,
                   title: AppLocale.streamingQuality.getString(context),
-                  subtitle: _settings.qualityPreset,
+                  subtitle: _qualitySubtitle(context),
                   trailing: const Icon(Symbols.hd, size: 20),
                   onTap: _cycleQuality,
                 ),

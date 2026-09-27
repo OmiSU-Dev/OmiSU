@@ -1,12 +1,15 @@
 package com.omisu.embedded
 
 import android.app.Activity
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.FrameMetrics
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.Window
 import androidx.lifecycle.LifecycleOwner
 import com.omisu.streaming.EmbeddedStreamCapture
 import com.swordfish.libretrodroid.GLRetroView
@@ -57,6 +60,9 @@ class EmbeddedEmulatorController {
     private var menuPaused = false
     private var rumbleLooper: EmbeddedRumbleLooper? = null
     private var frameMetricsJob: Job? = null
+    private var windowFrameMetricsListener: Window.OnFrameMetricsAvailableListener? = null
+    private val windowFrameDurationsNs = ArrayDeque<Long>()
+    private var windowFpsReportRunnable: Runnable? = null
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var presentationNudgeGeneration = 0
@@ -249,8 +255,22 @@ class EmbeddedEmulatorController {
     @OptIn(DelicateCoroutinesApi::class)
     private fun restartFrameMetrics(view: GLRetroView) {
         stopFrameMetrics()
-        if (!fpsCounterEnabled && !shouldRunAdaptiveGovernor()) return
+        val needGlFrameEvents =
+            shouldRunAdaptiveGovernor() ||
+                (fpsCounterEnabled && !useWindowFpsCounter())
+        if (needGlFrameEvents) {
+            startGlEventFrameMetrics(view)
+        }
+        if (fpsCounterEnabled && useWindowFpsCounter()) {
+            hostActivity?.let { startWindowFpsCounter(it) }
+        }
+    }
 
+    private fun useWindowFpsCounter(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun startGlEventFrameMetrics(view: GLRetroView) {
         frameMetricsJob =
             GlobalScope.launch {
                 var frameCount = 0
@@ -264,7 +284,7 @@ class EmbeddedEmulatorController {
                     val fps = frameCount * 1000.0 / elapsedMs
                     frameCount = 0
                     windowStart = now
-                    if (fpsCounterEnabled) {
+                    if (fpsCounterEnabled && !useWindowFpsCounter()) {
                         CoreResolver.statusListener?.invoke(
                             "fps:${String.format(Locale.US, "%.1f", fps)}",
                         )
@@ -274,7 +294,62 @@ class EmbeddedEmulatorController {
             }
     }
 
+    private fun startWindowFpsCounter(activity: Activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return
+        windowFrameDurationsNs.clear()
+        val listener =
+            Window.OnFrameMetricsAvailableListener { _, frameMetrics, _ ->
+                if (!fpsCounterEnabled) return@OnFrameMetricsAvailableListener
+                val durationNs =
+                    frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION)
+                if (durationNs <= 0) return@OnFrameMetricsAvailableListener
+                synchronized(windowFrameDurationsNs) {
+                    windowFrameDurationsNs.addLast(durationNs)
+                    while (windowFrameDurationsNs.size > 90) {
+                        windowFrameDurationsNs.removeFirst()
+                    }
+                }
+            }
+        windowFrameMetricsListener = listener
+        activity.window.addOnFrameMetricsAvailableListener(listener, mainHandler)
+        val report =
+            object : Runnable {
+                override fun run() {
+                    if (!fpsCounterEnabled) return
+                    val samples =
+                        synchronized(windowFrameDurationsNs) {
+                            windowFrameDurationsNs.toList()
+                        }
+                    if (samples.isNotEmpty()) {
+                        val avgNs = samples.average()
+                        if (avgNs > 0) {
+                            val fps = 1_000_000_000.0 / avgNs
+                            CoreResolver.statusListener?.invoke(
+                                "fps:${String.format(Locale.US, "%.1f", fps)}",
+                            )
+                        }
+                    }
+                    mainHandler.postDelayed(this, 1_000L)
+                }
+            }
+        windowFpsReportRunnable = report
+        mainHandler.postDelayed(report, 1_000L)
+    }
+
+    private fun stopWindowFpsCounter() {
+        windowFpsReportRunnable?.let { mainHandler.removeCallbacks(it) }
+        windowFpsReportRunnable = null
+        val activity = hostActivity
+        val listener = windowFrameMetricsListener
+        if (activity != null && listener != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            activity.window.removeOnFrameMetricsAvailableListener(listener)
+        }
+        windowFrameMetricsListener = null
+        synchronized(windowFrameDurationsNs) { windowFrameDurationsNs.clear() }
+    }
+
     private fun stopFrameMetrics() {
+        stopWindowFpsCounter()
         frameMetricsJob?.cancel()
         frameMetricsJob = null
     }

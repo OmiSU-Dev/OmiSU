@@ -23,6 +23,7 @@ import 'package:omisu/services/logger_service.dart';
 import '../../providers/sqlite_config_provider.dart';
 import '../../widgets/omisu/omisu_retro_chrome.dart';
 import '../../themes/omisu_accent.dart';
+import 'package:omisu/config/nordi_config.dart';
 import 'package:omisu/services/nordi/nordi_settings.dart';
 import 'new_settings_options/nordi_power_settings_content.dart';
 
@@ -261,10 +262,10 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
         ),
       );
     }
-    if (NordiSettings.handheldRetailUi) {
+    if (NordiConfig.curatedBuild) {
       _menuItems.add(
         SettingsMenuItem(
-          title: 'Restart / Reboot',
+          title: '',
           localeKey: NordiSettings.powerMenuLocaleKey,
           icon: Symbols.restart_alt_rounded,
           isVisible: true,
@@ -486,9 +487,9 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
     } else if (selectedKey == AppLocale.about) {
       return _aboutSettingsKey.currentState?.getItemCount() ?? 0;
     } else if (selectedKey == NordiSettings.powerMenuLocaleKey) {
-      return _nordiPowerKey.currentState?.getItemCount() ?? 3;
+      return _nordiPowerKey.currentState?.getItemCount() ?? 4;
     } else if (selectedKey == AppLocale.exit) {
-      return 1;
+      return _exitSettingsKey.currentState?.getItemCount() ?? 2;
     } else {
       return 0;
     }
@@ -520,7 +521,7 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
     } else if (selectedKey == NordiSettings.powerMenuLocaleKey) {
       _nordiPowerKey.currentState?.selectItem(_selectedContentIndex);
     } else if (selectedKey == AppLocale.exit) {
-      _executeExit();
+      _exitSettingsKey.currentState?.selectItem(_selectedContentIndex);
     }
   }
 
@@ -747,6 +748,7 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
         key: _nordiPowerKey,
         isContentFocused: !_focusOnMenu,
         selectedContentIndex: _selectedContentIndex,
+        onExitApp: _executeExit,
       );
     } else if (selectedKey == AppLocale.exit) {
       return ExitSettingsContent(

@@ -65,6 +65,12 @@ class SystemInfo {
   /// Indicates if this entry represents a single game (e.g., in "Recently Played").
   final bool isGame;
 
+  /// Launches an installed Android app from the home grid (Winlator, GameHub, …).
+  final bool isAppShortcut;
+
+  /// Package to open when [isAppShortcut] is true.
+  final String? appPackageName;
+
   /// The underlying game data if [isGame] is true.
   final GameModel? gameModel;
 
@@ -93,6 +99,8 @@ class SystemInfo {
     this.hideLogo = false,
     this.imageVersion = 0,
     this.isGame = false,
+    this.isAppShortcut = false,
+    this.appPackageName,
     this.gameModel,
     this.mosaicPaths = const [],
   });
@@ -116,6 +124,8 @@ class SystemInfo {
     bool? hideLogo,
     int? imageVersion,
     bool? isGame,
+    bool? isAppShortcut,
+    String? appPackageName,
     GameModel? gameModel,
     List<String>? mosaicPaths,
   }) {
@@ -137,8 +147,30 @@ class SystemInfo {
       hideLogo: hideLogo ?? this.hideLogo,
       imageVersion: imageVersion ?? this.imageVersion,
       isGame: isGame ?? this.isGame,
+      isAppShortcut: isAppShortcut ?? this.isAppShortcut,
+      appPackageName: appPackageName ?? this.appPackageName,
       gameModel: gameModel ?? this.gameModel,
       mosaicPaths: mosaicPaths ?? this.mosaicPaths,
+    );
+  }
+
+  /// Home grid tile that opens a PC-gaming / streaming wrapper app.
+  factory SystemInfo.fromHomeAppShortcut({
+    required String packageName,
+    required String title,
+  }) {
+    return SystemInfo(
+      title: title,
+      shortName: null,
+      folderName: 'app_shortcut:$packageName',
+      primaryFolderName: 'steam',
+      numOfRoms: 0,
+      color: const Color(0xFF1b2838),
+      color1: '#1b2838',
+      color2: '#66c0f4',
+      hideLogo: true,
+      isAppShortcut: true,
+      appPackageName: packageName,
     );
   }
 

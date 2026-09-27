@@ -51,6 +51,23 @@ void main() {
     expect(params['shaderFilter'], 'sharp');
   });
 
+  test('4 GB mid-tier device keeps HD at launch', () {
+    const settings = PlaySettings(hdMode: true, hdModeQuality: 'medium');
+    const device = DeviceProfile(
+      id: 'android_mid',
+      model: 'moto g - 2025',
+      manufacturer: 'motorola',
+      ramGb: 4,
+      tier: DevicePerformanceTier.mid,
+    );
+    expect(PlaySettings.deviceNeedsPerformanceSafeguard(device), isFalse);
+    expect(settings.effectivePerformanceMode(device), isFalse);
+    final params = settings.toEmbeddedParams(device: device);
+    expect(params['hdMode'], isTrue);
+    expect(params['hdModeQuality'], 'medium');
+    expect(params['performanceMode'], isFalse);
+  });
+
   test('low-RAM device safeguard applies performance at launch', () {
     const settings = PlaySettings(hdMode: true);
     const device = DeviceProfile(

@@ -13,7 +13,8 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
-import io.github.thibaultbee.streampack.core.streamers.utils.MediaProjectionUtils
+import com.omisu.streaming.EmbeddedStreamCapture
+import com.omisu.streaming.StreamCaptureIntents
 
 class StreamingPlugin :
     FlutterPlugin,
@@ -103,6 +104,7 @@ class StreamingPlugin :
                 val height = call.argument<Int>("height") ?: 720
                 val bitrateKbps = call.argument<Int>("bitrateKbps") ?: 2500
                 val fps = call.argument<Int>("fps") ?: 30
+                val qualityPreset = call.argument<String>("qualityPreset") ?: "auto"
                 val audioMode =
                     StreamAudioMode.fromWire(call.argument<String>("audioMode"))
                 pendingFaceCam = call.argument<Boolean>("faceCamEnabled") ?: false
@@ -117,6 +119,7 @@ class StreamingPlugin :
                         height = height,
                         bitrateKbps = bitrateKbps,
                         fps = fps,
+                        qualityPreset = qualityPreset,
                         audioMode = audioMode,
                         faceCamEnabled = pendingFaceCam,
                         faceCamCorner = call.argument<String>("faceCamCorner") ?: "bottomRight",
@@ -216,7 +219,10 @@ class StreamingPlugin :
         }
         @Suppress("DEPRECATION")
         act.startActivityForResult(
-            MediaProjectionUtils.createScreenCaptureIntent(act),
+            StreamCaptureIntents.createScreenCaptureIntent(
+                act,
+                preferFullDisplay = !EmbeddedStreamCapture.isActive(),
+            ),
             REQUEST_PROJECTION,
         )
     }

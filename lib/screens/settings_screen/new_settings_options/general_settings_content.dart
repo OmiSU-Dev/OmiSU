@@ -22,7 +22,9 @@ import '../../../services/permission_service.dart';
 import '../../../services/sfx_service.dart';
 import 'package:omisu/config/nordi_config.dart';
 import 'package:omisu/services/nordi/nordi_safe_mode_service.dart';
+import 'package:omisu/services/nordi/controller_idle_sleep_service.dart';
 import 'package:omisu/services/unified_update_coordinator.dart';
+import 'package:omisu/services/screenshot_service.dart';
 
 /// A specialized content panel for system-wide configuration, including platform-specific orchestration (Windows/Android/Linux).
 ///
@@ -50,6 +52,8 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
     with WidgetsBindingObserver {
   bool _isDefaultLauncher = false;
   bool _manualUpdateInFlight = false;
+  int _controllerIdleMinutes = 5;
+  bool _suspendControllerOnNordiSleep = false;
 
   static final _log = LoggerService.instance;
 
@@ -75,6 +79,9 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
     WidgetsBinding.instance.addObserver(this);
     _loadFullscreenState();
     _checkDefaultLauncher();
+    if (Platform.isAndroid && NordiConfig.curatedBuild) {
+      unawaited(_loadControllerPowerSettings());
+    }
 
     // Pre-allocate keys for maximum theoretical setting items (the fixed rows
     // plus one per navigation tab that can be toggled).
@@ -108,7 +115,53 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
     }
   }
 
-  /// Sychronizes the native window state with persistent preferences.
+  String _controllerSleepSettingSubtitle(
+    BuildContext context,
+    String baseLocaleKey,
+  ) {
+    final base = baseLocaleKey.getString(context);
+    final disclaimer =
+        AppLocale.nordiControllerSleepExperimentalDisclaimer.getString(
+      context,
+    );
+    return '$disclaimer\n$base';
+  }
+
+  Future<void> _loadControllerPowerSettings() async {
+    final results = await Future.wait([
+      ControllerIdleSleepService.getIdleMinutes(),
+      ControllerIdleSleepService.getSuspendOnNordiSleep(),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _controllerIdleMinutes = results[0] as int;
+      _suspendControllerOnNordiSleep = results[1] as bool;
+    });
+  }
+
+  String _controllerIdleLabel(BuildContext context, int minutes) {
+    if (minutes <= 0) {
+      return AppLocale.nordiControllerIdleOff.getString(context);
+    }
+    return AppLocale.nordiControllerIdleMinutes
+        .getString(context)
+        .replaceAll('{minutes}', '$minutes');
+  }
+
+  Future<void> _cycleControllerIdleMinutes() async {
+    final next = ControllerIdleSleepService.nextOption(_controllerIdleMinutes);
+    await ControllerIdleSleepService.setIdleMinutes(next);
+    if (!mounted) return;
+    setState(() => _controllerIdleMinutes = next);
+  }
+
+  Future<void> _toggleSuspendOnNordiSleep() async {
+    final next = !_suspendControllerOnNordiSleep;
+    await ControllerIdleSleepService.setSuspendOnNordiSleep(next);
+    if (!mounted) return;
+    setState(() => _suspendControllerOnNordiSleep = next);
+  }
+
   Future<void> _loadFullscreenState() async {
     if (!kIsWeb &&
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
@@ -228,14 +281,26 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
     }
   }
 
+  Future<void> _openAccessibilitySettings() async {
+    if (!Platform.isAndroid) return;
+    try {
+      await ScreenshotService.openAccessSettings();
+    } catch (e) {
+      _log.e('Accessibility settings activity could not be resolved: $e');
+    }
+  }
+
   /// Dynamic Item Resolution: Calculates the total setting items available for the current platform/configuration.
   int getItemCount() {
     int count = 0;
     if (Platform.isAndroid) {
       count++; // System updates / settings
+      count++; // Accessibility (OmiSU Screenshot)
     }
     if (Platform.isAndroid && NordiConfig.curatedBuild) {
       count++; // Nordi safe mode
+      count++; // Controller idle sleep
+      count++; // Suspend grip on Sleep tab
     }
     if (Platform.isAndroid && NordiConfig.curatedBuild) {
       count++; // Auto-update built-in player
@@ -276,11 +341,29 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
         return;
       }
       currentItemIndex++;
+
+      if (index == currentItemIndex) {
+        unawaited(_openAccessibilitySettings());
+        return;
+      }
+      currentItemIndex++;
     }
 
     if (Platform.isAndroid && NordiConfig.curatedBuild) {
       if (index == currentItemIndex) {
         _toggleSafeMode();
+        return;
+      }
+      currentItemIndex++;
+
+      if (index == currentItemIndex) {
+        unawaited(_cycleControllerIdleMinutes());
+        return;
+      }
+      currentItemIndex++;
+
+      if (index == currentItemIndex) {
+        unawaited(_toggleSuspendOnNordiSleep());
         return;
       }
       currentItemIndex++;
@@ -475,6 +558,28 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
                     );
                   }(),
                   SizedBox(height: 12.r),
+                  () {
+                    final index = currentItemIdx++;
+                    return SettingRow(
+                      key: _itemKeys[index],
+                      onTap: () => selectItem(index),
+                      focused:
+                          widget.isContentFocused &&
+                          widget.selectedContentIndex == index,
+                      title: AppLocale.androidAccessibilitySettings.getString(
+                        context,
+                      ),
+                      subtitle: AppLocale.androidAccessibilitySettingsSubtitle
+                          .getString(context),
+                      trailing: Icon(
+                        Symbols.settings_accessibility_rounded,
+                        size: 18.r,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
+                    );
+                  }(),
                 ],
 
                 if (Platform.isAndroid && NordiConfig.curatedBuild) ...[
@@ -488,8 +593,7 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
                           widget.selectedContentIndex == index,
                       title: 'Safe mode (dev / sideload)',
                       subtitle:
-                          'Shows Exit and default launcher picker; disables crash relaunch. '
-                          'Restart the app after changing.',
+                          'Shows Exit and default launcher picker; opens Home app settings to switch to the stock launcher. Restart the app after changing.',
                       trailing: CustomToggleSwitch(
                         value: NordiSafeModeService.isEnabled,
                         onChanged: (value) async {
@@ -503,6 +607,57 @@ class GeneralSettingsContentState extends State<GeneralSettingsContent>
                     );
                   }(),
                   SizedBox(height: 12.r),
+                  () {
+                    final index = currentItemIdx++;
+                    return SettingRow(
+                      key: _itemKeys[index],
+                      onTap: () => selectItem(index),
+                      focused:
+                          widget.isContentFocused &&
+                          widget.selectedContentIndex == index,
+                      title: AppLocale.nordiControllerIdleTitle.getString(
+                        context,
+                      ),
+                      subtitle: _controllerSleepSettingSubtitle(
+                        context,
+                        AppLocale.nordiControllerIdleSubtitle,
+                      ),
+                      trailing: SettingValueChip(
+                        text: _controllerIdleLabel(
+                          context,
+                          _controllerIdleMinutes,
+                        ),
+                      ),
+                    );
+                  }(),
+                  SizedBox(height: 12.r),
+                  () {
+                    final index = currentItemIdx++;
+                    return SettingRow(
+                      key: _itemKeys[index],
+                      onTap: () => selectItem(index),
+                      focused:
+                          widget.isContentFocused &&
+                          widget.selectedContentIndex == index,
+                      title: AppLocale.nordiControllerSuspendOnSleepTitle
+                          .getString(context),
+                      subtitle: _controllerSleepSettingSubtitle(
+                        context,
+                        AppLocale.nordiControllerSuspendOnSleepSubtitle,
+                      ),
+                      trailing: CustomToggleSwitch(
+                        value: _suspendControllerOnNordiSleep,
+                        onChanged: (value) async {
+                          await ControllerIdleSleepService.setSuspendOnNordiSleep(
+                            value,
+                          );
+                          if (!context.mounted) return;
+                          setState(() => _suspendControllerOnNordiSleep = value);
+                        },
+                        activeColor: theme.colorScheme.primary,
+                      ),
+                    );
+                  }(),
                 ],
 
                 if (Platform.isAndroid && NordiConfig.curatedBuild) ...[

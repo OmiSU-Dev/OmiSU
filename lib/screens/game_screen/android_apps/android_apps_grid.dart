@@ -8,7 +8,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../../models/system_model.dart';
 import '../../../models/game_model.dart';
+import '../../../services/game/game_launch_service.dart';
 import '../../../services/game_service.dart';
+import '../../../services/game_launch_manager.dart';
 import '../../../utils/gamepad_nav.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../widgets/android_apps_footer.dart';
@@ -236,7 +238,17 @@ class _AndroidAppsGridState extends State<AndroidAppsGrid> {
     try {
       SfxService().playEnterSound();
       _log.i('Launching Android app: $packageName');
-      await AndroidService.launchPackage(packageName);
+      GameService.beginLaunchPending();
+      await GameLaunchManager().beginSession();
+      if (!mounted) return;
+      final result = await GameLaunchService.launchGame(context, widget.system, app);
+      if (!mounted) return;
+      if (result.success) {
+        GameLaunchManager().onGameStarted(emulatorExe: 'android_app');
+      } else {
+        GameService.clearLaunchPending();
+        GameLaunchManager().userDismiss();
+      }
     } finally {
       _isLaunching = false;
       _lastLaunchTime = DateTime.now();

@@ -47,6 +47,8 @@ import 'package:omisu/providers/retro_achievements_provider.dart';
 import 'package:omisu/providers/omisu_shell_provider.dart';
 import 'package:omisu/services/omarchy_ascii_renderer.dart';
 import 'package:omisu/services/secondary_achievements_controller.dart';
+import 'package:omisu/services/home_app_shortcuts_service.dart';
+import 'package:omisu/utils/home_app_shortcut_launch.dart';
 import 'system_list_builder.dart';
 
 part 'my_systems_grid/gamepad_grid_nav.dart';
@@ -150,8 +152,9 @@ class MySystems extends StatelessWidget {
   /// Aggregates all logical systems (recent games + detected systems) into a unified list.
   List<SystemInfo> _buildAllSystems(
     BuildContext context,
-    SqliteConfigProvider configProvider,
-  ) {
+    SqliteConfigProvider configProvider, {
+    List<SystemInfo> appShortcuts = const [],
+  }) {
     final fileProvider = Provider.of<FileProvider>(context, listen: false);
     final dbProvider = Provider.of<SqliteDatabaseProvider>(context);
     return buildSystemsList(
@@ -159,6 +162,7 @@ class MySystems extends StatelessWidget {
       configProvider: configProvider,
       dbProvider: dbProvider,
       fileProvider: fileProvider,
+      appShortcuts: appShortcuts,
     );
   }
 
@@ -167,7 +171,25 @@ class MySystems extends StatelessWidget {
     BuildContext context,
     SqliteConfigProvider configProvider,
   ) {
-    final allSystems = _buildAllSystems(context, configProvider);
+    return FutureBuilder<List<SystemInfo>>(
+      future: HomeAppShortcutsService.loadShortcutCards(),
+      builder: (context, shortcutSnap) {
+        final appShortcuts = shortcutSnap.data ?? const <SystemInfo>[];
+        final allSystems = _buildAllSystems(
+          context,
+          configProvider,
+          appShortcuts: appShortcuts,
+        );
+        return _buildSystemsGridBody(context, configProvider, allSystems);
+      },
+    );
+  }
+
+  Widget _buildSystemsGridBody(
+    BuildContext context,
+    SqliteConfigProvider configProvider,
+    List<SystemInfo> allSystems,
+  ) {
 
     // Bound check the selected index for safety.
     final currentSystem = selectedIndex < allSystems.length
@@ -263,6 +285,8 @@ class MySystems extends StatelessWidget {
     SystemInfo system,
     SqliteConfigProvider configProvider,
   ) async {
+    if (system.isAppShortcut) return;
+
     SfxService().playNavSound();
 
     final items = <ContextMenuItem>[
@@ -348,6 +372,15 @@ class MySystems extends StatelessWidget {
   ) async {
     if (MySystems.isNavigating) return;
     MySystems.isNavigating = true;
+
+    if (systemInfo.isAppShortcut) {
+      try {
+        await launchHomeAppShortcut(context, systemInfo);
+      } finally {
+        MySystems.isNavigating = false;
+      }
+      return;
+    }
 
     // SCENARIO A: Direct Game Launch (from Recent Games card).
     if (systemInfo.isGame && systemInfo.gameModel != null) {

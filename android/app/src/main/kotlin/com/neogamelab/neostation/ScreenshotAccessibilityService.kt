@@ -1,6 +1,7 @@
 package com.omisu.launcher
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
@@ -95,6 +96,17 @@ class ScreenshotAccessibilityService : AccessibilityService() {
         fun takeScreenshot(): Boolean {
             val service = instance ?: return false
             return service.performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+        }
+
+        /**
+         * Locks the device (same as the power button on most phones). Used when
+         * [PowerManager.goToSleep] is unavailable to retail apps — requires the
+         * user to have enabled this accessibility service.
+         */
+        fun lockScreen(): Boolean {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+            val service = instance ?: return false
+            return service.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
         }
     }
 

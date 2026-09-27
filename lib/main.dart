@@ -42,6 +42,7 @@ import 'package:omisu/services/library_watch_coordinator.dart';
 import 'package:omisu/services/launch/device_profile_service.dart';
 import 'package:omisu/services/nordi/nordi_bootstrap_service.dart';
 import 'package:omisu/services/nordi/nordi_safe_mode_service.dart';
+import 'package:omisu/services/nordi/nordi_launcher_events.dart';
 import 'package:omisu/config/nordi_config.dart';
 import 'package:omisu/services/embedded/libretro_cheat_bootstrap.dart';
 import 'package:omisu/services/embedded/play_settings_service.dart';
@@ -159,7 +160,9 @@ Future<int?> _physicalRamGb() async {
       LoggerService.instance.i(
         'Android device detected: ${info.model}, RAM: ${info.physicalRamSize} MB',
       );
-      return info.physicalRamSize ~/ 1024;
+      return DeviceProfileService.ramGbFromPhysicalMegabytes(
+        info.physicalRamSize,
+      );
     }
     if (Platform.isWindows) {
       final info = await DeviceInfoPlugin().windowsInfo;
@@ -224,6 +227,10 @@ void main() async {
   if (Platform.isAndroid) {
     await PlaySettingsService.load();
     await PlaySettingsService.applyLowTierDefaultsIfNeeded();
+    await PlaySettingsService.applyMisclassifiedRamPlaybackFixIfNeeded();
+    if (NordiConfig.curatedBuild) {
+      await PlaySettingsService.applyCuratedPlaybackDefaultsIfNeeded();
+    }
   }
 
   // Resolve the user-data location before anything reads it, so the cold-boot
@@ -383,12 +390,21 @@ void main() async {
     await NordiBootstrapService.ensureDefaultRomFolder(
       configProvider: sqliteConfigProvider,
     );
+    await NordiBootstrapService.applyCuratedUiDefaultsIfNeeded(
+      configProvider: sqliteConfigProvider,
+    );
+    // Do not auto-open the Home role UI during cold boot — it races Flutter
+    // startup and breaks launches from the app drawer after switching to stock
+    // HOME. Users set default launcher from Settings (or Safe mode).
   }
 
   // Inicializar listener de Android para tracking de tiempo de juego
   if (Platform.isAndroid) {
     unawaited(LibretroCheatBootstrap.ensureInstalled());
     try {
+      if (NordiConfig.curatedBuild) {
+        NordiLauncherEvents.ensureListening();
+      }
       GameService.initializeAndroidGameListener();
       // Verificar si hay una sesion de juego pendiente (app fue matada)
       await GameService.checkPendingGameSession();
@@ -894,7 +910,8 @@ Future<void> subDisplay() async {
       (int.tryParse(rawConfig?['sfx_enabled']?.toString() ?? '1') ?? 1) == 1,
     );
     SfxService().setVolume(
-      double.tryParse(rawConfig?['sfx_volume']?.toString() ?? '0.75') ?? 0.75,
+      double.tryParse(rawConfig?['sfx_volume']?.toString() ?? '${SfxService.defaultVolume}') ??
+          SfxService.defaultVolume,
     );
   } catch (e) {
     debugPrint('Secondary display could not load saved config: $e');

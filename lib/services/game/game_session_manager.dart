@@ -7,6 +7,7 @@ import '../../models/system_model.dart';
 import '../../repositories/game_repository.dart';
 import '../../repositories/system_repository.dart';
 import '../../sync/sync_manager.dart';
+import '../android_service.dart';
 import '../game_session_persistence.dart';
 import '../retroachievements_hash_service.dart';
 import '../romm_playtime_service.dart';
@@ -306,6 +307,7 @@ class GameSessionManager {
       if (Platform.isAndroid) {
         const platform = MethodChannel('com.omisu.launcher/game');
         await platform.invokeMethod('setGamepadBlock', {'block': false});
+        await AndroidService.endExternalPlaySession();
         GameSessionPersistence.clearGameSession();
       } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
         if (_onProcessExitCallback != null) {

@@ -19,6 +19,9 @@ import 'package:path_provider/path_provider.dart';
 class SfxService {
   /// Maximum UI SFX volume. The UI presents this as 100%.
   static const double maxVolume = 0.75;
+
+  /// Default UI SFX level (Settings “Medium”).
+  static const double defaultVolume = maxVolume * 2 / 3;
   static final SfxService _instance = SfxService._internal();
   factory SfxService() => _instance;
   SfxService._internal();
@@ -58,7 +61,7 @@ class SfxService {
   bool _enabled = true;
 
   /// Global SFX playback volume (0.0 to [maxVolume]).
-  double _volume = maxVolume;
+  double _volume = defaultVolume;
 
   double get volume => _volume;
   bool get isInitialized => _isInitialized;

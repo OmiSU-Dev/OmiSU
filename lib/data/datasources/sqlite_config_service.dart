@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:omisu/constants/recent_card_sizes.dart';
 import 'package:path/path.dart' as path;
 import 'package:omisu/services/logger_service.dart';
+import 'package:omisu/services/sfx_service.dart';
 import '../../models/config_model.dart';
 import '../../models/ambient_backdrop_mode.dart';
 import '../../models/gamepad_shoulder_style.dart';
@@ -181,9 +182,12 @@ class SqliteConfigService {
                 1) ==
             1,
         sfxVolume:
-            (double.tryParse(userConfig?['sfx_volume']?.toString() ?? '0.75') ??
-                    0.75)
-                .clamp(0.0, 0.75)
+            (double.tryParse(
+                      userConfig?['sfx_volume']?.toString() ??
+                          '${SfxService.defaultVolume}',
+                    ) ??
+                    SfxService.defaultVolume)
+                .clamp(0.0, SfxService.maxVolume)
                 .toDouble(),
         use12HourClock:
             (int.tryParse(

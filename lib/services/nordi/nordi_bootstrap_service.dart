@@ -7,6 +7,7 @@ import 'package:omisu/models/gamepad_shoulder_style.dart';
 import 'package:omisu/providers/neo_assets_provider.dart';
 import 'package:omisu/providers/sqlite_config_provider.dart';
 import 'package:omisu/services/embedded/play_settings_service.dart';
+import 'package:omisu/services/sfx_service.dart';
 import 'package:omisu/services/logger_service.dart';
 import 'package:omisu/utils/nav_tabs.dart';
 import 'package:omisu/widgets/permission_check_wrapper.dart';
@@ -39,6 +40,7 @@ class NordiBootstrapService {
     await configProvider.updateGamepadShoulderStyle(
       GamepadShoulderStyle.triggers,
     );
+    await configProvider.updateSfxVolume(SfxService.defaultVolume);
 
     for (final tab in [
       NavTab.sync,
@@ -107,6 +109,24 @@ class NordiBootstrapService {
     }
 
     await prefs.setBool(NordiConfig.prefsDefaultRomFolderEnsured, true);
+  }
+
+  /// One-time: medium UI sounds; migrate installs still on legacy high (0.75).
+  static Future<void> applyCuratedUiDefaultsIfNeeded({
+    required SqliteConfigProvider configProvider,
+  }) async {
+    if (!NordiConfig.curatedBuild || !Platform.isAndroid) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    const key = 'nordi_ui_sfx_medium_v1';
+    if (prefs.getBool(key) == true) return;
+
+    const legacyHigh = SfxService.maxVolume;
+    const medium = SfxService.defaultVolume;
+    if ((configProvider.config.sfxVolume - legacyHigh).abs() < 0.001) {
+      await configProvider.updateSfxVolume(medium);
+    }
+    await prefs.setBool(key, true);
   }
 
   /// Downloads default System Art once systems are known (after startup scan).
